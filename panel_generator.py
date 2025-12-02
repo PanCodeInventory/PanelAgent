@@ -164,35 +164,86 @@ def evaluate_candidates_with_llm(candidates, missing_markers=[]):
     """
     print(f"--- Asking LLM to evaluate {len(candidates)} candidates ---")
     
-    # Format candidates for Prompt
-    candidates_str = ""
+    if not candidates:
+        return {"status": "error", "message": "No candidates to evaluate."}
+
+    # --- 1. Diff Analysis ---
+    # We assume all candidates have the same set of markers (keys).
+    # We want to find which markers have different assignments across candidates.
+    first_panel = candidates[0]
+    markers = list(first_panel.keys())
+    
+    common_assignments = {}
+    diff_markers = []
+
+    for m in markers:
+        # Check if this marker has the exact same antibody (same system_code/fluor) in all candidates
+        # We use system_code + fluorochrome as identity signature
+        signatures = set()
+        for cand in candidates:
+            ab = cand.get(m, {})
+            sig = f"{ab.get('fluorochrome', '?')} ({ab.get('system_code', '?')})"
+            signatures.add(sig)
+        
+        if len(signatures) == 1:
+            # It's common across all
+            common_assignments[m] = list(signatures)[0]
+        else:
+            diff_markers.append(m)
+
+    # --- 2. Construct Prompt ---
+    common_str = ", ".join([f"{m}: {fluor}" for m, fluor in common_assignments.items()])
+    
+    diff_str = ""
     for i, cand in enumerate(candidates):
-        candidates_str += f"\n--- OPTION {i+1} ---\n"
-        candidates_str += json.dumps(cand, indent=2, ensure_ascii=False)
+        diff_str += f"\n**OPTION {i+1} Differences:**\n"
+        for m in diff_markers:
+            ab = cand.get(m, {})
+            diff_str += f"- {m}: {ab.get('fluorochrome', '?')} (Brightness: {ab.get('brightness', '?')})\n"
 
     prompt = f"""
-You are an expert flow cytometry panel designer.
+You are a flow cytometry panel design expert.
 
-**Goal:** Evaluate the following {len(candidates)} valid antibody panels.
-Select the BEST one based on **fluorochrome brightness matching** (bright fluorochromes for low-expression markers, dim for high).
+**Goal:** Compare {len(candidates)} candidate panels and select the BEST one.
 
-**Candidate Panels:**
-{candidates_str}
+**Context:**
+- **Common Assignments (Identical in all options):** 
+  {common_assignments if common_assignments else "None"}
+  *(These are fixed due to inventory constraints. Do not critique them unless fatal.)*
 
-**Instructions:**
-1.  **Analyze** each option carefully.
-2.  **Select** the single best option (1-based index).
-3.  **Explain** your choice (Design Rationale), highlighting specific marker-fluorochrome matches.
-4.  **Provide** a comprehensive Gating Strategy.
+- **KEY DIFFERENCES (Focus your decision here):**
+{diff_str}
 
-**Output Format:**
-Return a SINGLE JSON object: 
+**Evaluation Criteria:**
+1. **Brightness Matching:** High expression markers -> Dim fluorochromes. Low expression -> Bright fluorochromes.
+2. **Spillover:** Minimize spectral overlap in critical co-expressed markers.
+
+**Task:**
+1. **Select** the best option index.
+2. **Rationale:** Focus ONLY on why the specific assignments in the chosen option are better than the others.
+3. **Gating Strategy:** Provide a **structured hierarchical list** (e.g., "1. CD45+ -> 2. CD3+ ...").
+
+**Output Format (JSON):**
 {{
   "selected_option_index": 1, 
-  "rationale": "...",
-  "gating_strategy": "..."
+  "rationale": "Option X is better because...",
+  "gating_detail": [
+    {{ 
+      "step": 1, 
+      "parent": "All Events", 
+      "axis": "FSC-A / SSC-A", 
+      "gate": "Polygon around lymphocytes", 
+      "population": "Lymphocytes" 
+    }},
+    {{
+       "step": 2,
+       "parent": "Lymphocytes",
+       "axis": "CD3 / CD19",
+       "gate": "CD3+",
+       "population": "T Cells"
+    }}
+  ]
 }}
-Respond with ONLY the valid JSON.
 """
 
     llm_response = consult_gpt_oss(prompt)
@@ -204,7 +255,7 @@ Respond with ONLY the valid JSON.
             print("LLM format invalid. Defaulting to Option 1.")
             selected_idx = 0
             rationale = "LLM output invalid. Shown Option 1."
-            gating = "N/A"
+            gating_detail = []
         else:
             result_json = json.loads(json_match.group(1))
             idx = result_json.get("selected_option_index", 1) - 1
@@ -214,7 +265,7 @@ Respond with ONLY the valid JSON.
                 selected_idx = 0
             
             rationale = result_json.get("rationale", "No rationale provided.")
-            gating = result_json.get("gating_strategy", "N/A")
+            gating_detail = result_json.get("gating_detail", [])
             
         selected_panel = candidates[selected_idx].copy()
         
@@ -226,8 +277,65 @@ Respond with ONLY the valid JSON.
             "status": "success",
             "selected_panel": selected_panel,
             "rationale": rationale,
-            "gating_strategy": gating
+            "gating_detail": gating_detail
         }
 
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+def recommend_markers_from_inventory(experimental_goal, num_colors, available_targets_list):
+    """
+    New Feature: AI Experimental Design.
+    Asks LLM to select markers from the INVENTORY list based on a research goal.
+    Returns structured data for table display.
+    """
+    print(f"--- Asking LLM to recommend {num_colors} markers for: {experimental_goal} ---")
+    
+    # Convert list to string for prompt
+    targets_str = ", ".join(sorted(available_targets_list))
+    
+    prompt = f"""
+You are a senior flow cytometry expert.
+
+**User's Research Goal:** {experimental_goal}
+**Target Panel Size:** {num_colors} colors (approximately)
+
+**Constraint:** You can ONLY select markers from the following **Available Inventory**:
+[{targets_str}]
+
+**Task:**
+1. Select the most critical markers from the inventory to achieve the research goal.
+2. Categorize each marker (e.g., Lineage, Activation, Exhaustion, Functional).
+3. Provide a brief reason for selecting it.
+
+**Output Format:**
+Return a SINGLE JSON object containing a list called "markers_detail":
+{{
+  "markers_detail": [
+    {{ "marker": "MarkerName", "type": "Category", "reason": "Short explanation..." }},
+    {{ "marker": "MarkerName", "type": "Category", "reason": "Short explanation..." }}
+  ]
+}}
+Respond with ONLY the valid JSON.
+"""
+
+    llm_response = consult_gpt_oss(prompt)
+    
+    try:
+        json_match = re.search(r"(\{[\s\S]*\})", llm_response)
+        if not json_match:
+            return {"status": "error", "message": "LLM returned invalid format."}
+        
+        result_json = json.loads(json_match.group(1))
+        details = result_json.get("markers_detail", [])
+        
+        # Extract simple list of names for the input box
+        selected_markers = [item["marker"] for item in details]
+        
+        return {
+            "status": "success",
+            "markers_detail": details,
+            "selected_markers": selected_markers
+        }
     except Exception as e:
         return {"status": "error", "message": str(e)}
