@@ -1,0 +1,29 @@
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+.idea/
+.vscode/
+
+# --- Mac OS ---
+.DS_Store
+
+# --- Streamlit ---
+.streamlit/secrets.toml
+
+# --- Project Data (Inventory) ---
+*.csv
+*.xlsx
+*.xls
+
+# --- Secrets & Configuration ---
+.env
+.env.*
+api_key.txt
+secrets.json
+config_private.json
+openai_key.txt
