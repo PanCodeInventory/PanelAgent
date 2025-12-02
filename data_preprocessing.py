@@ -4,12 +4,17 @@ import re
 
 def normalize_marker_name(name):
     """
-    Normalizes a marker or alias name by converting to lowercase, removing delimiters,
-    and handling common suffixes like 'a' or 'b'.
-    e.g., "NK-1.1" -> "nk1.1", "CD8a" -> "cd8"
+    Normalizes a marker name by:
+    1. Removing content in parentheses (e.g. "CD96 (TACTILE)" -> "CD96")
+    2. Converting to lowercase
+    3. Removing delimiters (spaces, dashes)
+    4. Handling common suffixes
     """
     if not isinstance(name, str):
         return ""
+    
+    # Remove parentheses and content inside them
+    name = re.sub(r'\s*\(.*?\)', '', name)
     
     name = name.lower().replace("-", "").replace(" ", "")
     if name.endswith('a') or name.endswith('b'): # Handle CD8a, CD8b
@@ -55,6 +60,10 @@ def load_antibody_data(file_path, mapping_file=None):
         if mapping_file:
             with open(mapping_file, 'r', encoding='utf-8') as f:
                 channel_map = json.load(f)
+            
+            # Normalize map keys to lowercase for robust matching
+            channel_map = {k.lower(): v for k, v in channel_map.items()}
+
             # Use lower() for case-insensitive mapping
             df['System_Code'] = df['Fluorescein'].str.lower().map(channel_map)
             df['System_Code'].fillna('UNKNOWN', inplace=True)
@@ -101,10 +110,8 @@ def aggregate_antibodies_by_marker(antibody_df, brightness_data):
         # The primary, un-normalized marker name from the 'Target' column
         main_marker = row['Target'].split('(')[0].strip()
         
-        # Use the first alias (which is the normalized main marker) as the primary key
         if not row['Target_Aliases']:
             continue
-        primary_alias = row['Target_Aliases'][0]
 
         # Store the simplified antibody info
         fluorochrome = row['Fluorescein']
@@ -119,24 +126,26 @@ def aggregate_antibodies_by_marker(antibody_df, brightness_data):
             "catalog_number": row.get('Catalog Number', 'N/A') # Added Catalog Number
         }
 
-        # Add to the list for that marker alias
-        if primary_alias not in antibodies_by_marker:
-            antibodies_by_marker[primary_alias] = []
-        antibodies_by_marker[primary_alias].append(antibody_info)
+        # --- FIX: Index antibody under ALL aliases ---
+        # Instead of just picking the first alias, we add this antibody to the list 
+        # for EVERY alias found. This creates a comprehensive inverted index.
+        for alias in row['Target_Aliases']:
+            if alias not in antibodies_by_marker:
+                antibodies_by_marker[alias] = []
+            antibodies_by_marker[alias].append(antibody_info)
 
-        # Store expression level, ensuring we don't overwrite "High" with "Medium", etc.
-        # This assumes the CSV might have different expression levels for the same marker.
-        # We take the "highest" seen expression level as the canonical one.
+        # Store expression level (logic remains similar, mapping to all aliases might be overkill 
+        # but mapping to the main one is usually enough for the prompt context)
         if 'Expression Level' in row and pd.notna(row['Expression Level']):
-            current_level = marker_expression.get(primary_alias)
-            new_level = row['Expression Level']
-            
-            level_priority = {"High": 3, "Medium": 2, "Low": 1}
-            
-            if not current_level or level_priority.get(new_level, 0) > level_priority.get(current_level, 0):
-                # We use the original, non-normalized marker name for the expression profile key
-                # as this is what the user sees in the UI.
-                marker_expression[main_marker] = new_level
+            # We map expression level to ALL aliases too, to be safe
+            for alias in row['Target_Aliases']:
+                current_level = marker_expression.get(alias)
+                new_level = row['Expression Level']
+                
+                level_priority = {"High": 3, "Medium": 2, "Low": 1}
+                
+                if not current_level or level_priority.get(new_level, 0) > level_priority.get(current_level, 0):
+                    marker_expression[alias] = new_level
 
     return antibodies_by_marker, marker_expression
 
