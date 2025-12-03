@@ -1,0 +1,60 @@
+{
+  "_comment": "Full spectral database covering all dyes in channel_mapping.json. Peak=nm, Sigma approx=FWHM/2.355.",
+  
+  "FITC": { "peak": 519, "sigma": 15, "color": "#00FF00", "category": "Blue Laser" },
+  "Alexa Fluor® 488": { "peak": 519, "sigma": 12, "color": "#00FF00", "category": "Blue Laser" },
+  "AF488": { "peak": 519, "sigma": 12, "color": "#00FF00", "category": "Blue Laser" },
+  "BB515": { "peak": 515, "sigma": 14, "color": "#00EE00", "category": "Blue Laser" },
+  
+  "PE": { "peak": 575, "sigma": 18, "color": "#FFFF00", "category": "Blue/Yellow Laser" },
+  "PE/Cyanine7": { "peak": 778, "sigma": 25, "color": "#800080", "category": "Blue/Yellow Laser" },
+  "PE-Cy7": { "peak": 778, "sigma": 25, "color": "#800080", "category": "Blue/Yellow Laser" },
+  "PE-CF594": { "peak": 612, "sigma": 20, "color": "#FF4500", "category": "Blue/Yellow Laser" },
+  "PE-Dazzle 594": { "peak": 610, "sigma": 20, "color": "#FF4500", "category": "Blue/Yellow Laser" },
+  "PE/Dazzle™ 594": { "peak": 610, "sigma": 20, "color": "#FF4500", "category": "Blue/Yellow Laser" },
+  "PE-Cy5": { "peak": 667, "sigma": 20, "color": "#8B008B", "category": "Blue/Yellow Laser" },
+  
+  "PerCP": { "peak": 675, "sigma": 20, "color": "#A52A2A", "category": "Blue Laser" },
+  "PerCP/Cyanine5.5": { "peak": 695, "sigma": 20, "color": "#A52A2A", "category": "Blue Laser" },
+  "PerCP-Cy5.5": { "peak": 695, "sigma": 20, "color": "#A52A2A", "category": "Blue Laser" },
+  
+  "APC": { "peak": 660, "sigma": 15, "color": "#FF0000", "category": "Red Laser" },
+  "Alexa Fluor® 647": { "peak": 665, "sigma": 12, "color": "#FF0000", "category": "Red Laser" },
+  "AF647": { "peak": 665, "sigma": 12, "color": "#FF0000", "category": "Red Laser" },
+  "Alexa Fluor® 700": { "peak": 723, "sigma": 20, "color": "#B22222", "category": "Red Laser" },
+  "AF700": { "peak": 723, "sigma": 20, "color": "#B22222", "category": "Red Laser" },
+  "APC-R700": { "peak": 713, "sigma": 20, "color": "#B22222", "category": "Red Laser" },
+  
+  "APC/Cyanine7": { "peak": 785, "sigma": 25, "color": "#4B0082", "category": "Red Laser" },
+  "APC-Cy7": { "peak": 785, "sigma": 25, "color": "#4B0082", "category": "Red Laser" },
+  "APC/Fire™ 750": { "peak": 788, "sigma": 30, "color": "#4B0082", "category": "Red Laser" },
+  "APC-H7": { "peak": 785, "sigma": 25, "color": "#4B0082", "category": "Red Laser" },
+  
+  "Pacific Blue™": { "peak": 455, "sigma": 20, "color": "#0000FF", "category": "Violet Laser" },
+  "PB": { "peak": 455, "sigma": 20, "color": "#0000FF", "category": "Violet Laser" },
+  "Brilliant Violet 421™": { "peak": 421, "sigma": 12, "color": "#8A2BE2", "category": "Violet Laser" },
+  "BV421": { "peak": 421, "sigma": 12, "color": "#8A2BE2", "category": "Violet Laser" },
+  "Super Bright™ 436": { "peak": 436, "sigma": 15, "color": "#8A2BE2", "category": "Violet Laser" },
+  "SB436": { "peak": 436, "sigma": 15, "color": "#8A2BE2", "category": "Violet Laser" },
+  
+  "Brilliant Violet 510™": { "peak": 510, "sigma": 15, "color": "#FFA500", "category": "Violet Laser" },
+  "BV510": { "peak": 510, "sigma": 15, "color": "#FFA500", "category": "Violet Laser" },
+  
+  "Brilliant Violet 605™": { "peak": 605, "sigma": 20, "color": "#FF1493", "category": "Violet Laser" },
+  "BV605": { "peak": 605, "sigma": 20, "color": "#FF1493", "category": "Violet Laser" },
+  
+  "Brilliant Violet 650™": { "peak": 650, "sigma": 20, "color": "#DC143C", "category": "Violet Laser" },
+  "BV650": { "peak": 650, "sigma": 20, "color": "#DC143C", "category": "Violet Laser" },
+  
+  "Brilliant Violet 711™": { "peak": 711, "sigma": 22, "color": "#8B0000", "category": "Violet Laser" },
+  "BV711": { "peak": 711, "sigma": 22, "color": "#8B0000", "category": "Violet Laser" },
+  
+  "Brilliant Violet 785™": { "peak": 785, "sigma": 21, "color": "#800000", "category": "Violet Laser" },
+  "Brilliant Violet 786™": { "peak": 786, "sigma": 21, "color": "#800000", "category": "Violet Laser" },
+  "BV785": { "peak": 785, "sigma": 21, "color": "#800000", "category": "Violet Laser" },
+  
+  "DAPI": { "peak": 461, "sigma": 35, "color": "#0000FF", "category": "Violet/UV Laser" },
+  "7-AAD": { "peak": 647, "sigma": 40, "color": "#FF6347", "category": "Blue/Yellow Laser" },
+  "Zombie Aqua™": { "peak": 516, "sigma": 20, "color": "#00CED1", "category": "Violet Laser" },
+  "Zombie NIR™": { "peak": 746, "sigma": 30, "color": "#2F4F4F", "category": "Red Laser" }
+}

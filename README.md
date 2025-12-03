@@ -1,66 +1,75 @@
-# 智能流式 Panel 生成器 (FlowCyt LLM-Agent)
+# 智能流式 Panel 生成器 (FlowCyt Panel Assistant)
 
 ## 1. 项目简介
 
-本项目旨在自动化多色流式细胞术 Panel 的设计过程。通过结合实验室的抗体库存信息和本地部署的大语言模型（LLM），本工具能够根据用户输入的 Markers 自动生成优化的 Panel 方案，并提供详细的溢漏补偿建议和设计理由。项目目标是解决人工设计 Panel 耗时、易错、易导致库存浪费以及知识门槛高的问题。
+本项目是一个结合了 **确定性算法** 与 **大语言模型 (LLM)** 的智能流式细胞术 Panel 设计工具。它能够基于实验室现有的抗体库存，辅助研究人员完成从“实验设计”到“Panel 搭建”的全流程。
 
-## 2. 如何使用
+与传统的纯 AI 生成不同，本项目采用了 **"混合智能" (Hybrid Intelligence)** 架构：
+1.  **刚性搜索 (Python):** 使用回溯算法 (Backtracking) 穷举出所有物理上可行（无通道冲突）的 Panel 候选方案，确保方案的**绝对可用性**。
+2.  **柔性评估 (LLM):** 利用本地部署的大模型 (如 Qwen, Llama) 扮演“流式专家”，从亮度匹配、光谱重叠等维度对候选方案进行评分、择优，并生成圈门策略。
+
+## 2. 核心功能
+
+### 🧠 AI 实验设计 (Experimental Design)
+*   **场景:** 当你不确定该选哪些 Marker 时。
+*   **功能:** 输入实验目的（例如：“分析肿瘤浸润淋巴细胞的耗竭状态”），AI 会从库存中推荐最相关的 Marker 组合，并解释选择理由。
+
+### 🛠️ Panel 生成与评估 (Panel Generation & Eval)
+*   **硬约束搜索:** 基于库存数据，自动搜索出多个无冲突的配色方案。如果无法生成，系统会提供详细的**冲突诊断报告**（例如：“Marker A 和 B 都在争夺 PE 通道”）。
+*   **AI 专家评估:** 一键让 AI 对多个候选方案进行 PK，选出亮度搭配最合理的一个。
+*   **📊 光谱可视化:** 内置光谱模拟器 (Spectral Simulator)，基于高斯拟合生成 Panel 中所有染料的发射光谱图，直观展示潜在的溢漏干扰。
+*   **圈门策略:** AI 自动生成配套的分级圈门 (Gating Strategy) 建议。
+
+## 3. 如何使用
 
 ### 前提条件
-1.  **LM Studio:** 确保已安装并运行 [LM Studio](https://lmstudio.ai/)。
-2.  **LLM 模型:** 在 LM Studio 中下载并加载一个兼容 OpenAI API 的 GGUF 模型，例如 `GPT-OSS-20B` 。确保 LM Studio 的本地推理服务器正在运行在 `http://127.0.0.1:1234`。
-3.  **Python 环境:** 确保您的环境中安装了 Python 3.9+。
-4.  **Python 依赖:** 安装项目所需的 Python 库：
+1.  **环境准备:** Python 3.9+
+2.  **安装依赖:**
     ```bash
-    pip install pandas streamlit openai
+    pip install pandas streamlit openai plotly scipy numpy
     ```
-5.  **抗体库存文件:** 确保 `流式抗体库-20250625小鼠.csv` 文件存在于项目根目录。
-6.  **通道映射文件:** 确保 `channel_mapping.json` 文件存在于项目根目录。
+3.  **本地 LLM 服务:**
+    *   安装并运行 [LM Studio](https://lmstudio.ai/)。
+    *   加载一个兼容 OpenAI API 的模型（推荐 `Qwen2.5-14B-Instruct` 或 `Llama-3-8B`）。
+    *   启动 Local Server，确保地址为 `http://127.0.0.1:1234`。
+4.  **数据文件:** 确保项目根目录下有以下文件：
+    *   `流式抗体库-20250625小鼠.csv` (库存数据)
+    *   `channel_mapping.json` (通道映射配置)
+    *   `fluorochrome_brightness.json` (荧光亮度表)
+    *   `spectral_data.json` (光谱物理参数库)
 
 ### 启动应用
-1.  在终端中，导航到项目根目录。
-2.  运行 Streamlit 应用：
-    ```bash
-    streamlit run streamlit_app.py
-    ```
-3.  应用程序将在您的默认网页浏览器中打开。
+在终端运行：
+```bash
+streamlit run streamlit_app.py
+```
+浏览器自动打开 `http://localhost:8501` 即可使用。
 
-### 使用界面
-*   在网页界面的输入框中，输入您希望检测的 Markers (例如: `CD4, CD8, CD3`)，使用逗号分隔。
-*   点击 "生成 Panel" 按钮。
-*   系统将显示生成的 Panel 详情，包括抗体信息、溢漏补偿建议和 Panel 设计理由。
+## 4. 系统架构
 
-## 3. 框架概述 ("三明治" 架构)
+本项目采用 **Search-then-Evaluate** (先搜索后评估) 模式：
 
-本项目采用 **Python (数据预处理) - LLM (核心决策) - Python (校验与反馈)** 的三层架构，也称作“三明治”架构：
+### 第一阶段：确定性搜索 (Python)
+*   **模块:** `panel_generator.py` -> `find_valid_panels`
+*   **逻辑:**
+    *   **数据聚合:** `data_preprocessing.py` 将库存清洗并按 Marker 聚合。
+    *   **回溯算法:** 深度优先搜索 (DFS) 寻找所有不冲突的 System Code 组合。
+    *   **冲突诊断:** 如果搜索失败，利用抽屉原理 (Pigeonhole Principle) 分析是哪些 Marker 导致了资源死锁。
 
-*   **数据准备层 (L1 - Python):**
-    *   `data_preprocessing.py`: 负责加载 `流式抗体库-20250625小鼠.csv`。
-    *   `channel_mapping.json`: 存储荧光通道的标准化映射。
-    *   对用户输入的 Markers 和抗体库存中的 Target 进行标准化处理，以提高匹配度（例如，将 `NK1.1` 匹配到 `NK-1.1`，`CD8` 匹配到 `CD8a`）。
-    *   根据用户 Markers 过滤相关抗体，减少发送给 LLM 的 Prompt 长度。
+### 第二阶段：智能评估 (LLM)
+*   **模块:** `panel_generator.py` -> `evaluate_candidates_with_llm`
+*   **逻辑:**
+    *   **差异分析:** 自动识别候选方案之间的关键差异点。
+    *   **Prompt 工程:** 将差异点构建为 Prompt，请求 LLM 基于“强弱搭配”原则进行选择。
+    *   **结构化输出:** LLM 返回 JSON 格式的决策理由和圈门策略。
 
-*   **核心决策层 (L2 - LLM via LM Studio):**
-    *   `llm_api_client.py`: 负责与本地 LM Studio 服务（LLM）进行通信。
-    *   大语言模型接收处理过的库存信息和用户 Markers。
-    *   **两阶段 LLM 交互:**
-        1.  **初始选择:** LLM 推荐 Markers 对应的荧光抗体组合（例如 `CD4:FITC`），以简化、可控的格式返回。
-        2.  **详细反馈:** LLM 接收最终验证过的 Panel，作为流式专家提供详细的溢漏补偿建议和 Panel 设计理由。
+## 5. 文件结构说明
 
-*   **校验与执行层 (L3 - Python):**
-    *   `panel_generator.py`: 协调整个流程。
-    *   根据 LLM 的选择结果，从原始库存中查找完整的抗体信息（包括 Brand, Catalog Number 等）。
-    *   严格执行“System_Code 唯一性”等物理规则，确保生成的 Panel 合规。
-    *   调用 LLM 获取详细的补偿建议和设计理由。
-    *   `streamlit_app.py`: 提供直观的用户界面，展示 Panel、补偿建议和设计理由。
-
-## 4. 当前开发进度
-
-*   **核心功能:** 已实现根据用户 Markers 智能生成 Panel，并从本地 LLM 获取补偿建议和设计理由。
-*   **数据预处理:** 完成抗体库存 CSV 加载、荧光通道标准化映射 (`channel_mapping.json`)。
-*   **Marker 名称标准化:** 解决了用户输入与库存中 Marker 名称不一致的问题（如 `CD8` vs `CD8a`, `NK1.1` vs `NK-1.1`）。
-*   **LLM 交互:** 实现了与 LM Studio 部署的 LLM 的稳定通信，并采用两阶段交互策略，提高输出的可靠性。
-*   **健壮性:** 增强了对 LLM 输出格式变化的容错处理能力。
-*   **用户界面:** 开发了基于 Streamlit 的交互式界面，用于输入 Markers 和展示结果，包括 Panel 详情、溢漏补偿建议和 Panel 设计理由。
-
-目前项目已达到功能完善阶段，可以根据用户需求生成、分析并展示流式 Panel。
+*   `streamlit_app.py`: 前端交互界面 (Tabs: 实验设计 | Panel 生成)。
+*   `panel_generator.py`: 核心业务逻辑 (回溯搜索算法、LLM 调用封装)。
+*   `data_preprocessing.py`: 数据清洗、别名解析 (Target Aliases)、库存加载。
+*   `spectral_viewer.py`: 光谱模拟与绘图模块 (Plotly + Scipy)。
+*   `llm_api_client.py`: OpenAI API 客户端封装，适配 LM Studio。
+*   `channel_mapping.json`: 定义荧光素到检测通道的映射 (如 `AF488` -> `FITC`)。
+*   `fluorochrome_brightness.json`: 定义荧光素的亮度等级 (1-5)。
+*   `spectral_data.json`: 存储荧光素的物理参数 (Peak, Sigma)，用于模拟光谱曲线。

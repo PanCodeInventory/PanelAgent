@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import re
 from panel_generator import generate_candidate_panels, evaluate_candidates_with_llm, recommend_markers_from_inventory
+from spectral_viewer import plot_panel_spectra
 
 # --- UI Configuration ---
 st.set_page_config(page_title="智能流式 Panel 生成器", layout="wide")
@@ -78,7 +79,7 @@ with tab1:
     
     col1, col2 = st.columns([3, 1])
     with col1:
-        exp_goal = st.text_area("实验目的 (Experimental Goal):", "研究肿瘤微环境中 CD8 T 细胞的耗竭状态 (Exhaustion) ...")
+        exp_goal = st.text_area("实验目的 (Experimental Goal):", "")
     with col2:
         num_colors = st.number_input("期望颜色数 (Target Colors):", min_value=1, max_value=30, value=8)
 
@@ -161,8 +162,8 @@ with tab2:
     # Results Display
     if st.session_state.candidates:
         candidates = st.session_state.candidates
-        limit = 3 if not st.session_state.show_all else len(candidates)
-        display_candidates = candidates[:limit]
+        # Always display all candidates directly
+        display_candidates = candidates
 
         st.subheader("📋 候选方案预览 (Candidate Panels)")
         
@@ -170,12 +171,10 @@ with tab2:
         for i, tab in enumerate(display_tabs):
             with tab:
                 display_panel_table(display_candidates[i])
-
-        # "Show All" Button
-        if len(candidates) > 3 and not st.session_state.show_all:
-            if st.button(f"👀 查看剩余 {len(candidates)-3} 个方案"):
-                st.session_state.show_all = True
-                st.rerun()
+                
+                with st.expander("📊 查看光谱模拟 (Spectral Simulation)"):
+                    fig = plot_panel_spectra(display_candidates[i])
+                    st.plotly_chart(fig, use_container_width=True)
 
         st.divider()
 
@@ -201,6 +200,11 @@ with tab2:
                 
                 st.markdown("### 🏆 推荐方案 (Best Option)")
                 display_panel_table(res["selected_panel"])
+                
+                # --- Spectral Plot for Best Option ---
+                st.markdown("#### 📊 光谱干扰模拟")
+                best_fig = plot_panel_spectra(res["selected_panel"])
+                st.plotly_chart(best_fig, use_container_width=True)
                 
                 st.info(f"**💡 推荐理由:**\n\n{res['rationale']}")
                 
