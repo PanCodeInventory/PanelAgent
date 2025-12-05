@@ -1,21 +1,21 @@
 {
     "APC": "APC",
     "APC/Cyanine7": "RED_780",
-    "Alexa Fluor® 647": "AF647",
+    "Alexa Fluor® 647": "APC",
     "Alexa Fluor® 700": "AF700",
     "APC/Fire™ 750": "RED_780",
-    "Pacific Blue™": "PB",
+    "Pacific Blue™": "BV421",
     "PE/Cyanine7": "PE-Cy7",
-    "PerCP/Cyanine5.5": "PerCP-Cy5.5",
-    "PerCP": "PerCP",
+    "PerCP/Cyanine5.5": "PP",
+    "PerCP": "PP",
     "FITC": "FITC",
     "PE": "PE",
-    "Alexa Fluor® 488": "AF488",
+    "Alexa Fluor® 488": "FITC",
     "Brilliant Violet 421™": "BV421",
     "Brilliant Violet 510™": "BV510",
     "Brilliant Violet 605™": "BV605",
     "Brilliant Violet 650™": "BV650",
     "Brilliant Violet 785™": "BV785",
     "Brilliant Violet 786™": "BV785",
-    "Super Bright™ 436": "SB436"
+    "Super Bright™ 436": "BV421"
 }

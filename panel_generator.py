@@ -1,6 +1,7 @@
 import json
 import re
 import random
+import ast
 from data_preprocessing import load_antibody_data, normalize_marker_name, aggregate_antibodies_by_marker
 from llm_api_client import consult_gpt_oss
 
@@ -227,7 +228,8 @@ You are a flow cytometry panel design expert.
 2. **Rationale:** Focus ONLY on why the specific assignments in the chosen option are better than the others.
 3. **Gating Strategy:** Provide a **structured hierarchical list** (e.g., "1. CD45+ -> 2. CD3+ ...").
 
-**Output Format (JSON):**
+**Output Format (Strict JSON):**
+Return ONLY a valid JSON object. Do NOT use Markdown code blocks. Use DOUBLE QUOTES for ALL keys and string values.
 {{
   "selected_option_index": 1, 
   "rationale": "Option X is better because...",
@@ -254,14 +256,30 @@ You are a flow cytometry panel design expert.
     
     # Parse Response
     try:
-        json_match = re.search(r"(\{[\s\S]*\})", llm_response)
+        # Clean potential markdown
+        cleaned_response = llm_response.strip()
+        if cleaned_response.startswith("```json"):
+            cleaned_response = cleaned_response[7:]
+        if cleaned_response.startswith("```"):
+            cleaned_response = cleaned_response[3:]
+        if cleaned_response.endswith("```"):
+            cleaned_response = cleaned_response[:-3]
+        cleaned_response = cleaned_response.strip()
+
+        json_match = re.search(r"(\{[\s\S]*\})", cleaned_response)
         if not json_match:
             print("LLM format invalid. Defaulting to Option 1.")
             selected_idx = 0
             rationale = "LLM output invalid. Shown Option 1."
             gating_detail = []
         else:
-            result_json = json.loads(json_match.group(1))
+            json_str = json_match.group(1)
+            try:
+                result_json = json.loads(json_str)
+            except json.JSONDecodeError:
+                # Fallback: Try parsing as Python literal (handles single quotes)
+                result_json = ast.literal_eval(json_str)
+
             idx = result_json.get("selected_option_index", 1) - 1
             if 0 <= idx < len(candidates):
                 selected_idx = idx
@@ -285,7 +303,7 @@ You are a flow cytometry panel design expert.
         }
 
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        return {"status": "error", "message": f"Parsing Error: {str(e)}. Raw: {llm_response[:100]}..."}
 
 def recommend_markers_from_inventory(experimental_goal, num_colors, available_targets_list):
     """
@@ -312,25 +330,45 @@ You are a senior flow cytometry expert.
 2. Categorize each marker (e.g., Lineage, Activation, Exhaustion, Functional).
 3. Provide a brief reason for selecting it.
 
-**Output Format:**
-Return a SINGLE JSON object containing a list called "markers_detail":
+**Output Format (Strict JSON):**
+Return a SINGLE JSON object containing a list called "markers_detail". 
+Do NOT use Markdown code blocks. Use DOUBLE QUOTES for ALL keys and string values.
 {{
   "markers_detail": [
     {{ "marker": "MarkerName", "type": "Category", "reason": "Short explanation..." }},
     {{ "marker": "MarkerName", "type": "Category", "reason": "Short explanation..." }}
   ]
 }}
-Respond with ONLY the valid JSON.
 """
 
     llm_response = consult_gpt_oss(prompt)
     
     try:
-        json_match = re.search(r"(\{[\s\S]*\})", llm_response)
+        # Clean potential markdown
+        cleaned_response = llm_response.strip()
+        if cleaned_response.startswith("```json"):
+            cleaned_response = cleaned_response[7:]
+        if cleaned_response.startswith("```"):
+            cleaned_response = cleaned_response[3:]
+        if cleaned_response.endswith("```"):
+            cleaned_response = cleaned_response[:-3]
+        cleaned_response = cleaned_response.strip()
+
+        json_match = re.search(r"(\{[\s\S]*\})", cleaned_response)
         if not json_match:
-            return {"status": "error", "message": "LLM returned invalid format."}
+            return {
+                "status": "error", 
+                "message": "LLM returned invalid format.",
+                "raw_response": llm_response
+            }
         
-        result_json = json.loads(json_match.group(1))
+        json_str = json_match.group(1)
+        try:
+            result_json = json.loads(json_str)
+        except json.JSONDecodeError:
+            # Fallback: Try parsing as Python literal (handles single quotes)
+            result_json = ast.literal_eval(json_str)
+
         details = result_json.get("markers_detail", [])
         
         # Extract simple list of names for the input box
@@ -339,7 +377,12 @@ Respond with ONLY the valid JSON.
         return {
             "status": "success",
             "markers_detail": details,
-            "selected_markers": selected_markers
+            "selected_markers": selected_markers,
+            "raw_response": llm_response
         }
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        return {
+            "status": "error", 
+            "message": f"Parsing Error: {str(e)}",
+            "raw_response": llm_response
+        }

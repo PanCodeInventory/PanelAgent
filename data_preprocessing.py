@@ -104,7 +104,7 @@ def load_antibody_data(file_input, mapping_file=None, column_mapping=None):
 
             # Use lower() for case-insensitive mapping
             df['System_Code'] = df['Fluorescein'].str.lower().map(channel_map)
-            df['System_Code'].fillna('UNKNOWN', inplace=True)
+            df['System_Code'] = df['System_Code'].fillna('UNKNOWN')
 
         return df
     except Exception as e:

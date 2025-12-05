@@ -160,11 +160,17 @@ with tab1:
         
         if rec_result["status"] == "error":
             st.error(f"推荐失败: {rec_result['message']}")
+            with st.expander("🔍 Debug: Raw LLM Response"):
+                st.text(rec_result.get("raw_response", "No response captured."))
         else:
             st.success("推荐方案已生成！")
             rec_markers = rec_result["selected_markers"]
             details = rec_result.get("markers_detail", [])
             
+            # --- DEBUG INFO ---
+            with st.expander("🔍 Debug: Raw LLM Response"):
+                st.text(rec_result.get("raw_response", "No response captured."))
+
             st.markdown(f"### 推荐列表 ({len(rec_markers)} Markers)")
             st.code(", ".join(rec_markers), language="text")
             
