@@ -3,32 +3,68 @@ import pandas as pd
 import re
 from panel_generator import generate_candidate_panels, evaluate_candidates_with_llm, recommend_markers_from_inventory
 from spectral_viewer import plot_panel_spectra
+from data_preprocessing import load_antibody_data # Import load_antibody_data
 
 # --- UI Configuration ---
 st.set_page_config(page_title="智能流式 Panel 生成器", layout="wide")
 st.title("🫠 FlowCyt Panel Assistant")
 
-# --- Global Constants ---
-CSV_FILE = "流式抗体库-20250625小鼠.csv"
-MAPPING_FILE = "channel_mapping.json"
+# --- Global Configuration (User-modifiable) ---
+# Modify these paths to change your inventory and mapping files.
+# Place your CSV files in the 'inventory' folder.
+INVENTORY_CONFIG = {
+    "Mouse (小鼠)": "inventory/Mouse_20250625_ZhengLab.csv",
+    "Human (人)": "inventory/Human_20250625_ZhengLab.csv"
+} 
+CHANNEL_MAPPING_FILE = "channel_mapping.json"
+BRIGHTNESS_MAPPING_FILE = "fluorochrome_brightness.json" # Used in aggregate_antibodies_by_marker
+
+# --- Column Mapping Configuration ---
+# Map your CSV column names to the system's standard names.
+# Format: "Your Column Name": "Standard Name"
+# Standard Names: 'Target', 'Fluorescein', 'Clone', 'Brand', 'Catalog Number'
+CUSTOM_COLUMN_MAPPING = {
+    # Example:
+    # "Antigen": "Target",
+    # "Fluorophore": "Fluorescein",
+    # "Clone ID": "Clone",
+    # "Vendor": "Brand",
+    # "Cat#": "Catalog Number"
+}
 
 # --- Helper Functions ---
+@st.cache_resource # Use st.cache_resource for heavy data loading
+def load_data_from_config(inventory_path, channel_map_path):
+    """
+    Loads antibody data using the configured paths and preprocesses it.
+    This function is cached to avoid reloading on every rerun.
+    """
+    # Load antibody data with the custom column mapping
+    antibody_df = load_antibody_data(inventory_path, channel_map_path, column_mapping=CUSTOM_COLUMN_MAPPING)
+    
+    if antibody_df is None:
+        st.error(f"Error loading antibody inventory from '{inventory_path}'. Please check the file path and format.")
+        return None, []
+    
+    # Extract unique target names
+    targets = set()
+    for t in antibody_df['Target'].dropna():
+        clean_name = re.sub(r'\s*\(.*?\)', '', t).strip()
+        if clean_name:
+            targets.add(clean_name)
+    
+    return antibody_df, sorted(list(targets))
+
 @st.cache_data
-def get_inventory_targets(csv_path):
-    """Extracts unique target names from the inventory CSV."""
-    try:
-        df = pd.read_csv(csv_path)
+def get_inventory_targets(antibody_df):
+    """Extracts unique target names from the inventory DataFrame."""
+    targets = set()
+    for t in antibody_df['Target'].dropna():
         # Simple cleaning to get main target names
-        targets = set()
-        for t in df['Target'].dropna():
-            # Remove content in parentheses to get cleaner names for LLM
-            clean_name = re.sub(r'\s*\(.*?\)', '', t).strip()
-            if clean_name: # Ensure it's not empty after cleaning
-                targets.add(clean_name)
-        return sorted(list(targets))
-    except Exception as e:
-        st.error(f"Failed to load inventory: {e}")
-        return []
+        clean_name = re.sub(r'\s*\(.*?\)', '', t).strip()
+        if clean_name: # Ensure it's not empty after cleaning
+            targets.add(clean_name)
+    return sorted(list(targets))
 
 def display_panel_table(panel_dict):
     """Helper to render a single panel as a dataframe."""
@@ -62,11 +98,45 @@ if "show_all" not in st.session_state:
     st.session_state.show_all = False
 if "current_markers" not in st.session_state:
     st.session_state.current_markers = "CD45.2, CD3, NK1.1, Perforin, Granzyme B, TNF-α, IFN-γ"
+if "selected_species" not in st.session_state:
+    # Default to the first key in configuration
+    st.session_state.selected_species = list(INVENTORY_CONFIG.keys())[0]
+
+# --- Sidebar: Global Settings ---
+with st.sidebar:
+    st.header("⚙️ 设置 (Settings)")
+    
+    # Species Selection
+    species_options = list(INVENTORY_CONFIG.keys())
+    selected_species = st.selectbox(
+        "选择物种 (Select Species):", 
+        species_options,
+        index=species_options.index(st.session_state.selected_species) if st.session_state.selected_species in species_options else 0
+    )
+    
+    # Handle Species Change
+    if selected_species != st.session_state.selected_species:
+        st.session_state.selected_species = selected_species
+        # Clear previous results when switching inventory
+        st.session_state.candidates = None
+        st.session_state.llm_result = None
+        st.rerun() # Rerun app to reload data
+
+    st.info(f"当前加载: **{selected_species}**")
+    st.markdown("---")
+    st.markdown("📝 **关于库存:**\n请将 CSV 文件放入 `inventory/` 文件夹，并在代码配置中更新文件名。")
 
 
 # --- Load Data ---
-available_targets = get_inventory_targets(CSV_FILE)
+current_inventory_path = INVENTORY_CONFIG[st.session_state.selected_species]
+antibody_df_loaded, available_targets = load_data_from_config(current_inventory_path, CHANNEL_MAPPING_FILE)
 
+# If loading failed, stop execution here
+if antibody_df_loaded is None:
+    st.error(f"❌ 无法加载库存文件: `{current_inventory_path}`")
+    st.warning("请检查：\n1. 文件是否已放入 `inventory/` 文件夹。\n2. `streamlit_app.py` 中的文件名配置是否正确。")
+    st.stop()
+    
 # --- Main Layout ---
 tab1, tab2 = st.tabs(["🧠 AI 实验设计 (Exp. Design)", "🛠️ Panel 生成 (Panel Gen)"])
 
@@ -74,6 +144,7 @@ tab1, tab2 = st.tabs(["🧠 AI 实验设计 (Exp. Design)", "🛠️ Panel 生�
 # TAB 1: AI Experimental Design
 # ==========================================
 with tab1:
+    st.info(f"当前使用的库存: **{st.session_state.selected_species}**")
     st.header("AI 实验助手")
     st.markdown("描述您的实验目的，AI 将基于**现有库存**为您推荐最佳 Marker 组合。")
     
@@ -123,6 +194,7 @@ with tab1:
 # TAB 2: Panel Generation (Manual/Auto)
 # ==========================================
 with tab2:
+    st.info(f"当前使用的库存: **{st.session_state.selected_species}**")
     st.header("Panel 生成器")
     
     # Input Section
@@ -148,7 +220,8 @@ with tab2:
             user_markers = [m.strip() for m in user_markers_input.split(',') if m.strip()]
 
             with st.spinner("正在搜索无冲突组合..."):
-                result = generate_candidate_panels(user_markers, CSV_FILE, MAPPING_FILE, max_solutions=10)
+                # Call generate_candidate_panels with the loaded DataFrame
+                result = generate_candidate_panels(user_markers, antibody_df_loaded, max_solutions=10)
             
             if result["status"] == "error":
                 st.error(result["message"])

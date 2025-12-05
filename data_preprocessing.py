@@ -46,14 +46,52 @@ def parse_target_aliases(target_string):
 
     return list(all_names)
 
-def load_antibody_data(file_path, mapping_file=None):
+def load_antibody_data(file_input, mapping_file=None, column_mapping=None):
     """
-    Loads antibody inventory from a CSV file, parses target aliases, 
-    and optionally adds a System_Code based on a mapping file.
+    Loads antibody inventory from a CSV file (path or buffer), maps columns if needed,
+    parses target aliases, and optionally adds a System_Code based on a mapping file.
+    
+    Args:
+        file_input: File path (str) or file-like object.
+        mapping_file: Path to the channel mapping JSON.
+        column_mapping: Dict mapping user columns to standard columns 
+                        e.g. {'Antigen': 'Target', 'Fluor': 'Fluorescein'}
     """
-    try:
-        df = pd.read_csv(file_path)
+    df = None
+    
+    # 1. Load CSV with Encoding Detection
+    encodings_to_try = ['utf-8', 'gbk', 'gb18030', 'latin1']
+    
+    # If it's a file-like object, we need to be careful about seeking to 0 if we retry
+    is_buffer = not isinstance(file_input, str)
+    
+    for encoding in encodings_to_try:
+        try:
+            if is_buffer:
+                file_input.seek(0)
+            df = pd.read_csv(file_input, encoding=encoding)
+            break # Success
+        except (UnicodeDecodeError, pd.errors.ParserError):
+            continue
+            
+    if df is None:
+        print("Error: Failed to decode file with supported encodings.")
+        return None
 
+    # 2. Apply Column Mapping
+    if column_mapping:
+        # Invert mapping if needed or just apply strict renaming
+        # We assume column_mapping is {UserCol: StandardCol}
+        df.rename(columns=column_mapping, inplace=True)
+    
+    # 3. Validation: Check for critical columns
+    required_cols = ['Target', 'Fluorescein'] 
+    missing = [c for c in required_cols if c not in df.columns]
+    if missing:
+        print(f"Error: Missing required columns after mapping: {missing}")
+        return None
+
+    try:
         # --- NEW: Parse Aliases into a new column ---
         df['Target_Aliases'] = df['Target'].apply(parse_target_aliases)
 
@@ -69,11 +107,8 @@ def load_antibody_data(file_path, mapping_file=None):
             df['System_Code'].fillna('UNKNOWN', inplace=True)
 
         return df
-    except FileNotFoundError:
-        print(f"Error: The file '{file_path}' was not found.")
-        return None
     except Exception as e:
-        print(f"Error loading data or mapping: {e}")
+        print(f"Error processing data: {e}")
         return None
 
 def format_antibodies_for_llm(df):
@@ -133,19 +168,6 @@ def aggregate_antibodies_by_marker(antibody_df, brightness_data):
             if alias not in antibodies_by_marker:
                 antibodies_by_marker[alias] = []
             antibodies_by_marker[alias].append(antibody_info)
-
-        # Store expression level (logic remains similar, mapping to all aliases might be overkill 
-        # but mapping to the main one is usually enough for the prompt context)
-        if 'Expression Level' in row and pd.notna(row['Expression Level']):
-            # We map expression level to ALL aliases too, to be safe
-            for alias in row['Target_Aliases']:
-                current_level = marker_expression.get(alias)
-                new_level = row['Expression Level']
-                
-                level_priority = {"High": 3, "Medium": 2, "Low": 1}
-                
-                if not current_level or level_priority.get(new_level, 0) > level_priority.get(current_level, 0):
-                    marker_expression[alias] = new_level
 
     return antibodies_by_marker, marker_expression
 

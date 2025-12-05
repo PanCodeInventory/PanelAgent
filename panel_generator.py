@@ -98,17 +98,21 @@ def diagnose_conflicts(markers, antibodies_by_marker):
 
     return "\n\n".join(diagnosis)
 
-def generate_candidate_panels(user_markers, antibody_data_csv, channel_mapping_json, max_solutions=10):
+def generate_candidate_panels(user_markers, antibody_df, max_solutions=10):
     """
     Step 1: Pure Python Generation (The "Manual Mode").
     Generates valid panels but does NOT call LLM.
+    
+    Args:
+        user_markers: List of target markers.
+        antibody_df: Pre-loaded and processed pandas DataFrame.
+        max_solutions: Max number of candidates to find.
     """
     print(f"--- Generating Candidate Panels for: {user_markers} ---")
 
-    # 1. Load Data
-    antibody_df = load_antibody_data(antibody_data_csv, channel_mapping_json)
-    if antibody_df is None:
-        return {"status": "error", "message": "Could not load antibody data CSV."}
+    # 1. Validation
+    if antibody_df is None or antibody_df.empty:
+        return {"status": "error", "message": "Antibody data is empty or invalid."}
     
     try:
         with open('fluorochrome_brightness.json', 'r') as f:
