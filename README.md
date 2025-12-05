@@ -26,7 +26,7 @@
 1.  **环境准备:** Python 3.9+
 2.  **安装依赖:**
     ```bash
-    pip install -r requirements.txt
+    pip install pandas streamlit openai plotly scipy numpy python-dotenv
     ```
 3.  **LLM 服务配置:**
     *   项目支持 **本地 LM Studio** 或 **云端 LLM (如 OpenAI, DeepSeek)**。
@@ -40,21 +40,11 @@
 4.  **数据文件:** 确保 `inventory/` 文件夹下有库存 CSV 文件，根目录下有 `channel_mapping.json`, `fluorochrome_brightness.json`, `spectral_data.json`。
 
 ### 启动应用
-**方式一：直接运行 (Python)**
+在终端运行：
 ```bash
 streamlit run streamlit_app.py
 ```
-
-**方式二：Docker 部署 (推荐)**
-1.  构建镜像：
-    ```bash
-    docker build -t panel-gpt-app .
-    ```
-2.  运行容器：
-    ```bash
-    docker run -p 8501:8501 --env-file .env panel-gpt-app
-    ```
-浏览器访问 `http://localhost:8501` 即可。
+浏览器自动打开 `http://localhost:8501` 即可使用。
 
 ## 4. 系统架构
 

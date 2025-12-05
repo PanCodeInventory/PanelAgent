@@ -56,16 +56,9 @@ The system solves the "Combinatorial Constraint Satisfaction Problem" of panel d
     *   `OPENAI_MODEL_NAME`: Model name to request.
 *   **Robust Parsing:** Includes fallback logic (`json.loads` -> `ast.literal_eval`) and Markdown cleanup to handle variable LLM outputs.
 
-## Deployment
-
-*   **Dockerized:** Project includes a `Dockerfile` based on `python:3.9-slim-buster`.
-*   **Dependencies:** Managed via a minimal `requirements.txt` to ensure fast builds and small image size.
-*   **Port:** Exposes port `8501` for Streamlit access.
-
 ## Development Status
 
-*   **Current Focus:** Production Deployment (Docker) & Cloud Integration.
-*   **Status:** **Deployment Ready**. Successfully containerized and tested locally.
+*   **Current Focus:** Refinement of the UI and robustness of the solver.
 *   **Known Limitations:** 
-    *   Inventory file path is configured in code (can be improved to load dynamically).
+    *   Inventory file path is configured in code.
     *   Spectral simulation is based on Gaussian approximation.
