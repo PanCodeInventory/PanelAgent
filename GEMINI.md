@@ -49,15 +49,23 @@ The system solves the "Combinatorial Constraint Satisfaction Problem" of panel d
 
 ## LLM Integration (`llm_api_client.py`)
 
-*   **Endpoint:** Defaults to local LM Studio (`http://127.0.0.1:1234/v1`).
-*   **Model:** Configured to request JSON output.
-*   **Prompt Engineering:**
-    *   Prompts are heavily structured to enforce valid JSON responses.
-    *   Context includes specific inventory constraints and biological rules.
+*   **Hybrid Configuration:** Supports both local LM Studio and Cloud LLM providers (OpenAI, DeepSeek, etc.).
+*   **Configuration:** Reads from environment variables (`.env` file) or defaults to local settings.
+    *   `OPENAI_API_BASE`: Custom API endpoint.
+    *   `OPENAI_API_KEY`: API Key.
+    *   `OPENAI_MODEL_NAME`: Model name to request.
+*   **Robust Parsing:** Includes fallback logic (`json.loads` -> `ast.literal_eval`) and Markdown cleanup to handle variable LLM outputs.
+
+## Deployment
+
+*   **Dockerized:** Project includes a `Dockerfile` based on `python:3.9-slim-buster`.
+*   **Dependencies:** Managed via a minimal `requirements.txt` to ensure fast builds and small image size.
+*   **Port:** Exposes port `8501` for Streamlit access.
 
 ## Development Status
 
-*   **Current Focus:** Refinement of the UI and robustness of the solver.
+*   **Current Focus:** Production Deployment (Docker) & Cloud Integration.
+*   **Status:** **Deployment Ready**. Successfully containerized and tested locally.
 *   **Known Limitations:** 
-    *   Inventory file path is currently hardcoded.
-    *   Spectral simulation is based on Gaussian approximation, not empirical raw data matrices.
+    *   Inventory file path is configured in code (can be improved to load dynamically).
+    *   Spectral simulation is based on Gaussian approximation.

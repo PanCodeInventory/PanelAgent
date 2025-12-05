@@ -20,30 +20,41 @@
 *   **📊 光谱可视化:** 内置光谱模拟器 (Spectral Simulator)，基于高斯拟合生成 Panel 中所有染料的发射光谱图，直观展示潜在的溢漏干扰。
 *   **圈门策略:** AI 自动生成配套的分级圈门 (Gating Strategy) 建议。
 
-## 3. 如何使用
+### 3. 如何使用
 
 ### 前提条件
 1.  **环境准备:** Python 3.9+
 2.  **安装依赖:**
     ```bash
-    pip install pandas streamlit openai plotly scipy numpy
+    pip install -r requirements.txt
     ```
-3.  **本地 LLM 服务:**
-    *   安装并运行 [LM Studio](https://lmstudio.ai/)。
-    *   加载一个兼容 OpenAI API 的模型（推荐 `Qwen2.5-14B-Instruct` 或 `Llama-3-8B`）。
-    *   启动 Local Server，确保地址为 `http://127.0.0.1:1234`。
-4.  **数据文件:** 确保项目根目录下有以下文件：
-    *   `流式抗体库-20250625小鼠.csv` (库存数据)
-    *   `channel_mapping.json` (通道映射配置)
-    *   `fluorochrome_brightness.json` (荧光亮度表)
-    *   `spectral_data.json` (光谱物理参数库)
+3.  **LLM 服务配置:**
+    *   项目支持 **本地 LM Studio** 或 **云端 LLM (如 OpenAI, DeepSeek)**。
+    *   **云端 LLM (推荐):** 在项目根目录创建 `.env` 文件，填入以下配置：
+        ```env
+        OPENAI_API_BASE=https://api.example.com/v1
+        OPENAI_API_KEY=sk-your-api-key
+        OPENAI_MODEL_NAME=gpt-4-turbo
+        ```
+    *   **本地 LM Studio:** 启动 Local Server (地址 `http://127.0.0.1:1234`)，无需 `.env` 配置即可默认连接。
+4.  **数据文件:** 确保 `inventory/` 文件夹下有库存 CSV 文件，根目录下有 `channel_mapping.json`, `fluorochrome_brightness.json`, `spectral_data.json`。
 
 ### 启动应用
-在终端运行：
+**方式一：直接运行 (Python)**
 ```bash
 streamlit run streamlit_app.py
 ```
-浏览器自动打开 `http://localhost:8501` 即可使用。
+
+**方式二：Docker 部署 (推荐)**
+1.  构建镜像：
+    ```bash
+    docker build -t panel-gpt-app .
+    ```
+2.  运行容器：
+    ```bash
+    docker run -p 8501:8501 --env-file .env panel-gpt-app
+    ```
+浏览器访问 `http://localhost:8501` 即可。
 
 ## 4. 系统架构
 
