@@ -7,14 +7,14 @@ from data_preprocessing import load_antibody_data # Import load_antibody_data
 
 # --- UI Configuration ---
 st.set_page_config(page_title="智能流式 Panel 生成器", layout="wide")
-st.title("🫠 FlowCyt Panel Assistant")
+st.title("👨🏻‍🔬 FlowCyt Panel Assistant_TSP Lab Edition")
 
 # --- Global Configuration (User-modifiable) ---
 # Modify these paths to change your inventory and mapping files.
 # Place your CSV files in the 'inventory' folder.
 INVENTORY_CONFIG = {
-    "Mouse (小鼠)": "inventory/Mouse_20250625_ZhengLab.csv",
-    "Human (人)": "inventory/Human_20250625_ZhengLab.csv"
+    "Mouse (小鼠)": "inventory/Mouse_20240225_TSPlab.csv",
+    # "Human (人)": "inventory/Human_20250625_ZhengLab.csv"
 } 
 CHANNEL_MAPPING_FILE = "channel_mapping.json"
 BRIGHTNESS_MAPPING_FILE = "fluorochrome_brightness.json" # Used in aggregate_antibodies_by_marker
@@ -24,12 +24,7 @@ BRIGHTNESS_MAPPING_FILE = "fluorochrome_brightness.json" # Used in aggregate_ant
 # Format: "Your Column Name": "Standard Name"
 # Standard Names: 'Target', 'Fluorescein', 'Clone', 'Brand', 'Catalog Number'
 CUSTOM_COLUMN_MAPPING = {
-    # Example:
-    # "Antigen": "Target",
-    # "Fluorophore": "Fluorescein",
-    # "Clone ID": "Clone",
-    # "Vendor": "Brand",
-    # "Cat#": "Catalog Number"
+    "Flourence": "Fluorescein"
 }
 
 # --- Helper Functions ---

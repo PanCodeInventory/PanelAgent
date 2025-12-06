@@ -37,7 +37,13 @@
         OPENAI_MODEL_NAME=gpt-4-turbo
         ```
     *   **本地 LM Studio:** 启动 Local Server (地址 `http://127.0.0.1:1234`)，无需 `.env` 配置即可默认连接。
-4.  **数据文件:** 确保 `inventory/` 文件夹下有库存 CSV 文件，根目录下有 `channel_mapping.json`, `fluorochrome_brightness.json`, `spectral_data.json`。
+### 4. 数据文件: 
+确保 `inventory/` 文件夹下有库存 CSV 文件，根目录下有 `channel_mapping.json`, `fluorochrome_brightness.json`, `spectral_data.json`。
+
+### 5. 配置说明 (重要)
+由于不同实验室的 CSV 格式可能不同，您可以在 `streamlit_app.py` 中自定义配置：
+*   **库存路径:** 修改 `INVENTORY_CONFIG` 字典以指向您的 CSV 文件。
+*   **列名映射:** 修改 `CUSTOM_COLUMN_MAPPING` 字典，将您的 CSV 列名映射到系统标准列名 (如 "Flourence": "Fluorescein")。
 
 ### 启动应用
 在终端运行：
@@ -68,9 +74,9 @@ streamlit run streamlit_app.py
 
 *   `streamlit_app.py`: 前端交互界面 (Tabs: 实验设计 | Panel 生成)。
 *   `panel_generator.py`: 核心业务逻辑 (回溯搜索算法、LLM 调用封装)。
-*   `data_preprocessing.py`: 数据清洗、别名解析 (Target Aliases)、库存加载。
+*   `data_preprocessing.py`: 数据清洗、别名解析 (Target Aliases)、库存加载 (支持动态列映射)。
 *   `spectral_viewer.py`: 光谱模拟与绘图模块 (Plotly + Scipy)。
 *   `llm_api_client.py`: OpenAI API 客户端封装，适配 LM Studio。
-*   `channel_mapping.json`: 定义荧光素到检测通道的映射 (如 `AF488` -> `FITC`)。
+*   `channel_mapping.json`: 定义荧光素到检测通道的映射 (已更新支持更多实验室常见染料)。
 *   `fluorochrome_brightness.json`: 定义荧光素的亮度等级 (1-5)。
 *   `spectral_data.json`: 存储荧光素的物理参数 (Peak, Sigma)，用于模拟光谱曲线。

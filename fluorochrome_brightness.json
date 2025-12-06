@@ -29,5 +29,14 @@
   "BUV805": 4,
   "PE-Cy5.5": 4,
   "APC-H7": 3,
-  "APC-Cy7": 4
+  "APC-Cy7": 4,
+  "RED_780": 4,
+  "BB700": 4,
+  "APC-R660": 4,
+  "PE-Dazzle594": 4,
+  "BIOTIN": 1,
+  "UNSTAINED": 1,
+  "PerCP-eFluor710": 3,
+  "710": 3,
+  "eFluor660": 4
 }

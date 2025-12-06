@@ -11,12 +11,14 @@ The system solves the "Combinatorial Constraint Satisfaction Problem" of panel d
 ## Technical Architecture
 
 ### 1. Data Layer (`data_preprocessing.py`)
-*   **Inventory Loading:** Parses CSV inventory files (`流式抗体库-*.csv`).
+*   **Inventory Loading:** Parses CSV inventory files (e.g., `inventory/Mouse_20240225_TSPlab.csv`).
+*   **Dynamic Mapping:** Supports custom column mapping via `streamlit_app.py` (e.g., mapping "Flourence" to "Fluorescein") to adapt to different lab CSV formats.
 *   **Normalization:**
     *   **Markers:** Standardizes names (e.g., `CD96 (TACTILE)` -> `cd96`, `CD8a` -> `cd8`).
     *   **Aliases:** Builds an inverted index so searches for `PD-L1` can find antibodies labeled `CD274`.
     *   **Channels:** Maps commercial fluorochrome names (e.g., `Alexa Fluor 488`, `BB515`) to standardized hardware detectors (`FITC`) via `channel_mapping.json`.
 *   **Aggregates:** Groups individual antibody products by their target marker.
+*   **Robustness:** Includes type checking to safely handle non-string or missing values in inventory data.
 
 ### 2. Logic Layer (`panel_generator.py`)
 *   **Backtracking Solver (`find_valid_panels`):**
@@ -38,14 +40,15 @@ The system solves the "Combinatorial Constraint Satisfaction Problem" of panel d
     *   Output: Interactive tables of candidate panels.
     *   **Visualization:** Integrates `spectral_viewer.py` to display simulated emission spectra for every candidate panel, allowing visual spillover assessment.
     *   Action: "Evaluate with AI" button triggers the LLM analysis.
+    *   **Configuration:** Allows easy switching between different species/inventories and customizing column mappings directly in the code.
 
 ## Configuration Files
 
-*   **`channel_mapping.json`**: Critical for the solver. Maps specific dyes to exclusive system channels.
+*   **`channel_mapping.json`**: Critical for the solver. Maps specific dyes to exclusive system channels. Updated to include a comprehensive list of fluorochromes from real-world lab data (e.g., BUV series, BV series, Alexa Fluor variants).
     *   *Example:* `{"FITC": "FITC", "Alexa Fluor 488": "FITC", "BB515": "FITC"}`
-*   **`fluorochrome_brightness.json`**: Used by the LLM to judge panel quality (Brightness Matching).
+*   **`fluorochrome_brightness.json`**: Used by the LLM to judge panel quality (Brightness Matching). Updated with brightness values for new fluorochromes found in lab inventories.
     *   *Scale:* 1 (Dim) to 5 (Very Bright).
-*   **`spectral_data.json`**: A local database of fluorophore physical properties (Peak Emission, Sigma). Used by the spectral viewer to simulate Gaussian curves.
+*   **`spectral_data.json`**: A local database of fluorophore physical properties (Peak Emission, Sigma). Used by the spectral viewer to simulate Gaussian curves. Expanded to cover new dyes like BB700, APC-R660, and eFluor series.
 
 ## LLM Integration (`llm_api_client.py`)
 
@@ -58,7 +61,11 @@ The system solves the "Combinatorial Constraint Satisfaction Problem" of panel d
 
 ## Development Status
 
-*   **Current Focus:** Refinement of the UI and robustness of the solver.
+*   **Current Focus:** Optimization for specific lab datasets and robustness improvements.
+*   **Recent Updates:**
+    *   Integrated `Mouse_20240225_TSPlab.csv` as the primary mouse inventory.
+    *   Enhanced `data_preprocessing.py` to handle dirty data (non-string values).
+    *   Fixed JSON syntax issues in configuration files.
+    *   Implemented flexible column mapping in `streamlit_app.py` to support varying CSV headers (e.g., mapping "Flourence" to "Fluorescein").
 *   **Known Limitations:** 
-    *   Inventory file path is configured in code.
     *   Spectral simulation is based on Gaussian approximation.

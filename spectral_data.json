@@ -1,6 +1,4 @@
 {
-  "_comment": "Full spectral database covering all dyes in channel_mapping.json. Peak=nm, Sigma approx=FWHM/2.355.",
-  
   "FITC": { "peak": 519, "sigma": 15, "color": "#00FF00", "category": "Blue Laser" },
   "Alexa Fluor® 488": { "peak": 519, "sigma": 12, "color": "#00FF00", "category": "Blue Laser" },
   "AF488": { "peak": 519, "sigma": 12, "color": "#00FF00", "category": "Blue Laser" },
@@ -56,5 +54,15 @@
   "DAPI": { "peak": 461, "sigma": 35, "color": "#0000FF", "category": "Violet/UV Laser" },
   "7-AAD": { "peak": 647, "sigma": 40, "color": "#FF6347", "category": "Blue/Yellow Laser" },
   "Zombie Aqua™": { "peak": 516, "sigma": 20, "color": "#00CED1", "category": "Violet Laser" },
-  "Zombie NIR™": { "peak": 746, "sigma": 30, "color": "#2F4F4F", "category": "Red Laser" }
+  "Zombie NIR™": { "peak": 746, "sigma": 30, "color": "#2F4F4F", "category": "Red Laser" },
+  "RED_780": { "peak": 785, "sigma": 25, "color": "#4B0082", "category": "Red Laser" },
+  "BB700": { "peak": 700, "sigma": 20, "color": "#FF00FF", "category": "Blue Laser" },
+  "APC-R660": { "peak": 660, "sigma": 15, "color": "#FF0000", "category": "Red Laser" },
+  "PE-Dazzle594": { "peak": 610, "sigma": 20, "color": "#FF4500", "category": "Blue/Yellow Laser" },
+  "BUV395": { "peak": 395, "sigma": 15, "color": "#800080", "category": "UV Laser" },
+  "BUV563": { "peak": 563, "sigma": 15, "color": "#FFA500", "category": "UV Laser" },
+  "BUV737": { "peak": 737, "sigma": 20, "color": "#8B0000", "category": "UV Laser" },
+  "PerCP-eFluor710": { "peak": 710, "sigma": 20, "color": "#A52A2A", "category": "Blue Laser" },
+  "710": { "peak": 710, "sigma": 20, "color": "#FF0000", "category": "Red Laser" },
+  "eFluor660": { "peak": 660, "sigma": 15, "color": "#FF0000", "category": "Red Laser" }
 }

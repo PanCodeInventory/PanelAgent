@@ -143,6 +143,9 @@ def aggregate_antibodies_by_marker(antibody_df, brightness_data):
 
     for _, row in antibody_df.iterrows():
         # The primary, un-normalized marker name from the 'Target' column
+        if not isinstance(row['Target'], str):
+            continue
+            
         main_marker = row['Target'].split('(')[0].strip()
         
         if not row['Target_Aliases']:
