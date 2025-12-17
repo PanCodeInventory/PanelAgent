@@ -6,8 +6,8 @@ from spectral_viewer import plot_panel_spectra
 from data_preprocessing import load_antibody_data # Import load_antibody_data
 
 # --- UI Configuration ---
-st.set_page_config(page_title="智能流式 Panel 生成器", layout="wide")
-st.title("🫠 FlowCyt Panel Assistant")
+st.set_page_config(page_title="流式 Panel 生成器", layout="wide")
+st.title("👨🏻‍💻 FlowCyt Panel Assistant")
 
 # --- Global Configuration (User-modifiable) ---
 # Modify these paths to change your inventory and mapping files.
@@ -280,24 +280,24 @@ with tab2:
                 
                 st.info(f"**💡 推荐理由:**\n\n{res['rationale']}")
                 
-                with st.expander("🚪 查看圈门策略 (Gating Strategy)", expanded=True):
-                    gating_detail = res.get("gating_detail", [])
-                    if gating_detail:
-                        df_gating = pd.DataFrame(gating_detail)
-                        # Rename cols
-                        df_gating.rename(columns={
-                            "step": "步骤",
-                            "parent": "上级门 (Parent Gate)",
-                            "axis": "X轴/Y轴 (Axes)",
-                            "gate": "圈门操作 (Gating)",
-                            "population": "含义 (Population)"
-                        }, inplace=True)
-                        
-                        # Ensure order
-                        g_cols = ["步骤", "上级门 (Parent Gate)", "X轴/Y轴 (Axes)", "圈门操作 (Gating)", "含义 (Population)"]
-                        final_g_cols = [c for c in g_cols if c in df_gating.columns]
-                        
-                        st.dataframe(df_gating[final_g_cols], use_container_width=True, hide_index=True)
-                    else:
-                        # Fallback for old text format
-                        st.markdown(res.get("gating_strategy", "暂无策略"))
+                st.markdown("#### 🚪 圈门策略 (Gating Strategy)")
+                gating_detail = res.get("gating_detail", [])
+                if gating_detail:
+                    df_gating = pd.DataFrame(gating_detail)
+                    # Rename cols
+                    df_gating.rename(columns={
+                        "step": "步骤",
+                        "parent": "上级门 (Parent Gate)",
+                        "axis": "X轴/Y轴 (Axes)",
+                        "gate": "圈门操作 (Gating)",
+                        "population": "含义 (Population)"
+                    }, inplace=True)
+                    
+                    # Ensure order
+                    g_cols = ["步骤", "上级门 (Parent Gate)", "X轴/Y轴 (Axes)", "圈门操作 (Gating)", "含义 (Population)"]
+                    final_g_cols = [c for c in g_cols if c in df_gating.columns]
+                    
+                    st.dataframe(df_gating[final_g_cols], use_container_width=True, hide_index=True)
+                else:
+                    # Fallback for old text format
+                    st.markdown(res.get("gating_strategy", "暂无策略"))
