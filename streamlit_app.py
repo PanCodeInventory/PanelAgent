@@ -246,7 +246,7 @@ with tab2:
                 
                 with st.expander("📊 查看光谱模拟 (Spectral Simulation)"):
                     fig = plot_panel_spectra(display_candidates[i])
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key=f"candidate_spectral_plot_{i}")
 
         st.divider()
 
@@ -276,7 +276,7 @@ with tab2:
                 # --- Spectral Plot for Best Option ---
                 st.markdown("#### 📊 光谱干扰模拟")
                 best_fig = plot_panel_spectra(res["selected_panel"])
-                st.plotly_chart(best_fig, use_container_width=True)
+                st.plotly_chart(best_fig, use_container_width=True, key="best_option_spectral_plot")
                 
                 st.info(f"**💡 推荐理由:**\n\n{res['rationale']}")
                 
