@@ -27,3 +27,6 @@ api_key.txt
 secrets.json
 config_private.json
 openai_key.txt
+
+.gemini/
+gha-creds-*.json
