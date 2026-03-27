@@ -83,6 +83,17 @@ export function useMarkerRecommendation(): UseMarkerRecommendationReturn {
         return;
       }
 
+      if (data.status === "error") {
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          markers: [],
+          markersDetail: [],
+          error: data.message ?? "Marker recommendation failed",
+        }));
+        return;
+      }
+
       setState((prev) => ({
         ...prev,
         isLoading: false,

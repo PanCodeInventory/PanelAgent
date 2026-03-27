@@ -2,7 +2,7 @@ import importlib
 import re
 from pathlib import Path
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from ....core.config import get_settings
 
@@ -29,12 +29,8 @@ def _resolve_inventory_path(inventory_file: str | None, species: str | None) -> 
     inventory_dir = root / settings.INVENTORY_DIR
 
     if inventory_file:
-        inventory_path = Path(inventory_file)
-        if inventory_path.is_absolute():
-            return inventory_path
-        repo_relative = root / inventory_file
-        if repo_relative.exists():
-            return repo_relative
+        if "/" in inventory_file or "\\" in inventory_file or ".." in inventory_file:
+            return None
         return inventory_dir / inventory_file
 
     if species:
@@ -72,37 +68,29 @@ def _extract_available_targets(antibody_df) -> list[str]:
 async def recommend_markers(payload: MarkerRecommendationRequest) -> MarkerRecommendationResponse:
     inventory_path = _resolve_inventory_path(payload.inventory_file, payload.species)
     if inventory_path is None:
-        return MarkerRecommendationResponse(
-            status="error",
-            selected_markers=[],
-            markers_detail=[],
-            message="Could not resolve inventory file. Provide inventory_file or a species-mapped CSV.",
+        raise HTTPException(
+            status_code=400,
+            detail="Could not resolve inventory file. Provide inventory_file or a species-mapped CSV.",
         )
 
     if not inventory_path.exists():
-        return MarkerRecommendationResponse(
-            status="error",
-            selected_markers=[],
-            markers_detail=[],
-            message=f"Inventory file not found: {inventory_path}",
+        raise HTTPException(
+            status_code=400,
+            detail=f"Inventory file not found: {inventory_path}",
         )
 
     antibody_df = _load_inventory_df(inventory_path)
     if antibody_df is None or antibody_df.empty:
-        return MarkerRecommendationResponse(
-            status="error",
-            selected_markers=[],
-            markers_detail=[],
-            message="Inventory file is empty or invalid.",
+        raise HTTPException(
+            status_code=400,
+            detail="Inventory file is empty or invalid.",
         )
 
     available_targets = _extract_available_targets(antibody_df)
     if not available_targets:
-        return MarkerRecommendationResponse(
-            status="error",
-            selected_markers=[],
-            markers_detail=[],
-            message="No available targets found in inventory.",
+        raise HTTPException(
+            status_code=400,
+            detail="No available targets found in inventory.",
         )
 
     _, panel_generator = _load_domain_modules()
@@ -113,19 +101,15 @@ async def recommend_markers(payload: MarkerRecommendationRequest) -> MarkerRecom
             available_targets,
         )
     except Exception as exc:
-        return MarkerRecommendationResponse(
-            status="error",
-            selected_markers=[],
-            markers_detail=[],
-            message=f"LLM recommendation failed: {exc}",
+        raise HTTPException(
+            status_code=400,
+            detail=f"LLM recommendation failed: {exc}",
         )
 
     if result.get("status") != "success":
-        return MarkerRecommendationResponse(
-            status="error",
-            selected_markers=[],
-            markers_detail=[],
-            message=result.get("message", "Failed to recommend markers."),
+        raise HTTPException(
+            status_code=400,
+            detail=result.get("message", "Failed to recommend markers."),
         )
 
     return MarkerRecommendationResponse(

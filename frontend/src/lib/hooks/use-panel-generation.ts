@@ -116,14 +116,24 @@ export function usePanelGeneration(): UsePanelGenerationReturn {
           missingMarkers: data.missing_markers ?? [],
           candidates: data.candidates ?? [],
         }));
-      } else {
+        return;
+      }
+
+      if (data.status === "error") {
         setState((prev) => ({
           ...prev,
           isLoading: false,
-          candidates: data.candidates ?? [],
-          missingMarkers: data.missing_markers ?? [],
+          error: data.message ?? "Failed to generate panels",
         }));
+        return;
       }
+
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        candidates: data.candidates ?? [],
+        missingMarkers: data.missing_markers ?? [],
+      }));
     } catch (err) {
       setState((prev) => ({
         ...prev,

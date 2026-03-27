@@ -72,12 +72,10 @@ async def test_render_spectra_all_unknown(client):
         "fluorochromes": ["GHOST_DYE_1", "GHOST_DYE_2"],
     }
     resp = await client.post("/api/v1/spectra/render-data", json=payload)
-    assert resp.status_code == 200
+    assert resp.status_code == 400
 
     body = resp.json()
-    assert body["status"] == "error"
-    assert body["series"] == []
-    assert len(body["warnings"]) == 2
+    assert body["detail"] == "No valid fluorochromes found in request."
 
 
 @pytest.mark.asyncio

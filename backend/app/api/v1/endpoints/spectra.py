@@ -3,7 +3,7 @@ import importlib
 from pathlib import Path
 
 import numpy as np
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from ....core.config import get_settings
 
@@ -92,11 +92,9 @@ async def render_spectra(payload: SpectraRenderRequest) -> SpectraRenderResponse
         )
 
     if warnings and not series:
-        return SpectraRenderResponse(
-            status="error",
-            series=[],
-            warnings=warnings,
-            message="No valid fluorochromes found in request.",
+        raise HTTPException(
+            status_code=400,
+            detail="No valid fluorochromes found in request.",
         )
 
     return SpectraRenderResponse(

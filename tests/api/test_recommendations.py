@@ -15,7 +15,7 @@ async def test_recommend_markers_success(client):
     payload = {
         "experimental_goal": "Profile tumor-infiltrating T cells",
         "num_colors": 2,
-        "inventory_file": "tests/fixtures/panel_inventory.csv",
+        "inventory_file": "panel_inventory.csv",
     }
 
     with patch("llm_api_client.consult_gpt_oss", return_value=llm_response), patch(
@@ -35,7 +35,7 @@ async def test_recommend_markers_llm_error_returns_error_status(client):
     payload = {
         "experimental_goal": "Profile tumor-infiltrating T cells",
         "num_colors": 2,
-        "inventory_file": "tests/fixtures/panel_inventory.csv",
+        "inventory_file": "panel_inventory.csv",
     }
 
     with patch("llm_api_client.consult_gpt_oss", side_effect=RuntimeError("LLM down")), patch(
@@ -43,7 +43,6 @@ async def test_recommend_markers_llm_error_returns_error_status(client):
     ):
         resp = await client.post("/api/v1/recommendations/markers", json=payload)
 
-    assert resp.status_code == 200
+    assert resp.status_code == 400
     body = resp.json()
-    assert body["status"] == "error"
-    assert "LLM recommendation failed" in body["message"]
+    assert "LLM recommendation failed" in body["detail"]

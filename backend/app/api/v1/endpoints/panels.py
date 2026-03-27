@@ -3,7 +3,7 @@ import importlib
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from ....core.config import get_settings
 
@@ -34,12 +34,8 @@ def _resolve_inventory_path(inventory_file: str | None, species: str | None) -> 
     inventory_dir = root / settings.INVENTORY_DIR
 
     if inventory_file:
-        inventory_path = Path(inventory_file)
-        if inventory_path.is_absolute():
-            return inventory_path
-        repo_relative = root / inventory_file
-        if repo_relative.exists():
-            return repo_relative
+        if "/" in inventory_file or "\\" in inventory_file or ".." in inventory_file:
+            return None
         return inventory_dir / inventory_file
 
     if species:
@@ -65,19 +61,15 @@ def _load_inventory_df(inventory_path: Path):
 async def generate_panels(payload: PanelGenerateRequest) -> PanelGenerateResponse:
     inventory_path = _resolve_inventory_path(payload.inventory_file, payload.species)
     if inventory_path is None:
-        return PanelGenerateResponse(
-            status="error",
-            candidates=[],
-            missing_markers=[],
-            message="Could not resolve inventory file. Provide inventory_file or a species-mapped CSV.",
+        raise HTTPException(
+            status_code=400,
+            detail="Could not resolve inventory file. Provide inventory_file or a species-mapped CSV.",
         )
 
     if not inventory_path.exists():
-        return PanelGenerateResponse(
-            status="error",
-            candidates=[],
-            missing_markers=[],
-            message=f"Inventory file not found: {inventory_path}",
+        raise HTTPException(
+            status_code=400,
+            detail=f"Inventory file not found: {inventory_path}",
         )
 
     antibody_df = _load_inventory_df(inventory_path)
@@ -89,11 +81,9 @@ async def generate_panels(payload: PanelGenerateRequest) -> PanelGenerateRespons
     )
 
     if result.get("status") != "success":
-        return PanelGenerateResponse(
-            status="error",
-            candidates=[],
-            missing_markers=result.get("missing_markers", []),
-            message=result.get("message", "Failed to generate panel candidates."),
+        raise HTTPException(
+            status_code=400,
+            detail=result.get("message", "Failed to generate panel candidates."),
         )
 
     raw_candidates: Any = result.get("candidates", [])
@@ -128,22 +118,22 @@ async def generate_panels(payload: PanelGenerateRequest) -> PanelGenerateRespons
 async def diagnose_panels(payload: DiagnoseRequest) -> DiagnoseResponse:
     inventory_path = _resolve_inventory_path(payload.inventory_file, species=None)
     if inventory_path is None:
-        return DiagnoseResponse(
-            status="error",
-            diagnosis="Could not resolve inventory file. Provide inventory_file.",
+        raise HTTPException(
+            status_code=400,
+            detail="Could not resolve inventory file. Provide inventory_file.",
         )
 
     if not inventory_path.exists():
-        return DiagnoseResponse(
-            status="error",
-            diagnosis=f"Inventory file not found: {inventory_path}",
+        raise HTTPException(
+            status_code=400,
+            detail=f"Inventory file not found: {inventory_path}",
         )
 
     antibody_df = _load_inventory_df(inventory_path)
     if antibody_df is None or antibody_df.empty:
-        return DiagnoseResponse(
-            status="error",
-            diagnosis="Inventory file is empty or invalid.",
+        raise HTTPException(
+            status_code=400,
+            detail="Inventory file is empty or invalid.",
         )
 
     settings = get_settings()
@@ -173,21 +163,15 @@ async def evaluate_panels(payload: PanelEvaluateRequest) -> PanelEvaluateRespons
             missing_markers=payload.missing_markers,
         )
     except Exception as exc:
-        return PanelEvaluateResponse(
-            status="error",
-            selected_panel={},
-            rationale="",
-            gating_detail=[],
-            message=f"LLM evaluation failed: {exc}",
+        raise HTTPException(
+            status_code=400,
+            detail=f"LLM evaluation failed: {exc}",
         )
 
     if result.get("status") != "success":
-        return PanelEvaluateResponse(
-            status="error",
-            selected_panel={},
-            rationale="",
-            gating_detail=[],
-            message=result.get("message", "Failed to evaluate panel candidates."),
+        raise HTTPException(
+            status_code=400,
+            detail=result.get("message", "Failed to evaluate panel candidates."),
         )
 
     selected_panel: Any = result.get("selected_panel", {})

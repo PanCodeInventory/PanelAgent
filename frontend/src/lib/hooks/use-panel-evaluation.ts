@@ -81,6 +81,15 @@ export function usePanelEvaluation(): UsePanelEvaluationReturn {
         return;
       }
 
+      if (data.status === "error") {
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: data.message ?? "Panel evaluation failed",
+        }));
+        return;
+      }
+
       setState((prev) => ({
         ...prev,
         isLoading: false,

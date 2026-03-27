@@ -102,7 +102,6 @@ async def test_evaluate_panels_llm_exception_returns_error(client):
     ):
         resp = await client.post("/api/v1/panels/evaluate", json=payload)
 
-    assert resp.status_code == 200
+    assert resp.status_code == 400
     body = resp.json()
-    assert body["status"] == "error"
-    assert "LLM evaluation failed" in body["message"]
+    assert "LLM evaluation failed" in body["detail"]

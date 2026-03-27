@@ -5,7 +5,7 @@ import pytest
 async def test_generate_panels_returns_unique_system_codes(client):
     payload = {
         "markers": ["CD3", "CD4", "CD8a"],
-        "inventory_file": "tests/fixtures/panel_inventory.csv",
+        "inventory_file": "panel_inventory.csv",
         "max_solutions": 5,
     }
 
@@ -25,7 +25,7 @@ async def test_generate_panels_returns_unique_system_codes(client):
 async def test_generate_panels_reports_missing_markers(client):
     payload = {
         "markers": ["CD3", "CD999"],
-        "inventory_file": "tests/fixtures/panel_inventory.csv",
+        "inventory_file": "panel_inventory.csv",
         "max_solutions": 3,
     }
 
