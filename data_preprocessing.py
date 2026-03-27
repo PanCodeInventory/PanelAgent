@@ -80,11 +80,12 @@ def load_antibody_data(file_input, mapping_file=None, column_mapping=None):
 
     # 2. Apply Column Mapping
     if column_mapping:
-        # Invert mapping if needed or just apply strict renaming
-        # We assume column_mapping is {UserCol: StandardCol}
         df.rename(columns=column_mapping, inplace=True)
     
-    # 3. Validation: Check for critical columns
+    # 3. Drop rows where Target or Fluorescein is NaN (trailing empty rows, etc.)
+    df = df.dropna(subset=['Target', 'Fluorescein'])
+
+    # 4. Validation: Check for critical columns
     required_cols = ['Target', 'Fluorescein'] 
     missing = [c for c in required_cols if c not in df.columns]
     if missing:

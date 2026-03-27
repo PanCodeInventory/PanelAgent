@@ -30,10 +30,10 @@ class Settings(BaseSettings):
     # Inventory directory
     INVENTORY_DIR: str = "inventory"
 
-    # Species-to-inventory filename mapping (mirrors Streamlit INVENTORY_CONFIG)
+    # Species-to-inventory filename mapping
     SPECIES_INVENTORY_MAP: dict[str, str] = {
-        "Mouse": "Mouse_20250625_ZhengLab.csv",
-        "Human": "Human_20250625_ZhengLab.csv",
+        "Mouse": "流式抗体库-20250625小鼠.csv",
+        "Human": "流式抗体库-20250625-人.csv",
     }
 
 

@@ -1,0 +1,129 @@
+{
+  "active_plan": "/home/user/PanChongshi/Repo/PanelAgent/.sisyphus/plans/frontend-backend-agentic-refactor.md",
+  "started_at": "2026-03-27T04:15:37.358Z",
+  "session_ids": [
+    "ses_2d2d2169bffeDVd9SXuf4BOfiw",
+    "ses_2d27cd6ecffeA0FvJtMU14PeBP",
+    "ses_2d27776aaffeMwqCfFWIS7Vs02",
+    "ses_2d2742c70ffezA7SpWetNstjan",
+    "ses_2d269e614ffe0hB0IW2tabRhfN",
+    "ses_2d269802affeYouVbiE27Hqumq",
+    "ses_2d26923f0ffe53x4bFq09M77lI",
+    "ses_2d24c847bffe6v74LpYqtaXjdq",
+    "ses_2d243dd56ffe7dUsf5Y4ra3uc3",
+    "ses_2d226d98cffeJTcrd6y5mCv8mq",
+    "ses_2d208d9e7ffe6m91qI6H5joFov",
+    "ses_2d1eee2adffeSL42SkEFUjiJZh",
+    "ses_2d1ea6c07ffeplT0QBY4mSO5k3",
+    "ses_2d1ea3f08ffetijgTgXY7VN3RA",
+    "ses_2d1ea94c4ffetPQ2Z0OK3PXVIR",
+    "ses_2d1eab9bfffewJ8s5nO1NvnEec",
+    "ses_2d1e0276affexpemqurSrbSd9K",
+    "ses_2d1d35036ffegs7jP6J5qhFDss",
+    "ses_2d1d3e474ffehaRvwtmLWenr4s",
+    "ses_2d1d4166effe0GXJULkyfF31T0",
+    "ses_2d1ce0f19ffeAtfz1Rmz5t7J46",
+    "ses_2d1c423bcffexCI5wUOFdJ8wYN",
+    "ses_2d1c3d954ffeOn8wF3RYWwZMx4",
+    "ses_2d1c4402affengnJAhxkq0kMRV",
+    "ses_2d1c0019fffeSFeQYdy7RT2mQ2",
+    "ses_2d17dd5f4ffe2yjxQ5J0Q1QLKA",
+    "ses_2d17dc450ffeqaRDz8GryDknfK",
+    "ses_2d17e07f3ffejTUfRprHeF6vim",
+    "ses_2d14776b9ffe08g0ISNywe9bEG",
+    "ses_2d14777faffePFZQNJ0fvYkLQ0"
+  ],
+  "plan_name": "frontend-backend-agentic-refactor",
+  "agent": "atlas",
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "Characterization Baseline Lock",
+      "session_id": "ses_2d27cd6ecffeA0FvJtMU14PeBP",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-03-27T04:22:08.641Z"
+    },
+    "todo:2": {
+      "task_key": "todo:2",
+      "task_label": "2",
+      "task_title": "FastAPI Skeleton and API Versioning",
+      "session_id": "ses_2d27776aaffeMwqCfFWIS7Vs02",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-03-27T04:26:04.674Z"
+    },
+    "todo:3": {
+      "task_key": "todo:3",
+      "task_label": "3",
+      "task_title": "Panel Generation and Diagnosis Endpoints",
+      "session_id": "ses_2d2742c70ffezA7SpWetNstjan",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-03-27T04:34:37.072Z"
+    },
+    "todo:4": {
+      "task_key": "todo:4",
+      "task_label": "4",
+      "task_title": "Spectral Render Data Endpoint",
+      "session_id": "ses_2d269e614ffe0hB0IW2tabRhfN",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-03-27T04:40:31.593Z"
+    },
+    "todo:6": {
+      "task_key": "todo:6",
+      "task_label": "6",
+      "task_title": "Next.js App Router Frontend Shell",
+      "session_id": "ses_2d24c847bffe6v74LpYqtaXjdq",
+      "agent": "Sisyphus-Junior",
+      "category": "visual-engineering",
+      "updated_at": "2026-03-27T05:18:25.151Z"
+    },
+    "todo:7": {
+      "task_key": "todo:7",
+      "task_label": "7",
+      "task_title": "OpenAPI Typed Client Generation",
+      "session_id": "ses_2d243dd56ffe7dUsf5Y4ra3uc3",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-03-27T05:49:58.052Z"
+    },
+    "todo:8": {
+      "task_key": "todo:8",
+      "task_label": "8",
+      "task_title": "Panel Generation Parity UI",
+      "session_id": "ses_2d226d98cffeJTcrd6y5mCv8mq",
+      "agent": "Sisyphus-Junior",
+      "category": "visual-engineering",
+      "updated_at": "2026-03-27T06:21:39.472Z"
+    },
+    "todo:9": {
+      "task_key": "todo:9",
+      "task_label": "9",
+      "task_title": "Exp Design + Evaluation + Spectra Integration",
+      "session_id": "ses_2d208d9e7ffe6m91qI6H5joFov",
+      "agent": "Sisyphus-Junior",
+      "category": "visual-engineering",
+      "updated_at": "2026-03-27T06:50:18.085Z"
+    },
+    "todo:10": {
+      "task_key": "todo:10",
+      "task_label": "10",
+      "task_title": "Quality Gates and Cutover Controls",
+      "session_id": "ses_2d1eee2adffeSL42SkEFUjiJZh",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-03-27T06:55:29.501Z"
+    },
+    "final-wave:f1": {
+      "task_key": "final-wave:f1",
+      "task_label": "F1",
+      "task_title": "Plan Compliance Audit - oracle",
+      "session_id": "ses_2d1c0019fffeSFeQYdy7RT2mQ2",
+      "agent": "oracle",
+      "updated_at": "2026-03-27T07:44:46.563Z"
+    }
+  }
+}

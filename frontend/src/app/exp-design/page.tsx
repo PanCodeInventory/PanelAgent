@@ -19,6 +19,14 @@ export default function ExpDesignPage() {
   const [species, setSpecies] = useState("Mouse (小鼠)");
   const router = useRouter();
 
+  const updateNumColors = (value: number) => {
+    if (Number.isNaN(value)) {
+      return;
+    }
+
+    setNumColors(Math.min(30, Math.max(1, value)));
+  };
+
   const { state: recState, recommend, clear: clearRecommendations } = useMarkerRecommendation();
 
   const handleRecommend = async () => {
@@ -82,21 +90,33 @@ export default function ExpDesignPage() {
 
           {/* Number of Colors */}
           <div className="space-y-2">
-            <label className="text-sm font-medium leading-none">
-              Target Number of Colors
-            </label>
-            <div className="flex items-center gap-4">
+              <label className="text-sm font-medium leading-none">
+                Target Number of Colors
+              </label>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <input
                 type="range"
                 min="1"
                 max="30"
+                step="1"
                 value={numColors}
-                onChange={(e) => setNumColors(Number(e.target.value))}
-                className="flex-1"
+                onChange={(e) => updateNumColors(Number(e.target.value))}
+                aria-label="Target Number of Colors"
+                className="w-full flex-1 accent-foreground"
               />
-              <span className="w-12 text-center font-mono text-sm">
-                {numColors}
-              </span>
+              <div className="flex items-center gap-2 sm:w-32">
+                <input
+                  type="number"
+                  min="1"
+                  max="30"
+                  step="1"
+                  value={numColors}
+                  onChange={(e) => updateNumColors(Number(e.target.value))}
+                  aria-label="Number of colors input"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-center text-sm font-mono ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+                <span className="text-sm text-muted-foreground">colors</span>
+              </div>
             </div>
             <p className="text-xs text-muted-foreground">
               How many fluorochromes (colors) do you plan to use?
