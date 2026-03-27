@@ -27,12 +27,11 @@ export interface UsePanelGenerationReturn {
 
 const MAX_SOLUTIONS = 10;
 
-// Map display species to inventory file format
-function mapSpeciesToParams(species: string): { species: string; inventoryFile?: string } {
+function mapSpeciesToParams(species: string): { species: string } {
   if (species.includes("Mouse")) {
-    return { species: "Mouse", inventoryFile: "Mouse_20250625_ZhengLab.csv" };
+    return { species: "Mouse" };
   } else if (species.includes("Human")) {
-    return { species: "Human", inventoryFile: "Human_Inventory.csv" };
+    return { species: "Human" };
   }
   return { species };
 }
@@ -60,13 +59,13 @@ export function usePanelGeneration(): UsePanelGenerationReturn {
     }));
 
     try {
-      const { species: speciesParam, inventoryFile } = mapSpeciesToParams(species);
+      const { species: speciesParam } = mapSpeciesToParams(species);
 
       const requestBody: PanelGenerateRequest = {
         markers: trimmedMarkers,
         species: speciesParam,
         max_solutions: MAX_SOLUTIONS,
-        inventory_file: inventoryFile ?? null,
+        inventory_file: null,
       };
 
       const response = await apiClient.post<PanelGenerateResponse>(
@@ -100,7 +99,7 @@ export function usePanelGeneration(): UsePanelGenerationReturn {
 
         const diagnoseBody: DiagnoseRequest = {
           markers: trimmedMarkers,
-          inventory_file: inventoryFile ?? null,
+          inventory_file: null,
         };
 
         const diagnoseResponse = await apiClient.post<DiagnoseResponse>(

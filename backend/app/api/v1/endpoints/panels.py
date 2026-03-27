@@ -39,6 +39,17 @@ def _resolve_inventory_path(inventory_file: str | None, species: str | None) -> 
         return inventory_dir / inventory_file
 
     if species:
+        if "/" in species or "\\" in species or ".." in species:
+            return None
+        mapping = settings.SPECIES_INVENTORY_MAP
+        filename = mapping.get(species)
+        if not filename:
+            for key, val in mapping.items():
+                if key.lower() == species.lower():
+                    filename = val
+                    break
+        if filename:
+            return inventory_dir / filename
         return inventory_dir / f"{species}.csv"
 
     if inventory_dir.exists():

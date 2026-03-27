@@ -21,12 +21,11 @@ export interface UseMarkerRecommendationReturn {
   clear: () => void;
 }
 
-// Map display species to API params
-function mapSpeciesToParams(species: string): { species: string; inventoryFile?: string } {
+function mapSpeciesToParams(species: string): { species: string } {
   if (species.includes("Mouse")) {
-    return { species: "Mouse", inventoryFile: "Mouse_20250625_ZhengLab.csv" };
+    return { species: "Mouse" };
   } else if (species.includes("Human")) {
-    return { species: "Human", inventoryFile: "Human_Inventory.csv" };
+    return { species: "Human" };
   }
   return { species };
 }
@@ -49,13 +48,13 @@ export function useMarkerRecommendation(): UseMarkerRecommendationReturn {
     }));
 
     try {
-      const { species: speciesParam, inventoryFile } = mapSpeciesToParams(species);
+      const { species: speciesParam } = mapSpeciesToParams(species);
 
       const requestBody: MarkerRecommendationRequest = {
         experimental_goal: experimentalGoal.trim(),
         num_colors: numColors,
         species: speciesParam,
-        inventory_file: inventoryFile ?? null,
+        inventory_file: null,
       };
 
       const response = await apiClient.post<MarkerRecommendationResponse>(

@@ -1,4 +1,4 @@
-.PHONY: test-backend lint-backend lint-frontend typecheck-frontend generate-client check-drift check-all
+.PHONY: test-backend lint-backend lint-frontend typecheck-frontend generate-client check-drift e2e-frontend check-all
 
 # ── Backend ──────────────────────────────────────────────────────────────────
 
@@ -24,8 +24,11 @@ generate-client:
 check-drift:
 	npm run check:client-drift --prefix frontend
 
+e2e-frontend:
+	cd frontend && npx playwright test
+
 # ── Aggregate ────────────────────────────────────────────────────────────────
 
-check-all: lint-backend test-backend lint-frontend typecheck-frontend generate-client check-drift
+check-all: lint-backend test-backend lint-frontend typecheck-frontend generate-client check-drift e2e-frontend
 	@echo ""
 	@echo "✅ All quality gates passed."

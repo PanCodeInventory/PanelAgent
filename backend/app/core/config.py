@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     # Inventory directory
     INVENTORY_DIR: str = "inventory"
 
+    # Species-to-inventory filename mapping (mirrors Streamlit INVENTORY_CONFIG)
+    SPECIES_INVENTORY_MAP: dict[str, str] = {
+        "Mouse": "Mouse_20250625_ZhengLab.csv",
+        "Human": "Human_20250625_ZhengLab.csv",
+    }
+
 
 @lru_cache
 def get_settings() -> Settings:

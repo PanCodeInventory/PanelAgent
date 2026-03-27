@@ -17,6 +17,7 @@ env/
 
 # --- Project Data (Inventory) ---
 *.csv
+!tests/fixtures/gbk_inventory.csv
 *.xlsx
 *.xls
 
