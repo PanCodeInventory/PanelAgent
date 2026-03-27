@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,11 +11,32 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useMarkerRecommendation } from "@/lib/hooks/use-marker-recommendation";
 
 export default function ExpDesignPage() {
   const [expGoal, setExpGoal] = useState("");
   const [numColors, setNumColors] = useState(8);
   const [species, setSpecies] = useState("Mouse (小鼠)");
+  const router = useRouter();
+
+  const { state: recState, recommend, clear: clearRecommendations } = useMarkerRecommendation();
+
+  const handleRecommend = async () => {
+    if (!expGoal.trim()) return;
+    await recommend(expGoal, numColors, species);
+  };
+
+  const handleUseThisPanel = () => {
+    if (recState.markers.length === 0) return;
+    const markersParam = recState.markers.join(",");
+    router.push(`/panel-design?markers=${encodeURIComponent(markersParam)}`);
+  };
+
+  const handleClear = () => {
+    setExpGoal("");
+    setNumColors(8);
+    clearRecommendations();
+  };
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -102,11 +124,43 @@ export default function ExpDesignPage() {
             <Badge variant="secondary">{species}</Badge>
           </div>
 
-          <Button className="w-full" size="lg">
-            🤖 Recommend Markers
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              className="flex-1" 
+              size="lg"
+              onClick={handleRecommend}
+              disabled={recState.isLoading || !expGoal.trim()}
+            >
+              {recState.isLoading ? (
+                <>
+                  <span className="mr-2 animate-spin">⏳</span>
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <span className="mr-2">🤖</span>
+                  Recommend Markers
+                </>
+              )}
+            </Button>
+            <Button variant="outline" onClick={handleClear} disabled={recState.isLoading}>
+              Clear
+            </Button>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Error Display */}
+      {recState.error && (
+        <Card className="mb-8 border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-900/20">
+          <CardContent className="pt-6">
+            <p className="text-sm text-red-800 dark:text-red-200">
+              <span className="font-semibold">Error: </span>
+              {recState.error}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recommended Markers Section */}
       <Card className="mb-8">
@@ -130,20 +184,31 @@ export default function ExpDesignPage() {
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b">
-                  <td
-                    colSpan={3}
-                    className="px-4 py-8 text-center text-muted-foreground"
-                  >
-                    <p className="text-sm">
-                      Recommended markers will appear here after AI analysis
-                    </p>
-                    <p className="mt-1 text-xs">
-                      Each marker will include its type (e.g., lineage, functional,
-                      activation) and selection rationale
-                    </p>
-                  </td>
-                </tr>
+                {recState.markersDetail.length === 0 && !recState.isLoading && (
+                  <tr className="border-b">
+                    <td
+                      colSpan={3}
+                      className="px-4 py-8 text-center text-muted-foreground"
+                    >
+                      <p className="text-sm">
+                        Recommended markers will appear here after AI analysis
+                      </p>
+                      <p className="mt-1 text-xs">
+                        Each marker will include its type (e.g., lineage, functional,
+                        activation) and selection rationale
+                      </p>
+                    </td>
+                  </tr>
+                )}
+                {recState.markersDetail.map((detail, idx) => (
+                  <tr key={idx} className="border-b last:border-b-0">
+                    <td className="px-4 py-2 font-medium">{detail.marker}</td>
+                    <td className="px-4 py-2">
+                      <Badge variant="outline">{detail.type}</Badge>
+                    </td>
+                    <td className="px-4 py-2 text-muted-foreground">{detail.reason}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -151,31 +216,48 @@ export default function ExpDesignPage() {
       </Card>
 
       {/* Action Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <span>🚀</span>
-            Use This Panel
-          </CardTitle>
-          <CardDescription>
-            Transfer recommended markers to Panel Generation
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Once you are satisfied with the AI recommendations, transfer the marker
-            list to the Panel Generation page to find optimal fluorochrome
-            assignments.
-          </p>
-          <Button variant="secondary" className="w-full">
-            ✅ Use This Panel
-          </Button>
-          <p className="text-xs text-muted-foreground">
-            This will populate the marker input in the Panel Generation page with
-            the recommended markers.
-          </p>
-        </CardContent>
-      </Card>
+      {recState.markers.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span>🚀</span>
+              Use This Panel
+            </CardTitle>
+            <CardDescription>
+              Transfer recommended markers to Panel Generation
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-md border bg-muted/50 p-4">
+              <p className="text-sm font-medium mb-2">Selected Markers:</p>
+              <div className="flex flex-wrap gap-2">
+                {recState.markers.map((marker) => (
+                  <Badge key={marker} variant="secondary">
+                    {marker}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Once you are satisfied with the AI recommendations, transfer the marker
+              list to the Panel Generation page to find optimal fluorochrome
+              assignments.
+            </p>
+            <Button 
+              variant="secondary" 
+              className="w-full"
+              onClick={handleUseThisPanel}
+            >
+              <span className="mr-2">✅</span>
+              Use This Panel
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              This will populate the marker input in the Panel Generation page with
+              the recommended markers.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

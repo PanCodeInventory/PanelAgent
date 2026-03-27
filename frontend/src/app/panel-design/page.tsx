@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePanelGeneration } from "@/lib/hooks/use-panel-generation";
 import { usePanelEvaluation } from "@/lib/hooks/use-panel-evaluation";
+import { SpectraChart } from "@/components/spectra-chart";
 import type { components } from "@/lib/api/generated";
 
 type PanelCandidate = components["schemas"]["PanelCandidate"];
@@ -68,26 +70,54 @@ function CandidateTable({ candidate }: CandidateTableProps) {
   );
 }
 
+// Extract fluorochromes from a candidate panel
+function extractFluorochromes(candidate: PanelCandidate): string[] {
+  return Object.values(candidate).map((info) => (info as AntibodyInfo).fluorochrome);
+}
+
 export default function PanelDesignPage() {
-  const [markers, setMarkers] = useState(
-    "CD45.2, CD3, NK1.1, Perforin, Granzyme B, TNF-α, IFN-γ"
-  );
+  const searchParams = useSearchParams();
+  
+  const getInitialMarkers = () => {
+    const markersParam = searchParams.get("markers");
+    if (markersParam) {
+      return decodeURIComponent(markersParam);
+    }
+    return "CD45.2, CD3, NK1.1, Perforin, Granzyme B, TNF-α, IFN-γ";
+  };
+  
+  const [markers, setMarkers] = useState(getInitialMarkers);
   const [species, setSpecies] = useState("Mouse (小鼠)");
+  const [selectedTab, setSelectedTab] = useState("option0");
 
   const { state: genState, generate, clear: clearGeneration } = usePanelGeneration();
   const { state: evalState, evaluate, clear: clearEvaluation } = usePanelEvaluation();
+
+  useEffect(() => {
+    const markersParam = searchParams.get("markers");
+    if (markersParam) {
+      const decodedMarkers = decodeURIComponent(markersParam);
+      const markerList = decodedMarkers.split(",").map((m) => m.trim()).filter(Boolean);
+      if (markerList.length > 0) {
+        void generate(markerList, species);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSearch = async () => {
     // Clear previous evaluation when searching new panels
     clearEvaluation();
     const markerList = markers.split(",").map((m) => m.trim()).filter(Boolean);
     await generate(markerList, species);
+    setSelectedTab("option0");
   };
 
   const handleClear = () => {
     setMarkers("");
     clearGeneration();
     clearEvaluation();
+    setSelectedTab("option0");
   };
 
   const handleEvaluate = async () => {
@@ -96,10 +126,9 @@ export default function PanelDesignPage() {
     }
   };
 
-  // Get brightness stars display
-  const getBrightnessStars = (brightness: number) => {
-    return "★".repeat(brightness) + "☆".repeat(5 - brightness);
-  };
+  // Get fluorochromes for currently selected candidate
+  const selectedCandidate = genState.candidates[parseInt(selectedTab.replace("option", "")) || 0];
+  const selectedFluorochromes = selectedCandidate ? extractFluorochromes(selectedCandidate) : [];
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -225,7 +254,11 @@ export default function PanelDesignPage() {
           )}
 
           {genState.candidates.length > 0 && (
-            <Tabs defaultValue="option0" className="w-full">
+            <Tabs 
+              value={selectedTab} 
+              onValueChange={setSelectedTab}
+              className="w-full"
+            >
               <TabsList className="mb-4">
                 {genState.candidates.map((_, idx) => (
                   <TabsTrigger key={idx} value={`option${idx}`}>
@@ -339,14 +372,7 @@ export default function PanelDesignPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border bg-muted/30 p-16">
-            <div className="text-center text-muted-foreground">
-              <p className="text-lg font-medium">Spectral Chart Placeholder</p>
-              <p className="mt-2 text-sm">
-                Gaussian emission spectra visualization will appear here
-              </p>
-            </div>
-          </div>
+          <SpectraChart fluorochromes={selectedFluorochromes} />
         </CardContent>
       </Card>
 
