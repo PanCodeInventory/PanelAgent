@@ -1,0 +1,783 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FlowCyt Panel API",
+    "description": "Hybrid AI tool for multi-color flow cytometry panel design.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health Check",
+        "description": "Return service status and version.",
+        "operationId": "health_check_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/panels/generate": {
+      "post": {
+        "tags": [
+          "panels"
+        ],
+        "summary": "Generate Panels",
+        "operationId": "generate_panels_api_v1_panels_generate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PanelGenerateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PanelGenerateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/panels/diagnose": {
+      "post": {
+        "tags": [
+          "panels"
+        ],
+        "summary": "Diagnose Panels",
+        "operationId": "diagnose_panels_api_v1_panels_diagnose_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiagnoseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiagnoseResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/panels/evaluate": {
+      "post": {
+        "tags": [
+          "panels"
+        ],
+        "summary": "Evaluate Panels",
+        "operationId": "evaluate_panels_api_v1_panels_evaluate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PanelEvaluateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PanelEvaluateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recommendations/markers": {
+      "post": {
+        "tags": [
+          "recommendations"
+        ],
+        "summary": "Recommend Markers",
+        "operationId": "recommend_markers_api_v1_recommendations_markers_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkerRecommendationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkerRecommendationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/spectra/render-data": {
+      "post": {
+        "tags": [
+          "spectra"
+        ],
+        "summary": "Render Spectra",
+        "operationId": "render_spectra_api_v1_spectra_render_data_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpectraRenderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpectraRenderResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AntibodyInfo": {
+        "properties": {
+          "system_code": {
+            "type": "string",
+            "title": "System Code"
+          },
+          "fluorochrome": {
+            "type": "string",
+            "title": "Fluorochrome"
+          },
+          "brightness": {
+            "type": "integer",
+            "title": "Brightness"
+          },
+          "clone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clone"
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand"
+          },
+          "catalog_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Catalog Number"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target"
+          }
+        },
+        "type": "object",
+        "required": [
+          "system_code",
+          "fluorochrome",
+          "brightness"
+        ],
+        "title": "AntibodyInfo"
+      },
+      "DiagnoseRequest": {
+        "properties": {
+          "markers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Markers"
+          },
+          "inventory_file": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inventory File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "markers"
+        ],
+        "title": "DiagnoseRequest"
+      },
+      "DiagnoseResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "diagnosis": {
+            "type": "string",
+            "title": "Diagnosis"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "diagnosis"
+        ],
+        "title": "DiagnoseResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "MarkerDetail": {
+        "properties": {
+          "marker": {
+            "type": "string",
+            "title": "Marker"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "marker",
+          "type",
+          "reason"
+        ],
+        "title": "MarkerDetail"
+      },
+      "MarkerRecommendationRequest": {
+        "properties": {
+          "experimental_goal": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Experimental Goal"
+          },
+          "num_colors": {
+            "type": "integer",
+            "maximum": 30.0,
+            "minimum": 1.0,
+            "title": "Num Colors",
+            "default": 10
+          },
+          "species": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Species"
+          },
+          "inventory_file": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inventory File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "experimental_goal"
+        ],
+        "title": "MarkerRecommendationRequest"
+      },
+      "MarkerRecommendationResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "selected_markers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Selected Markers"
+          },
+          "markers_detail": {
+            "items": {
+              "$ref": "#/components/schemas/MarkerDetail"
+            },
+            "type": "array",
+            "title": "Markers Detail"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "MarkerRecommendationResponse"
+      },
+      "PanelCandidate": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/AntibodyInfo"
+        },
+        "type": "object",
+        "title": "PanelCandidate"
+      },
+      "PanelEvaluateRequest": {
+        "properties": {
+          "candidates": {
+            "items": {
+              "additionalProperties": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Candidates"
+          },
+          "missing_markers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Markers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "candidates"
+        ],
+        "title": "PanelEvaluateRequest"
+      },
+      "PanelEvaluateResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "selected_panel": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Selected Panel"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale",
+            "default": ""
+          },
+          "gating_detail": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Gating Detail"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "PanelEvaluateResponse"
+      },
+      "PanelGenerateRequest": {
+        "properties": {
+          "markers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Markers"
+          },
+          "species": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Species"
+          },
+          "max_solutions": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Max Solutions",
+            "default": 10
+          },
+          "inventory_file": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inventory File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "markers"
+        ],
+        "title": "PanelGenerateRequest"
+      },
+      "PanelGenerateResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/PanelCandidate"
+            },
+            "type": "array",
+            "title": "Candidates"
+          },
+          "missing_markers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Markers"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "PanelGenerateResponse"
+      },
+      "SpectraRenderRequest": {
+        "properties": {
+          "fluorochromes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fluorochromes",
+            "description": "List of fluorochrome names to render emission spectra for."
+          }
+        },
+        "type": "object",
+        "title": "SpectraRenderRequest"
+      },
+      "SpectraRenderResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/SpectraSeries"
+            },
+            "type": "array",
+            "title": "Series"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings",
+            "description": "Fluorochrome names that were not found in spectral_data.json."
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "SpectraRenderResponse"
+      },
+      "SpectraSeries": {
+        "properties": {
+          "fluorochrome": {
+            "type": "string",
+            "title": "Fluorochrome"
+          },
+          "peak": {
+            "type": "integer",
+            "title": "Peak"
+          },
+          "sigma": {
+            "type": "number",
+            "title": "Sigma"
+          },
+          "color": {
+            "type": "string",
+            "title": "Color"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "x": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "X",
+            "description": "Wavelength values (nm)."
+          },
+          "y": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Y",
+            "description": "Normalized intensity values (0\u2013100)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "fluorochrome",
+          "peak",
+          "sigma",
+          "color",
+          "x",
+          "y"
+        ],
+        "title": "SpectraSeries"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
