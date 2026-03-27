@@ -311,6 +311,17 @@
             "minItems": 1,
             "title": "Markers"
           },
+          "species": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Species"
+          },
           "inventory_file": {
             "anyOf": [
               {

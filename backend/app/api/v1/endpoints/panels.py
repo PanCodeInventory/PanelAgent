@@ -127,7 +127,7 @@ async def generate_panels(payload: PanelGenerateRequest) -> PanelGenerateRespons
 
 @router.post("/diagnose", response_model=DiagnoseResponse)
 async def diagnose_panels(payload: DiagnoseRequest) -> DiagnoseResponse:
-    inventory_path = _resolve_inventory_path(payload.inventory_file, species=None)
+    inventory_path = _resolve_inventory_path(payload.inventory_file, species=payload.species)
     if inventory_path is None:
         raise HTTPException(
             status_code=400,

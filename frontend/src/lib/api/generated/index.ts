@@ -134,6 +134,8 @@ export interface components {
         DiagnoseRequest: {
             /** Markers */
             markers: string[];
+            /** Species */
+            species?: string | null;
             /** Inventory File */
             inventory_file?: string | null;
         };

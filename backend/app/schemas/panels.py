@@ -33,6 +33,7 @@ class PanelGenerateResponse(BaseModel):
 
 class DiagnoseRequest(BaseModel):
     markers: list[str] = Field(min_length=1)
+    species: str | None = None
     inventory_file: str | None = None
 
 

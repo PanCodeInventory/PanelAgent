@@ -99,6 +99,7 @@ export function usePanelGeneration(): UsePanelGenerationReturn {
 
         const diagnoseBody: DiagnoseRequest = {
           markers: trimmedMarkers,
+          species: speciesParam,
           inventory_file: null,
         };
 
