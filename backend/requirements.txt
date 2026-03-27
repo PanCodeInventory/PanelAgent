@@ -1,0 +1,13 @@
+# Backend API dependencies (adds to root requirements.txt)
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+pydantic>=2.10.0
+pydantic-settings>=2.6.0
+python-multipart>=0.0.17
+
+# Domain dependencies (from root requirements.txt)
+pandas
+numpy
+scipy
+openai
+python-dotenv
