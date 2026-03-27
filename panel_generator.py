@@ -5,6 +5,116 @@ import ast
 from data_preprocessing import load_antibody_data, normalize_marker_name, aggregate_antibodies_by_marker
 from llm_api_client import consult_gpt_oss
 
+
+def _infer_marker_type(marker_name, experimental_goal):
+    marker_lower = marker_name.lower()
+    goal_lower = experimental_goal.lower()
+
+    lineage_markers = {
+        'cd3', 'cd4', 'cd8', 'cd8a', 'cd19', 'cd20', 'cd45', 'cd45ra', 'cd45ro',
+        'cd11b', 'cd11c', 'cd14', 'cd16', 'cd56', 'nk1.1', 'ter119', 'b220',
+        'tcr', 'tcrb', 'tcrgd', 'cd90', 'cd127'
+    }
+    activation_markers = {
+        'cd25', 'cd44', 'cd69', 'cd62l', 'cd71', 'cd107a', 'cd134', 'cd137',
+        'cd154', 'cd178', 'ki-67', 'hla-dr'
+    }
+    exhaustion_markers = {
+        'pd-1', 'pd1', 'tigit', 'tim-3', 'tim3', 'lag-3', 'lag3', 'ctla-4',
+        'ctla4', 'cd160', '2b4', 'btla'
+    }
+    functional_markers = {
+        'ifn', 'tnf', 'il-', 'il17', 'il-17', 'il2', 'il-2', 'granzyme', 'perforin',
+        'gm-csf', 'foxp3', 't-bet', 'eomes', 'gata3', 'ror', 'bcl-6', 'annexin'
+    }
+
+    if marker_lower in lineage_markers or marker_lower.startswith('cd') and marker_lower[:3] in {'cd3', 'cd4', 'cd8'}:
+        return 'Lineage'
+    if any(token in marker_lower for token in exhaustion_markers):
+        return 'Exhaustion'
+    if any(token in marker_lower for token in functional_markers):
+        return 'Functional'
+    if any(token in marker_lower for token in activation_markers):
+        return 'Activation'
+    if any(word in goal_lower for word in ['cytokine', 'function', 'functional']) and marker_lower.startswith('il'):
+        return 'Functional'
+    return 'Phenotyping'
+
+
+def _build_marker_reason(marker_name, marker_type, experimental_goal):
+    goal_lower = experimental_goal.lower()
+
+    if marker_type == 'Lineage':
+        return f"Anchors the core cell population needed for {experimental_goal.strip() or 'this experiment'}."
+    if marker_type == 'Activation':
+        return f"Captures activation state changes relevant to {experimental_goal.strip() or 'the stated goal'}."
+    if marker_type == 'Exhaustion':
+        return f"Profiles exhaustion or checkpoint biology highlighted by {experimental_goal.strip() or 'the experimental question'}."
+    if marker_type == 'Functional':
+        return f"Measures functional output associated with {experimental_goal.strip() or 'the experiment'}."
+    if 'tumor' in goal_lower:
+        return 'Useful for distinguishing phenotype within the tumor-associated immune compartment.'
+    return 'Included because it is a relevant inventory marker for the requested study objective.'
+
+
+def _fallback_recommend_markers(experimental_goal, num_colors, available_targets_list):
+    goal_lower = experimental_goal.lower()
+    normalized_to_original = {
+        normalize_marker_name(target): target for target in available_targets_list if target
+    }
+
+    priority_groups = [
+        ['cd45', 'cd3', 'cd4', 'cd8', 'cd8a', 'cd19', 'cd11b', 'cd11c', 'nk1.1', 'cd56'],
+        ['cd44', 'cd62l', 'cd69', 'cd25', 'ki67', 'ki-67', 'cd107a'],
+        ['pd1', 'pd-1', 'tigit', 'tim3', 'tim-3', 'lag3', 'lag-3', 'ctla4', 'ctla-4'],
+        ['ifng', 'ifn-g', 'ifnγ', 'tnfa', 'tnf-a', 'il2', 'il-2', 'il17', 'il-17', 'perforin', 'granzymeb', 'foxp3'],
+    ]
+
+    if 'exhaust' in goal_lower or 'checkpoint' in goal_lower:
+        priority_groups = [priority_groups[0], priority_groups[2], priority_groups[1], priority_groups[3]]
+    elif any(word in goal_lower for word in ['cytokine', 'functional', 'activation']):
+        priority_groups = [priority_groups[0], priority_groups[3], priority_groups[1], priority_groups[2]]
+
+    selected = []
+    seen = set()
+    for group in priority_groups:
+        for candidate in group:
+            normalized = normalize_marker_name(candidate)
+            original = normalized_to_original.get(normalized)
+            if original and original not in seen:
+                selected.append(original)
+                seen.add(original)
+            if len(selected) >= num_colors:
+                break
+        if len(selected) >= num_colors:
+            break
+
+    if len(selected) < num_colors:
+        for target in available_targets_list:
+            if target not in seen:
+                selected.append(target)
+                seen.add(target)
+            if len(selected) >= num_colors:
+                break
+
+    details = []
+    for marker in selected[:num_colors]:
+        marker_type = _infer_marker_type(marker, experimental_goal)
+        details.append(
+            {
+                'marker': marker,
+                'type': marker_type,
+                'reason': _build_marker_reason(marker, marker_type, experimental_goal),
+            }
+        )
+
+    return {
+        'status': 'success',
+        'markers_detail': details,
+        'selected_markers': [item['marker'] for item in details],
+        'message': 'LLM unavailable; generated heuristic recommendations from inventory.',
+    }
+
 def find_valid_panels(markers, antibodies_by_marker, max_solutions=3):
     """
     Uses backtracking to find up to 'max_solutions' valid panels (no system_code conflicts).
@@ -252,7 +362,7 @@ Return ONLY a valid JSON object. Do NOT use Markdown code blocks. Use DOUBLE QUO
 }}
 """
 
-    llm_response = consult_gpt_oss(prompt)
+    llm_response = consult_gpt_oss(prompt) or ""
     
     # Parse Response
     try:
@@ -303,7 +413,8 @@ Return ONLY a valid JSON object. Do NOT use Markdown code blocks. Use DOUBLE QUO
         }
 
     except Exception as e:
-        return {"status": "error", "message": f"Parsing Error: {str(e)}. Raw: {llm_response[:100]}..."}
+        raw_preview = llm_response[:100]
+        return {"status": "error", "message": f"Parsing Error: {str(e)}. Raw: {raw_preview}..."}
 
 def recommend_markers_from_inventory(experimental_goal, num_colors, available_targets_list):
     """
@@ -341,7 +452,13 @@ Do NOT use Markdown code blocks. Use DOUBLE QUOTES for ALL keys and string value
 }}
 """
 
-    llm_response = consult_gpt_oss(prompt)
+    try:
+        llm_response = consult_gpt_oss(prompt) or ""
+    except Exception:
+        return _fallback_recommend_markers(experimental_goal, num_colors, available_targets_list)
+
+    if not llm_response or llm_response.startswith('连接错误:'):
+        return _fallback_recommend_markers(experimental_goal, num_colors, available_targets_list)
     
     try:
         # Clean potential markdown
@@ -356,11 +473,7 @@ Do NOT use Markdown code blocks. Use DOUBLE QUOTES for ALL keys and string value
 
         json_match = re.search(r"(\{[\s\S]*\})", cleaned_response)
         if not json_match:
-            return {
-                "status": "error", 
-                "message": "LLM returned invalid format.",
-                "raw_response": llm_response
-            }
+            return _fallback_recommend_markers(experimental_goal, num_colors, available_targets_list)
         
         json_str = json_match.group(1)
         try:
@@ -370,6 +483,8 @@ Do NOT use Markdown code blocks. Use DOUBLE QUOTES for ALL keys and string value
             result_json = ast.literal_eval(json_str)
 
         details = result_json.get("markers_detail", [])
+        if not details:
+            return _fallback_recommend_markers(experimental_goal, num_colors, available_targets_list)
         
         # Extract simple list of names for the input box
         selected_markers = [item["marker"] for item in details]
@@ -381,8 +496,4 @@ Do NOT use Markdown code blocks. Use DOUBLE QUOTES for ALL keys and string value
             "raw_response": llm_response
         }
     except Exception as e:
-        return {
-            "status": "error", 
-            "message": f"Parsing Error: {str(e)}",
-            "raw_response": llm_response
-        }
+        return _fallback_recommend_markers(experimental_goal, num_colors, available_targets_list)

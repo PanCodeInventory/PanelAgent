@@ -43,6 +43,9 @@ async def test_recommend_markers_llm_error_returns_error_status(client):
     ):
         resp = await client.post("/api/v1/recommendations/markers", json=payload)
 
-    assert resp.status_code == 400
+    assert resp.status_code == 200
     body = resp.json()
-    assert "LLM recommendation failed" in body["detail"]
+    assert body["status"] == "success"
+    assert len(body["selected_markers"]) == 2
+    assert len(body["markers_detail"]) == 2
+    assert body["message"] == "LLM unavailable; generated heuristic recommendations from inventory."

@@ -127,5 +127,5 @@ async def recommend_markers(payload: MarkerRecommendationRequest) -> MarkerRecom
         status="success",
         selected_markers=result.get("selected_markers", []),
         markers_detail=result.get("markers_detail", []),
-        message=None,
+        message=result.get("message"),
     )

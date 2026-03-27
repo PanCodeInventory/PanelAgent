@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,7 +75,7 @@ function extractFluorochromes(candidate: PanelCandidate): string[] {
   return Object.values(candidate).map((info) => (info as AntibodyInfo).fluorochrome);
 }
 
-export default function PanelDesignPage() {
+function PanelDesignPageContent() {
   const searchParams = useSearchParams();
   
   const getInitialMarkers = () => {
@@ -409,5 +409,23 @@ export default function PanelDesignPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function PanelDesignPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground">Loading panel designer...</p>
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
+      <PanelDesignPageContent />
+    </Suspense>
   );
 }
