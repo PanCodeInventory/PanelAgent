@@ -2,6 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  FlaskConical,
+  Palette,
+  Dna,
+  Sparkles,
+  ArrowRight,
+  RotateCcw,
+  Lightbulb,
+  CheckCircle2,
+  Rocket,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,7 +22,37 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  LoadingSkeleton,
+  TableSkeleton,
+} from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useMarkerRecommendation } from "@/lib/hooks/use-marker-recommendation";
+import { cn } from "@/lib/utils";
+
+interface MarkerDetail {
+  marker: string;
+  type: string;
+  reason: string;
+}
+
+function getTypeBadgeColor(type: string): string {
+  const normalizedType = type.toLowerCase();
+  if (normalizedType.includes("lineage")) {
+    return "bg-blue-500/10 text-blue-400 border-blue-500/30";
+  }
+  if (normalizedType.includes("activation")) {
+    return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+  }
+  if (normalizedType.includes("exhaustion")) {
+    return "bg-amber-500/10 text-amber-400 border-amber-500/30";
+  }
+  if (normalizedType.includes("functional")) {
+    return "bg-purple-500/10 text-purple-400 border-purple-500/30";
+  }
+  return "bg-muted/50 text-muted-foreground border-border";
+}
 
 export default function ExpDesignPage() {
   const [expGoal, setExpGoal] = useState("");
@@ -27,7 +68,8 @@ export default function ExpDesignPage() {
     setNumColors(Math.min(30, Math.max(1, value)));
   };
 
-  const { state: recState, recommend, clear: clearRecommendations } = useMarkerRecommendation();
+  const { state: recState, recommend, clear: clearRecommendations } =
+    useMarkerRecommendation();
 
   const handleRecommend = async () => {
     if (!expGoal.trim()) return;
@@ -49,7 +91,7 @@ export default function ExpDesignPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+        <h1 className="font-heading text-3xl font-bold tracking-tight text-foreground">
           AI Experimental Design
         </h1>
         <p className="mt-2 text-muted-foreground">
@@ -58,21 +100,22 @@ export default function ExpDesignPage() {
         </p>
       </div>
 
-      {/* Input Section */}
-      <Card className="mb-8">
+      <Card className="mb-8 glass glass-border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <span>📝</span>
-            Experiment Configuration
+          <CardTitle className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+              <Sparkles className="h-4 w-4 text-primary" />
+            </div>
+            <span>Experiment Configuration</span>
           </CardTitle>
           <CardDescription>
             Define your experimental goals and constraints
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Research Goal Input */}
           <div className="space-y-2">
-            <label className="text-sm font-medium leading-none">
+            <label className="flex items-center gap-2 text-sm font-medium leading-none text-foreground">
+              <FlaskConical className="h-4 w-4 text-muted-foreground" />
               Experimental Goal
             </label>
             <textarea
@@ -80,7 +123,7 @@ export default function ExpDesignPage() {
               onChange={(e) => setExpGoal(e.target.value)}
               placeholder="e.g., Analyze tumor-infiltrating lymphocyte exhaustion status in mouse melanoma model"
               rows={4}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full resize-none rounded-lg border border-border bg-secondary/50 px-3 py-2.5 text-sm text-foreground ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50"
             />
             <p className="text-xs text-muted-foreground">
               Describe what you want to study — cell types, conditions, biological
@@ -88,11 +131,11 @@ export default function ExpDesignPage() {
             </p>
           </div>
 
-          {/* Number of Colors */}
           <div className="space-y-2">
-              <label className="text-sm font-medium leading-none">
-                Target Number of Colors
-              </label>
+            <label className="flex items-center gap-2 text-sm font-medium leading-none text-foreground">
+              <Palette className="h-4 w-4 text-muted-foreground" />
+              Target Number of Colors
+            </label>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <input
                 type="range"
@@ -102,7 +145,7 @@ export default function ExpDesignPage() {
                 value={numColors}
                 onChange={(e) => updateNumColors(Number(e.target.value))}
                 aria-label="Target Number of Colors"
-                className="w-full flex-1 accent-foreground"
+                className="w-full flex-1 accent-primary"
               />
               <div className="flex items-center gap-2 sm:w-32">
                 <input
@@ -113,7 +156,7 @@ export default function ExpDesignPage() {
                   value={numColors}
                   onChange={(e) => updateNumColors(Number(e.target.value))}
                   aria-label="Number of colors input"
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-center text-sm font-mono ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full rounded-lg border border-border bg-secondary/50 px-3 py-2 text-center text-sm font-mono text-foreground ring-offset-background transition-colors focus-visible:border-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50"
                 />
                 <span className="text-sm text-muted-foreground">colors</span>
               </div>
@@ -123,13 +166,15 @@ export default function ExpDesignPage() {
             </p>
           </div>
 
-          {/* Species Selector */}
           <div className="space-y-2">
-            <label className="text-sm font-medium leading-none">Species</label>
+            <label className="flex items-center gap-2 text-sm font-medium leading-none text-foreground">
+              <Dna className="h-4 w-4 text-muted-foreground" />
+              Species
+            </label>
             <select
               value={species}
               onChange={(e) => setSpecies(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+              className="w-full rounded-lg border border-border bg-secondary/50 px-3 py-2.5 text-sm font-mono text-foreground ring-offset-background transition-colors focus-visible:border-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50"
             >
               <option>Mouse (小鼠)</option>
               <option>Human (人)</option>
@@ -144,115 +189,136 @@ export default function ExpDesignPage() {
             <Badge variant="secondary">{species}</Badge>
           </div>
 
-          <div className="flex gap-2">
-            <Button 
-              className="flex-1" 
+          <div className="flex gap-3 pt-2">
+            <Button
+              className="flex-1"
               size="lg"
               onClick={handleRecommend}
               disabled={recState.isLoading || !expGoal.trim()}
             >
               {recState.isLoading ? (
                 <>
-                  <span className="mr-2 animate-spin">⏳</span>
+                  <LoadingSkeleton className="mr-2 h-4 w-4 rounded-full" />
                   Analyzing...
                 </>
               ) : (
                 <>
-                  <span className="mr-2">🤖</span>
+                  <Sparkles data-icon="inline-start" />
                   Recommend Markers
                 </>
               )}
             </Button>
-            <Button variant="outline" onClick={handleClear} disabled={recState.isLoading}>
+            <Button
+              variant="outline"
+              onClick={handleClear}
+              disabled={recState.isLoading}
+            >
+              <RotateCcw data-icon="inline-start" />
               Clear
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Error Display */}
       {recState.error && (
-        <Card className="mb-8 border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-900/20">
-          <CardContent className="pt-6">
-            <p className="text-sm text-red-800 dark:text-red-200">
-              <span className="font-semibold">Error: </span>
-              {recState.error}
-            </p>
-          </CardContent>
-        </Card>
+        <div className="mb-8">
+          <ErrorState message={recState.error} onRetry={handleRecommend} />
+        </div>
       )}
 
-      {/* Recommended Markers Section */}
-      <Card className="mb-8">
+      <Card className="mb-8 glass glass-border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <span>💡</span>
-            Recommended Markers
+          <CardTitle className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+              <Lightbulb className="h-4 w-4 text-primary" />
+            </div>
+            <span>Recommended Markers</span>
           </CardTitle>
           <CardDescription>
             AI-selected markers with design rationale
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
-            <table className="w-full text-sm">
-              <thead className="border-b bg-muted/50">
-                <tr>
-                  <th className="px-4 py-2 text-left font-medium">Marker</th>
-                  <th className="px-4 py-2 text-left font-medium">Type</th>
-                  <th className="px-4 py-2 text-left font-medium">Rationale</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recState.markersDetail.length === 0 && !recState.isLoading && (
-                  <tr className="border-b">
-                    <td
-                      colSpan={3}
-                      className="px-4 py-8 text-center text-muted-foreground"
+          {recState.isLoading ? (
+            <TableSkeleton rows={numColors} columns={3} />
+          ) : recState.markersDetail.length === 0 ? (
+            <EmptyState
+              title="No recommendations yet"
+              description="Recommended markers will appear here after AI analysis. Each marker will include its type (e.g., lineage, functional, activation) and selection rationale."
+            />
+          ) : (
+            <div className="overflow-hidden rounded-lg border border-border">
+              <table className="w-full text-sm">
+                <thead className="border-b border-border bg-muted/50">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-medium text-foreground">
+                      Marker
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-foreground">
+                      Type
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-foreground">
+                      Rationale
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recState.markersDetail.map((detail: MarkerDetail, idx: number) => (
+                    <tr
+                      key={idx}
+                      className={cn(
+                        "border-b border-border last:border-b-0",
+                        idx % 2 === 1 && "bg-secondary/30"
+                      )}
                     >
-                      <p className="text-sm">
-                        Recommended markers will appear here after AI analysis
-                      </p>
-                      <p className="mt-1 text-xs">
-                        Each marker will include its type (e.g., lineage, functional,
-                        activation) and selection rationale
-                      </p>
-                    </td>
-                  </tr>
-                )}
-                {recState.markersDetail.map((detail, idx) => (
-                  <tr key={idx} className="border-b last:border-b-0">
-                    <td className="px-4 py-2 font-medium">{detail.marker}</td>
-                    <td className="px-4 py-2">
-                      <Badge variant="outline">{detail.type}</Badge>
-                    </td>
-                    <td className="px-4 py-2 text-muted-foreground">{detail.reason}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      <td className="px-4 py-3 font-mono font-medium text-foreground">
+                        {detail.marker}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge
+                          variant="outline"
+                          className={getTypeBadgeColor(detail.type)}
+                        >
+                          {detail.type}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {detail.reason}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Action Section */}
       {recState.markers.length > 0 && (
-        <Card>
+        <Card className="glass glass-border">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span>🚀</span>
-              Use This Panel
+            <CardTitle className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                <Rocket className="h-4 w-4 text-primary" />
+              </div>
+              <span>Use This Panel</span>
             </CardTitle>
             <CardDescription>
               Transfer recommended markers to Panel Generation
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-md border bg-muted/50 p-4">
-              <p className="text-sm font-medium mb-2">Selected Markers:</p>
+            <div className="rounded-lg border border-border bg-secondary/30 p-4">
+              <p className="mb-3 text-sm font-medium text-foreground">
+                Selected Markers:
+              </p>
               <div className="flex flex-wrap gap-2">
-                {recState.markers.map((marker) => (
-                  <Badge key={marker} variant="secondary">
+                {recState.markers.map((marker: string) => (
+                  <Badge
+                    key={marker}
+                    variant="outline"
+                    className="border-primary/30 bg-primary/5 font-mono text-primary"
+                  >
                     {marker}
                   </Badge>
                 ))}
@@ -263,13 +329,14 @@ export default function ExpDesignPage() {
               list to the Panel Generation page to find optimal fluorochrome
               assignments.
             </p>
-            <Button 
-              variant="secondary" 
+            <Button
+              variant="default"
               className="w-full"
               onClick={handleUseThisPanel}
             >
-              <span className="mr-2">✅</span>
+              <CheckCircle2 data-icon="inline-start" />
               Use This Panel
+              <ArrowRight data-icon="inline-end" />
             </Button>
             <p className="text-xs text-muted-foreground">
               This will populate the marker input in the Panel Generation page with

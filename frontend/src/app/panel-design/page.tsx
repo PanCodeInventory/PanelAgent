@@ -17,6 +17,19 @@ import { usePanelGeneration } from "@/lib/hooks/use-panel-generation";
 import { usePanelEvaluation } from "@/lib/hooks/use-panel-evaluation";
 import { SpectraChart } from "@/components/spectra-chart";
 import type { components } from "@/lib/api/generated";
+import { cn } from "@/lib/utils";
+import { TableSkeleton, CardSkeleton } from "@/components/ui/loading-skeleton";
+import { ErrorState } from "@/components/ui/error-state";
+import { EmptyState } from "@/components/ui/empty-state";
+import {
+  Search,
+  Bot,
+  BarChart3,
+  AlertTriangle,
+  Sparkles,
+  Beaker,
+  ChevronRight,
+} from "lucide-react";
 
 type PanelCandidate = components["schemas"]["PanelCandidate"];
 type AntibodyInfo = components["schemas"]["AntibodyInfo"];
@@ -25,6 +38,12 @@ interface CandidateTableProps {
   candidate: PanelCandidate;
 }
 
+const getBrightnessColor = (b: number) => {
+  if (b >= 4) return "bg-emerald-400";
+  if (b >= 3) return "bg-yellow-400";
+  return "bg-red-400";
+};
+
 function CandidateTable({ candidate }: CandidateTableProps) {
   const entries = Object.entries(candidate).map(([marker, info]) => ({
     marker,
@@ -32,34 +51,49 @@ function CandidateTable({ candidate }: CandidateTableProps) {
   }));
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border border-border">
       <table className="w-full text-sm">
-        <thead className="border-b bg-muted/50">
+        <thead className="border-b border-border bg-secondary/30">
           <tr>
-            <th className="px-4 py-2 text-left font-medium">Marker</th>
-            <th className="px-4 py-2 text-left font-medium">Fluorochrome</th>
-            <th className="px-4 py-2 text-left font-medium">System Code</th>
-            <th className="px-4 py-2 text-left font-medium">Brightness</th>
-            <th className="px-4 py-2 text-left font-medium">Clone</th>
+            <th className="px-4 py-2 text-left font-medium text-foreground">Marker</th>
+            <th className="px-4 py-2 text-left font-medium text-foreground">Fluorochrome</th>
+            <th className="px-4 py-2 text-left font-medium text-foreground">System Code</th>
+            <th className="px-4 py-2 text-left font-medium text-foreground">Brightness</th>
+            <th className="px-4 py-2 text-left font-medium text-foreground">Clone</th>
           </tr>
         </thead>
         <tbody>
           {entries.map((entry, idx) => (
-            <tr key={`${entry.marker}-${idx}`} className="border-b last:border-b-0">
-              <td className="px-4 py-2 font-medium">{entry.marker}</td>
-              <td className="px-4 py-2">{entry.fluorochrome}</td>
+            <tr
+              key={`${entry.marker}-${idx}`}
+              className={cn(
+                "border-b border-border last:border-b-0",
+                idx % 2 === 0 ? "bg-secondary/10" : ""
+              )}
+            >
+              <td className="px-4 py-2 font-medium text-foreground">{entry.marker}</td>
+              <td className="px-4 py-2 text-foreground">{entry.fluorochrome}</td>
               <td className="px-4 py-2">
-                <code className="rounded bg-muted px-1 py-0.5 text-xs">
+                <code className="rounded bg-secondary/50 px-1.5 py-0.5 text-xs font-mono text-foreground">
                   {entry.system_code}
                 </code>
               </td>
               <td className="px-4 py-2">
                 <div className="flex items-center gap-1">
-                  <span className="font-medium">{entry.brightness}</span>
-                  <span className="text-muted-foreground">/5</span>
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        "h-1.5 w-1.5 rounded-full",
+                        i < entry.brightness
+                          ? getBrightnessColor(entry.brightness)
+                          : "bg-muted/30"
+                      )}
+                    />
+                  ))}
                 </div>
               </td>
-              <td className="px-4 py-2 text-muted-foreground">
+              <td className="px-4 py-2 font-mono text-xs text-muted-foreground">
                 {entry.clone ?? "—"}
               </td>
             </tr>
@@ -70,14 +104,13 @@ function CandidateTable({ candidate }: CandidateTableProps) {
   );
 }
 
-// Extract fluorochromes from a candidate panel
 function extractFluorochromes(candidate: PanelCandidate): string[] {
   return Object.values(candidate).map((info) => (info as AntibodyInfo).fluorochrome);
 }
 
 function PanelDesignPageContent() {
   const searchParams = useSearchParams();
-  
+
   const getInitialMarkers = () => {
     const markersParam = searchParams.get("markers");
     if (markersParam) {
@@ -85,7 +118,7 @@ function PanelDesignPageContent() {
     }
     return "CD45.2, CD3, NK1.1, Perforin, Granzyme B, TNF-α, IFN-γ";
   };
-  
+
   const [markers, setMarkers] = useState(getInitialMarkers);
   const [species, setSpecies] = useState("Mouse (小鼠)");
   const [selectedTab, setSelectedTab] = useState("option0");
@@ -106,7 +139,6 @@ function PanelDesignPageContent() {
   }, []);
 
   const handleSearch = async () => {
-    // Clear previous evaluation when searching new panels
     clearEvaluation();
     const markerList = markers.split(",").map((m) => m.trim()).filter(Boolean);
     await generate(markerList, species);
@@ -126,13 +158,12 @@ function PanelDesignPageContent() {
     }
   };
 
-  // Get fluorochromes for currently selected candidate
   const selectedCandidate = genState.candidates[parseInt(selectedTab.replace("option", "")) || 0];
   const selectedFluorochromes = selectedCandidate ? extractFluorochromes(selectedCandidate) : [];
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Panel Generation
         </h1>
@@ -142,11 +173,12 @@ function PanelDesignPageContent() {
         </p>
       </div>
 
-      {/* Marker Input Section */}
-      <Card className="mb-8">
+      <Card className="mb-6 bg-card border border-border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <span>📝</span>
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+              <Search className="h-4 w-4 text-primary" />
+            </div>
             Marker Input
           </CardTitle>
           <CardDescription>
@@ -159,13 +191,13 @@ function PanelDesignPageContent() {
               value={markers}
               onChange={(e) => setMarkers(e.target.value)}
               placeholder="e.g., CD3, CD4, CD8, FoxP3"
-              className="flex-1"
+              className="flex-1 bg-secondary/50 border-border"
               disabled={genState.isLoading}
             />
             <select
               value={species}
               onChange={(e) => setSpecies(e.target.value)}
-              className="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+              className="rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm font-mono text-foreground ring-offset-background"
               disabled={genState.isLoading}
             >
               <option>Mouse (小鼠)</option>
@@ -173,17 +205,20 @@ function PanelDesignPageContent() {
             </select>
           </div>
           <div className="flex gap-2">
-            <Button 
+            <Button
               onClick={handleSearch}
               disabled={genState.isLoading || !markers.trim()}
             >
               {genState.isLoading ? (
                 <>
-                  <span className="mr-2 animate-spin">⏳</span>
+                  <Search className="mr-2 h-4 w-4 animate-pulse" />
                   {genState.isDiagnosing ? "Diagnosing..." : "Searching..."}
                 </>
               ) : (
-                <>🔍 Search Panels</>
+                <>
+                  <Search className="mr-2 h-4 w-4" />
+                  Search Panels
+                </>
               )}
             </Button>
             <Button variant="outline" onClick={handleClear} disabled={genState.isLoading}>
@@ -192,38 +227,32 @@ function PanelDesignPageContent() {
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>Current inventory:</span>
-            <Badge variant="secondary">{species}</Badge>
+            <Badge variant="secondary" className="font-mono">{species}</Badge>
           </div>
         </CardContent>
       </Card>
 
-      {/* Error Display */}
       {genState.error && (
-        <Card className="mb-8 border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-900/20">
-          <CardContent className="pt-6">
-            <p className="text-sm text-red-800 dark:text-red-200">
-              <span className="font-semibold">Error: </span>
-              {genState.error}
-            </p>
-          </CardContent>
-        </Card>
+        <div className="mb-6">
+          <ErrorState message={genState.error} onRetry={handleSearch} />
+        </div>
       )}
 
-      {/* Missing Markers */}
       {genState.missingMarkers.length > 0 && (
-        <Card className="mb-8 border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-900/20">
+        <Card className="mb-6 border-yellow-500/20 bg-yellow-500/5">
           <CardHeader>
-            <CardTitle className="text-yellow-800 dark:text-yellow-200">
-              ⚠️ Missing Markers
+            <CardTitle className="flex items-center gap-2 text-yellow-400">
+              <AlertTriangle className="h-5 w-5" />
+              Missing Markers
             </CardTitle>
-            <CardDescription className="text-yellow-700 dark:text-yellow-300">
+            <CardDescription className="text-yellow-200/70">
               The following markers were not found in the inventory
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {genState.missingMarkers.map((marker) => (
-                <Badge key={marker} variant="outline" className="border-yellow-500">
+                <Badge key={marker} variant="outline" className="border-yellow-500/50 text-yellow-400 font-mono">
                   {marker}
                 </Badge>
               ))}
@@ -232,11 +261,12 @@ function PanelDesignPageContent() {
         </Card>
       )}
 
-      {/* Candidate Panels Section */}
-      <Card className="mb-8">
+      <Card className="mb-6 bg-card border border-border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <span>📋</span>
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+              <Beaker className="h-4 w-4 text-primary" />
+            </div>
             Candidate Panels
           </CardTitle>
           <CardDescription>
@@ -245,23 +275,29 @@ function PanelDesignPageContent() {
         </CardHeader>
         <CardContent>
           {genState.candidates.length === 0 && !genState.isLoading && !genState.error && (
-            <div className="rounded-md border p-8 text-center text-muted-foreground">
-              <p className="text-lg font-medium">No candidates yet</p>
-              <p className="mt-2 text-sm">
-                Enter markers above and click &quot;Search Panels&quot; to generate valid panel configurations
-              </p>
-            </div>
+            <EmptyState
+              title="No candidates yet"
+              description="Enter markers above and click Search Panels to generate valid panel configurations"
+            />
           )}
 
-          {genState.candidates.length > 0 && (
-            <Tabs 
-              value={selectedTab} 
+          {genState.isLoading && (
+            <TableSkeleton rows={5} columns={5} />
+          )}
+
+          {genState.candidates.length > 0 && !genState.isLoading && (
+            <Tabs
+              value={selectedTab}
               onValueChange={setSelectedTab}
               className="w-full"
             >
-              <TabsList className="mb-4">
+              <TabsList className="mb-4 bg-secondary/30">
                 {genState.candidates.map((_, idx) => (
-                  <TabsTrigger key={idx} value={`option${idx}`}>
+                  <TabsTrigger
+                    key={idx}
+                    value={`option${idx}`}
+                    className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary"
+                  >
                     Option {idx + 1}
                   </TabsTrigger>
                 ))}
@@ -276,11 +312,12 @@ function PanelDesignPageContent() {
         </CardContent>
       </Card>
 
-      {/* AI Evaluation Section */}
-      <Card className="mb-8">
+      <Card className="mb-6 bg-card border border-border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <span>🤖</span>
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+              <Bot className="h-4 w-4 text-primary" />
+            </div>
             AI Expert Evaluation
           </CardTitle>
           <CardDescription>
@@ -288,69 +325,105 @@ function PanelDesignPageContent() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             onClick={handleEvaluate}
             disabled={genState.candidates.length === 0 || evalState.isLoading}
           >
             {evalState.isLoading ? (
               <>
-                <span className="mr-2 animate-spin">⏳</span>
+                <Sparkles className="mr-2 h-4 w-4 animate-pulse" />
                 Evaluating...
               </>
             ) : (
-              <>✨ Evaluate with AI</>
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Evaluate with AI
+              </>
             )}
           </Button>
 
-          {/* Evaluation Error */}
           {evalState.error && (
-            <div className="rounded-md border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-900/20">
-              <p className="text-sm text-red-800 dark:text-red-200">
+            <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+              <p className="text-sm text-destructive">
                 <span className="font-semibold">Error: </span>
                 {evalState.error}
               </p>
             </div>
           )}
 
-          {/* Recommended Panel */}
+          {evalState.isLoading && <CardSkeleton />}
+
           {evalState.result?.selectedPanel && (
-            <div className="rounded-md border p-6">
-              <h4 className="mb-4 font-semibold">🏆 Recommended Panel</h4>
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-6">
+              <h4 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-xs text-primary">1</span>
+                Recommended Panel
+              </h4>
               <CandidateTable candidate={evalState.result.selectedPanel} />
             </div>
           )}
 
-          {/* Rationale */}
           {evalState.result?.rationale && (
-            <div className="rounded-md border p-6">
-              <h4 className="mb-2 font-semibold">💡 Selection Rationale</h4>
-              <p className="text-sm text-muted-foreground">
-                {evalState.result.rationale}
-              </p>
+            <div className="rounded-lg border border-border bg-card/50 p-6">
+              <h4 className="mb-3 flex items-center gap-2 font-semibold text-foreground">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-xs text-primary">2</span>
+                Selection Rationale
+              </h4>
+              <div className="border-l-2 border-primary pl-4">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {evalState.result.rationale}
+                </p>
+              </div>
             </div>
           )}
 
-          {/* Gating Strategy */}
           {evalState.result?.gatingDetail && evalState.result.gatingDetail.length > 0 && (
-            <div className="rounded-md border p-6">
-              <h4 className="mb-2 font-semibold">🚪 Gating Strategy</h4>
-              <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
+            <div className="rounded-lg border border-border bg-card/50 p-6">
+              <h4 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-xs text-primary">3</span>
+                Gating Strategy
+              </h4>
+              <div className="relative space-y-4">
+                <div className="absolute left-[11px] top-6 bottom-4 w-px bg-border" />
                 {evalState.result.gatingDetail.map((step, idx) => (
-                  <li key={idx}>
-                    {typeof step === "string" 
-                      ? step 
-                      : JSON.stringify(step)}
-                  </li>
+                  <div key={idx} className="relative flex items-start gap-4">
+                    <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
+                      {idx + 1}
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      {typeof step === "object" && step !== null ? (
+                        <>
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="text-muted-foreground">Parent:</span>
+                            <span className="font-mono font-medium text-foreground">{(step as { parent?: string }).parent ?? "—"}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="text-muted-foreground">Axis:</span>
+                            <span className="font-mono text-foreground">{(step as { axis?: string }).axis ?? "—"}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="text-muted-foreground">Gate:</span>
+                            <span className="font-mono text-foreground">{(step as { gate?: string }).gate ?? "—"}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <ChevronRight className="h-4 w-4 text-primary" />
+                            <span className="font-medium text-primary">{(step as { population?: string }).population ?? "—"}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">{String(step)}</p>
+                      )}
+                    </div>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 
-          {/* Empty evaluation state */}
           {!evalState.result && !evalState.isLoading && !evalState.error && (
-            <div className="rounded-md border p-6">
-              <h4 className="mb-2 font-semibold">🏆 Recommended Panel</h4>
+            <div className="rounded-lg border border-border bg-card/50 p-6">
+              <h4 className="mb-2 font-semibold text-foreground">Recommended Panel</h4>
               <p className="text-sm text-muted-foreground">
                 AI evaluation results will appear here, including the recommended
                 panel and rationale.
@@ -360,11 +433,12 @@ function PanelDesignPageContent() {
         </CardContent>
       </Card>
 
-      {/* Spectral Visualization Section */}
-      <Card className="mb-8">
+      <Card className="mb-6 bg-card border border-border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <span>📊</span>
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+              <BarChart3 className="h-4 w-4 text-primary" />
+            </div>
             Spectral Visualization
           </CardTitle>
           <CardDescription>
@@ -376,11 +450,12 @@ function PanelDesignPageContent() {
         </CardContent>
       </Card>
 
-      {/* Diagnosis Section */}
-      <Card>
+      <Card className="bg-card border border-border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <span>🔍</span>
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+              <AlertTriangle className="h-4 w-4 text-primary" />
+            </div>
             Conflict Diagnosis
           </CardTitle>
           <CardDescription>
@@ -389,18 +464,19 @@ function PanelDesignPageContent() {
         </CardHeader>
         <CardContent>
           {genState.diagnosis ? (
-            <div className="rounded-md border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900 dark:bg-yellow-900/20">
-              <h4 className="mb-2 font-semibold text-yellow-800 dark:text-yellow-200">
+            <div className="rounded-lg bg-secondary/30 p-4">
+              <h4 className="mb-2 flex items-center gap-2 font-semibold text-foreground">
+                <AlertTriangle className="h-4 w-4 text-yellow-400" />
                 Diagnosis Report
               </h4>
-              <p className="whitespace-pre-wrap text-sm text-yellow-800 dark:text-yellow-200">
+              <p className="whitespace-pre-wrap font-mono text-sm text-muted-foreground">
                 {genState.diagnosis}
               </p>
             </div>
           ) : (
-            <div className="rounded-md border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900 dark:bg-yellow-900/20">
-              <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                <span className="font-semibold">Diagnostic messages</span> will
+            <div className="rounded-lg bg-secondary/30 p-4">
+              <p className="text-sm text-muted-foreground">
+                <span className="font-semibold text-foreground">Diagnostic messages</span> will
                 appear here if the solver cannot find a valid panel, including
                 which markers are competing for the same channels.
               </p>
@@ -417,11 +493,7 @@ export default function PanelDesignPage() {
     <Suspense
       fallback={
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Loading panel designer...</p>
-            </CardContent>
-          </Card>
+          <CardSkeleton />
         </div>
       }
     >

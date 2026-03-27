@@ -9,10 +9,12 @@ import {
   YAxis,
   Tooltip,
   Legend,
+  CartesianGrid,
 } from "recharts";
 import { apiClient } from "@/lib/api-client";
 import type { components } from "@/lib/api/generated";
 import { Badge } from "@/components/ui/badge";
+import { CardSkeleton } from "@/components/ui/loading-skeleton";
 
 type SpectraSeries = components["schemas"]["SpectraSeries"];
 type SpectraRenderRequest = components["schemas"]["SpectraRenderRequest"];
@@ -82,11 +84,9 @@ export function SpectraChart({ fluorochromes }: SpectraChartProps) {
     void fetchSpectraData();
   }, [fluorochromes]);
 
-  // Transform series data into chart-friendly format
   const chartData: ChartDataPoint[] = useMemo(() => {
     if (seriesData.length === 0) return [];
 
-    // Find the longest x array to use as reference
     const referenceSeries = seriesData.reduce((longest, series) =>
       series.x.length > longest.x.length ? series : longest
     );
@@ -102,7 +102,7 @@ export function SpectraChart({ fluorochromes }: SpectraChartProps) {
 
   if (fluorochromes.length === 0) {
     return (
-      <div className="rounded-md border bg-muted/30 p-8">
+      <div className="rounded-lg border border-border bg-secondary/20 p-8">
         <div className="text-center text-muted-foreground">
           <p className="text-sm">Select a panel candidate to view spectral data</p>
         </div>
@@ -111,20 +111,13 @@ export function SpectraChart({ fluorochromes }: SpectraChartProps) {
   }
 
   if (isLoading) {
-    return (
-      <div className="rounded-md border bg-muted/30 p-16">
-        <div className="text-center text-muted-foreground">
-          <p className="text-lg font-medium">Loading spectral data...</p>
-          <p className="mt-2 animate-spin text-2xl">⏳</p>
-        </div>
-      </div>
-    );
+    return <CardSkeleton />;
   }
 
   if (error) {
     return (
-      <div className="rounded-md border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-900/20">
-        <p className="text-sm text-red-800 dark:text-red-200">
+      <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+        <p className="text-sm text-destructive">
           <span className="font-semibold">Error: </span>
           {error}
         </p>
@@ -134,7 +127,7 @@ export function SpectraChart({ fluorochromes }: SpectraChartProps) {
 
   if (seriesData.length === 0) {
     return (
-      <div className="rounded-md border bg-muted/30 p-8">
+      <div className="rounded-lg border border-border bg-secondary/20 p-8">
         <div className="text-center text-muted-foreground">
           <p className="text-sm">No spectral data available for these fluorochromes</p>
         </div>
@@ -144,15 +137,14 @@ export function SpectraChart({ fluorochromes }: SpectraChartProps) {
 
   return (
     <div className="space-y-4">
-      {/* Warnings */}
       {warnings.length > 0 && (
-        <div className="rounded-md border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900 dark:bg-yellow-900/20">
-          <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-2">
+        <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 p-4">
+          <p className="mb-2 text-sm font-medium text-yellow-400">
             Unknown fluorochromes:
           </p>
           <div className="flex flex-wrap gap-2">
             {warnings.map((warning) => (
-              <Badge key={warning} variant="outline" className="border-yellow-500">
+              <Badge key={warning} variant="outline" className="border-yellow-500/50 text-yellow-400">
                 {warning}
               </Badge>
             ))}
@@ -160,37 +152,61 @@ export function SpectraChart({ fluorochromes }: SpectraChartProps) {
         </div>
       )}
 
-      {/* Chart */}
-      <div className="h-[400px] w-full rounded-md border bg-background p-4">
+      <div className="h-[400px] w-full rounded-lg border border-border bg-secondary/20 p-4">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="oklch(0.3 0.02 250 / 20%)"
+            />
             <XAxis
               dataKey="wavelength"
               type="number"
               domain={[350, 900]}
               tickCount={12}
-              label={{ value: "Wavelength (nm)", position: "insideBottom", offset: -10 }}
+              tick={{ fill: "oklch(0.6 0.05 250)", fontSize: 12 }}
+              label={{
+                value: "Wavelength (nm)",
+                position: "insideBottom",
+                offset: -10,
+                fill: "oklch(0.6 0.05 250)",
+                fontSize: 12,
+              }}
             />
             <YAxis
               domain={[0, 100]}
-              label={{ value: "Normalized Intensity (%)", angle: -90, position: "insideLeft" }}
+              tick={{ fill: "oklch(0.6 0.05 250)", fontSize: 12 }}
+              label={{
+                value: "Normalized Intensity (%)",
+                angle: -90,
+                position: "insideLeft",
+                fill: "oklch(0.6 0.05 250)",
+                fontSize: 12,
+              }}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "hsl(var(--background))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: "6px",
+                backgroundColor: "oklch(0.18 0.025 255)",
+                border: "1px solid oklch(0.4 0.02 250 / 15%)",
+                borderRadius: "8px",
+                color: "oklch(0.96 0.005 250)",
               }}
+              labelStyle={{ color: "oklch(0.96 0.005 250)" }}
+              itemStyle={{ color: "oklch(0.96 0.005 250)" }}
               labelFormatter={(value) => `${value} nm`}
             />
-            <Legend verticalAlign="top" height={36} />
+            <Legend
+              verticalAlign="top"
+              height={36}
+              wrapperStyle={{ color: "oklch(0.96 0.005 250)" }}
+            />
             {seriesData.map((series) => (
               <Line
                 key={series.fluorochrome}
                 type="monotone"
                 dataKey={series.fluorochrome}
                 stroke={series.color}
-                strokeWidth={2}
+                strokeWidth={2.5}
                 dot={false}
                 isAnimationActive={false}
               />

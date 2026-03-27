@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { DM_Sans, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 
-const geistSans = Geist({
+const dmSans = DM_Sans({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
+const jetbrainsMono = JetBrains_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
@@ -26,42 +26,62 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${dmSans.variable} ${jetbrainsMono.variable} dark h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <header className="border-b bg-background">
+      <body className="min-h-full flex flex-col font-sans">
+        <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
           <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-2">
-              <Link href="/" className="text-xl font-bold tracking-tight">
-                FlowCyt Panel Assistant
-              </Link>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Link href="/" className="flex items-center gap-2 group">
+                  <span className="text-xl font-semibold tracking-tight text-primary transition-colors">
+                    FlowCyt
+                  </span>
+                  <span className="text-xl font-light tracking-tight text-muted-foreground">
+                    Panel Assistant
+                  </span>
+                </Link>
+              </div>
+              <div className="ml-2 flex items-center gap-2">
+                <div className="h-2 w-2 animate-pulse rounded-full bg-primary glow-primary" />
+              </div>
             </div>
-            <nav className="flex items-center gap-6">
+            <nav className="flex items-center gap-1">
               <Link
                 href="/"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                className="relative px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
-                Home
+                <span className="relative">
+                  Home
+                  <span className="absolute inset-x-0 -bottom-1 h-px bg-primary opacity-0 transition-opacity group-hover:opacity-100" />
+                </span>
               </Link>
               <Link
                 href="/exp-design"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                className="relative px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
-                Experimental Design
+                <span className="relative">
+                  Experimental Design
+                  <span className="absolute inset-x-0 -bottom-1 h-px bg-primary opacity-0 transition-opacity hover:opacity-100" />
+                </span>
               </Link>
               <Link
                 href="/panel-design"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                className="relative px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
-                Panel Generation
+                <span className="relative">
+                  Panel Generation
+                  <span className="absolute inset-x-0 -bottom-1 h-px bg-primary opacity-0 transition-opacity hover:opacity-100" />
+                </span>
               </Link>
             </nav>
           </div>
         </header>
         <main className="flex-1">{children}</main>
-        <footer className="border-t bg-background py-6">
-          <div className="mx-auto max-w-7xl px-4 text-center text-sm text-muted-foreground sm:px-6 lg:px-8">
-            FlowCyt Panel Assistant — Hybrid AI for flow cytometry panel design
+        <footer className="border-t border-border bg-background/50 backdrop-blur-sm">
+          <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 text-xs text-muted-foreground sm:px-6 lg:px-8">
+            <span>FlowCyt Panel Assistant</span>
+            <span className="font-mono">Powered by Backtracking + LLM</span>
           </div>
         </footer>
       </body>
