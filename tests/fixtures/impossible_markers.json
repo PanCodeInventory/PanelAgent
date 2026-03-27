@@ -1,0 +1,40 @@
+{
+  "markers": [
+    "pd1",
+    "ctla4",
+    "lag3"
+  ],
+  "shared_channel": "APC",
+  "antibodies_by_marker": {
+    "pd1": [
+      {
+        "clone": "29F.1A12",
+        "fluorochrome": "APC",
+        "brightness": 5,
+        "system_code": "APC",
+        "brand": "BioLegend",
+        "catalog_number": "135209"
+      }
+    ],
+    "ctla4": [
+      {
+        "clone": "UC10-4B9",
+        "fluorochrome": "APC",
+        "brightness": 5,
+        "system_code": "APC",
+        "brand": "BioLegend",
+        "catalog_number": "106309"
+      }
+    ],
+    "lag3": [
+      {
+        "clone": "C9B7W",
+        "fluorochrome": "Alexa Fluor® 647",
+        "brightness": 4,
+        "system_code": "APC",
+        "brand": "BD Biosciences",
+        "catalog_number": "565486"
+      }
+    ]
+  }
+}
