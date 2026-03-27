@@ -1,0 +1,136 @@
+import importlib
+import re
+from pathlib import Path
+
+from fastapi import APIRouter
+
+from ....core.config import get_settings
+
+_recommendations_schemas = importlib.import_module("backend.app.schemas.recommendations")
+MarkerRecommendationRequest = _recommendations_schemas.MarkerRecommendationRequest
+MarkerRecommendationResponse = _recommendations_schemas.MarkerRecommendationResponse
+
+router = APIRouter(prefix="/recommendations")
+
+
+def _project_root() -> Path:
+    return Path(__file__).resolve().parents[5]
+
+
+def _load_domain_modules():
+    data_preprocessing = importlib.import_module("data_preprocessing")
+    panel_generator = importlib.import_module("panel_generator")
+    return data_preprocessing, panel_generator
+
+
+def _resolve_inventory_path(inventory_file: str | None, species: str | None) -> Path | None:
+    settings = get_settings()
+    root = _project_root()
+    inventory_dir = root / settings.INVENTORY_DIR
+
+    if inventory_file:
+        inventory_path = Path(inventory_file)
+        if inventory_path.is_absolute():
+            return inventory_path
+        repo_relative = root / inventory_file
+        if repo_relative.exists():
+            return repo_relative
+        return inventory_dir / inventory_file
+
+    if species:
+        return inventory_dir / f"{species}.csv"
+
+    if inventory_dir.exists():
+        csv_files = sorted(inventory_dir.glob("*.csv"))
+        if len(csv_files) == 1:
+            return csv_files[0]
+
+    return None
+
+
+def _load_inventory_df(inventory_path: Path):
+    settings = get_settings()
+    root = _project_root()
+    mapping_file = root / settings.CHANNEL_MAPPING_FILE
+    data_preprocessing, _ = _load_domain_modules()
+    return data_preprocessing.load_antibody_data(str(inventory_path), mapping_file=str(mapping_file))
+
+
+def _extract_available_targets(antibody_df) -> list[str]:
+    targets: set[str] = set()
+    if "Target" not in antibody_df.columns:
+        return []
+
+    for target in antibody_df["Target"].dropna():
+        clean_name = re.sub(r"\s*\(.*?\)", "", str(target)).strip()
+        if clean_name:
+            targets.add(clean_name)
+    return sorted(targets)
+
+
+@router.post("/markers", response_model=MarkerRecommendationResponse)
+async def recommend_markers(payload: MarkerRecommendationRequest) -> MarkerRecommendationResponse:
+    inventory_path = _resolve_inventory_path(payload.inventory_file, payload.species)
+    if inventory_path is None:
+        return MarkerRecommendationResponse(
+            status="error",
+            selected_markers=[],
+            markers_detail=[],
+            message="Could not resolve inventory file. Provide inventory_file or a species-mapped CSV.",
+        )
+
+    if not inventory_path.exists():
+        return MarkerRecommendationResponse(
+            status="error",
+            selected_markers=[],
+            markers_detail=[],
+            message=f"Inventory file not found: {inventory_path}",
+        )
+
+    antibody_df = _load_inventory_df(inventory_path)
+    if antibody_df is None or antibody_df.empty:
+        return MarkerRecommendationResponse(
+            status="error",
+            selected_markers=[],
+            markers_detail=[],
+            message="Inventory file is empty or invalid.",
+        )
+
+    available_targets = _extract_available_targets(antibody_df)
+    if not available_targets:
+        return MarkerRecommendationResponse(
+            status="error",
+            selected_markers=[],
+            markers_detail=[],
+            message="No available targets found in inventory.",
+        )
+
+    _, panel_generator = _load_domain_modules()
+    try:
+        result = panel_generator.recommend_markers_from_inventory(
+            payload.experimental_goal,
+            payload.num_colors,
+            available_targets,
+        )
+    except Exception as exc:
+        return MarkerRecommendationResponse(
+            status="error",
+            selected_markers=[],
+            markers_detail=[],
+            message=f"LLM recommendation failed: {exc}",
+        )
+
+    if result.get("status") != "success":
+        return MarkerRecommendationResponse(
+            status="error",
+            selected_markers=[],
+            markers_detail=[],
+            message=result.get("message", "Failed to recommend markers."),
+        )
+
+    return MarkerRecommendationResponse(
+        status="success",
+        selected_markers=result.get("selected_markers", []),
+        markers_detail=result.get("markers_detail", []),
+        message=None,
+    )

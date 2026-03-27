@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel, Field, RootModel
 
 
@@ -37,3 +39,16 @@ class DiagnoseRequest(BaseModel):
 class DiagnoseResponse(BaseModel):
     status: str
     diagnosis: str
+
+
+class PanelEvaluateRequest(BaseModel):
+    candidates: list[dict[str, dict[str, Any]]] = Field(min_length=1)
+    missing_markers: list[str] = Field(default_factory=list)
+
+
+class PanelEvaluateResponse(BaseModel):
+    status: str
+    selected_panel: dict[str, dict[str, Any]] = Field(default_factory=dict)
+    rationale: str = ""
+    gating_detail: list[dict[str, Any]] = Field(default_factory=list)
+    message: str | None = None

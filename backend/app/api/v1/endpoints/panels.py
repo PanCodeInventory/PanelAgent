@@ -12,6 +12,8 @@ DiagnoseRequest = _panels_schemas.DiagnoseRequest
 DiagnoseResponse = _panels_schemas.DiagnoseResponse
 PanelGenerateResponse = _panels_schemas.PanelGenerateResponse
 PanelGenerateRequest = _panels_schemas.PanelGenerateRequest
+PanelEvaluateRequest = _panels_schemas.PanelEvaluateRequest
+PanelEvaluateResponse = _panels_schemas.PanelEvaluateResponse
 
 router = APIRouter(prefix="/panels")
 
@@ -159,3 +161,51 @@ async def diagnose_panels(payload: DiagnoseRequest) -> DiagnoseResponse:
     diagnosis = panel_generator.diagnose_conflicts(normalized_markers, antibodies_by_marker)
 
     return DiagnoseResponse(status="success", diagnosis=diagnosis)
+
+
+@router.post("/evaluate", response_model=PanelEvaluateResponse)
+async def evaluate_panels(payload: PanelEvaluateRequest) -> PanelEvaluateResponse:
+    _, panel_generator = _load_domain_modules()
+
+    try:
+        result = panel_generator.evaluate_candidates_with_llm(
+            candidates=payload.candidates,
+            missing_markers=payload.missing_markers,
+        )
+    except Exception as exc:
+        return PanelEvaluateResponse(
+            status="error",
+            selected_panel={},
+            rationale="",
+            gating_detail=[],
+            message=f"LLM evaluation failed: {exc}",
+        )
+
+    if result.get("status") != "success":
+        return PanelEvaluateResponse(
+            status="error",
+            selected_panel={},
+            rationale="",
+            gating_detail=[],
+            message=result.get("message", "Failed to evaluate panel candidates."),
+        )
+
+    selected_panel: Any = result.get("selected_panel", {})
+    if not isinstance(selected_panel, dict):
+        selected_panel = {}
+
+    gating_detail: Any = result.get("gating_detail", [])
+    if not isinstance(gating_detail, list):
+        gating_detail = []
+
+    rationale = result.get("rationale", "")
+    if not isinstance(rationale, str):
+        rationale = str(rationale)
+
+    return PanelEvaluateResponse(
+        status="success",
+        selected_panel=selected_panel,
+        rationale=rationale,
+        gating_detail=gating_detail,
+        message=None,
+    )
