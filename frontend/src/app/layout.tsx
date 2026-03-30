@@ -26,25 +26,20 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${jetbrainsMono.variable} dark h-full antialiased`}
+      className={`${dmSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans">
-        <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
+        <header className="sticky top-0 z-50 bg-background border-b border-border">
           <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <Link href="/" className="flex items-center gap-2 group">
-                  <span className="text-xl font-semibold tracking-tight text-primary transition-colors">
-                    FlowCyt
-                  </span>
-                  <span className="text-xl font-light tracking-tight text-muted-foreground">
-                    Panel Assistant
-                  </span>
-                </Link>
-              </div>
-              <div className="ml-2 flex items-center gap-2">
-                <div className="h-2 w-2 animate-pulse rounded-full bg-primary glow-primary" />
-              </div>
+              <Link href="/" className="flex items-center gap-2 group">
+                <span className="text-xl font-semibold tracking-tight text-primary transition-colors">
+                  FlowCyt
+                </span>
+                <span className="text-xl font-light tracking-tight text-muted-foreground">
+                  Panel Assistant
+                </span>
+              </Link>
             </div>
             <nav className="flex items-center gap-1">
               <Link
@@ -78,7 +73,7 @@ export default function RootLayout({
           </div>
         </header>
         <main className="flex-1">{children}</main>
-        <footer className="border-t border-border bg-background/50 backdrop-blur-sm">
+        <footer className="border-t border-border bg-background">
           <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 text-xs text-muted-foreground sm:px-6 lg:px-8">
             <span>FlowCyt Panel Assistant</span>
             <span className="font-mono">Powered by Backtracking + LLM</span>

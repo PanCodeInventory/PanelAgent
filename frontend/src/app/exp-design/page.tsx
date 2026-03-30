@@ -37,21 +37,21 @@ interface MarkerDetail {
   reason: string;
 }
 
-function getTypeBadgeColor(type: string): string {
+function getTypeBadgeStyle(type: string): React.CSSProperties {
   const normalizedType = type.toLowerCase();
   if (normalizedType.includes("lineage")) {
-    return "bg-blue-500/10 text-blue-400 border-blue-500/30";
+    return { backgroundColor: 'var(--badge-lineage-bg)', color: 'var(--badge-lineage-text)', borderColor: 'var(--badge-lineage-border)' };
   }
   if (normalizedType.includes("activation")) {
-    return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+    return { backgroundColor: 'var(--badge-activation-bg)', color: 'var(--badge-activation-text)', borderColor: 'var(--badge-activation-border)' };
   }
   if (normalizedType.includes("exhaustion")) {
-    return "bg-amber-500/10 text-amber-400 border-amber-500/30";
+    return { backgroundColor: 'var(--badge-exhaustion-bg)', color: 'var(--badge-exhaustion-text)', borderColor: 'var(--badge-exhaustion-border)' };
   }
   if (normalizedType.includes("functional")) {
-    return "bg-purple-500/10 text-purple-400 border-purple-500/30";
+    return { backgroundColor: 'var(--badge-functional-bg)', color: 'var(--badge-functional-text)', borderColor: 'var(--badge-functional-border)' };
   }
-  return "bg-muted/50 text-muted-foreground border-border";
+  return {};
 }
 
 export default function ExpDesignPage() {
@@ -100,7 +100,7 @@ export default function ExpDesignPage() {
         </p>
       </div>
 
-      <Card className="mb-8 glass glass-border">
+      <Card className="mb-8">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
@@ -226,7 +226,7 @@ export default function ExpDesignPage() {
         </div>
       )}
 
-      <Card className="mb-8 glass glass-border">
+      <Card className="mb-8">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
@@ -277,7 +277,7 @@ export default function ExpDesignPage() {
                       <td className="px-4 py-3">
                         <Badge
                           variant="outline"
-                          className={getTypeBadgeColor(detail.type)}
+                          style={getTypeBadgeStyle(detail.type)}
                         >
                           {detail.type}
                         </Badge>
@@ -295,7 +295,7 @@ export default function ExpDesignPage() {
       </Card>
 
       {recState.markers.length > 0 && (
-        <Card className="glass glass-border">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">

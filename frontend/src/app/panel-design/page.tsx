@@ -38,10 +38,10 @@ interface CandidateTableProps {
   candidate: PanelCandidate;
 }
 
-const getBrightnessColor = (b: number) => {
-  if (b >= 4) return "bg-emerald-400";
-  if (b >= 3) return "bg-yellow-400";
-  return "bg-red-400";
+const getBrightnessStyle = (b: number): React.CSSProperties => {
+  if (b >= 4) return { backgroundColor: 'var(--brightness-high)' };
+  if (b >= 3) return { backgroundColor: 'var(--brightness-medium)' };
+  return { backgroundColor: 'var(--brightness-low)' };
 };
 
 function CandidateTable({ candidate }: CandidateTableProps) {
@@ -85,10 +85,9 @@ function CandidateTable({ candidate }: CandidateTableProps) {
                       key={i}
                       className={cn(
                         "h-1.5 w-1.5 rounded-full",
-                        i < entry.brightness
-                          ? getBrightnessColor(entry.brightness)
-                          : "bg-muted/30"
+                        i >= entry.brightness && "bg-muted-foreground/10"
                       )}
+                      style={i < entry.brightness ? getBrightnessStyle(entry.brightness) : undefined}
                     />
                   ))}
                 </div>
@@ -239,20 +238,20 @@ function PanelDesignPageContent() {
       )}
 
       {genState.missingMarkers.length > 0 && (
-        <Card className="mb-6 border-yellow-500/20 bg-yellow-500/5">
+        <Card className="mb-6" style={{ borderColor: 'var(--warning-border)', backgroundColor: 'var(--warning-bg)' }}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-yellow-400">
+            <CardTitle className="flex items-center gap-2" style={{ color: 'var(--warning-text)' }}>
               <AlertTriangle className="h-5 w-5" />
               Missing Markers
             </CardTitle>
-            <CardDescription className="text-yellow-200/70">
+            <CardDescription style={{ color: 'var(--warning-text)', opacity: 0.7 }}>
               The following markers were not found in the inventory
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {genState.missingMarkers.map((marker) => (
-                <Badge key={marker} variant="outline" className="border-yellow-500/50 text-yellow-400 font-mono">
+                <Badge key={marker} variant="outline" className="font-mono" style={{ borderColor: 'var(--warning-border)', color: 'var(--warning-text)' }}>
                   {marker}
                 </Badge>
               ))}
@@ -466,7 +465,7 @@ function PanelDesignPageContent() {
           {genState.diagnosis ? (
             <div className="rounded-lg bg-secondary/30 p-4">
               <h4 className="mb-2 flex items-center gap-2 font-semibold text-foreground">
-                <AlertTriangle className="h-4 w-4 text-yellow-400" />
+                <AlertTriangle className="h-4 w-4" style={{ color: 'var(--warning-text)' }} />
                 Diagnosis Report
               </h4>
               <p className="whitespace-pre-wrap font-mono text-sm text-muted-foreground">

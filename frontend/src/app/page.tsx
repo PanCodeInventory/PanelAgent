@@ -12,15 +12,7 @@ import { Brain, Wrench, Search, Bot, BarChart3 } from "lucide-react";
 export default function Home() {
   return (
     <div className="relative min-h-screen">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5 pointer-events-none" />
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-[10%] w-3 h-3 rounded-full bg-[hsl(217,91%,60%)]/20 blur-sm" />
-        <div className="absolute top-40 right-[15%] w-2 h-2 rounded-full bg-[hsl(330,81%,60%)]/20 blur-sm" />
-        <div className="absolute top-60 left-[20%] w-4 h-4 rounded-full bg-[hsl(160,84%,39%)]/15 blur-sm" />
-        <div className="absolute bottom-40 right-[25%] w-3 h-3 rounded-full bg-[hsl(45,93%,47%)]/15 blur-sm" />
-        <div className="absolute top-32 left-[60%] w-2 h-2 rounded-full bg-[hsl(270,91%,65%)]/20 blur-sm" />
-        <div className="absolute bottom-60 left-[5%] w-3 h-3 rounded-full bg-[hsl(12,76%,61%)]/15 blur-sm" />
-      </div>
+      <div className="absolute inset-0 bg-background pointer-events-none" />
 
       <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="text-center">
@@ -38,7 +30,7 @@ export default function Home() {
         </div>
 
         <div className="mt-16 grid gap-6 md:grid-cols-2">
-          <Card className="group bg-card border border-border hover:border-primary/30 transition-all duration-300 rounded-xl glass-border">
+          <Card className="group bg-card border border-border hover:border-primary/20 transition-colors duration-200 rounded-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -58,7 +50,7 @@ export default function Home() {
               </p>
               <Link href="/exp-design" className="block">
                 <Button 
-                  className="w-full glow-primary hover:shadow-lg hover:shadow-primary/20 transition-all duration-300" 
+                  className="w-full transition-all duration-200" 
                   variant="default"
                 >
                   Start Experimental Design
@@ -67,7 +59,7 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="group bg-card border border-border hover:border-primary/30 transition-all duration-300 rounded-xl glass-border">
+          <Card className="group bg-card border border-border hover:border-primary/20 transition-colors duration-200 rounded-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -87,7 +79,7 @@ export default function Home() {
               </p>
               <Link href="/panel-design" className="block">
                 <Button 
-                  className="w-full glow-primary hover:shadow-lg hover:shadow-primary/20 transition-all duration-300" 
+                  className="w-full transition-all duration-200" 
                   variant="default"
                 >
                   Generate Panel

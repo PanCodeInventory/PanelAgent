@@ -138,13 +138,13 @@ export function SpectraChart({ fluorochromes }: SpectraChartProps) {
   return (
     <div className="space-y-4">
       {warnings.length > 0 && (
-        <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 p-4">
-          <p className="mb-2 text-sm font-medium text-yellow-400">
+        <div className="rounded-lg border p-4" style={{ borderColor: 'var(--warning-border)', backgroundColor: 'var(--warning-bg)' }}>
+          <p className="mb-2 text-sm font-medium" style={{ color: 'var(--warning-text)' }}>
             Unknown fluorochromes:
           </p>
           <div className="flex flex-wrap gap-2">
             {warnings.map((warning) => (
-              <Badge key={warning} variant="outline" className="border-yellow-500/50 text-yellow-400">
+              <Badge key={warning} variant="outline" style={{ borderColor: 'var(--warning-border)', color: 'var(--warning-text)' }}>
                 {warning}
               </Badge>
             ))}
@@ -152,53 +152,54 @@ export function SpectraChart({ fluorochromes }: SpectraChartProps) {
         </div>
       )}
 
-      <div className="h-[400px] w-full rounded-lg border border-border bg-secondary/20 p-4">
+      <div className="h-[400px] w-full rounded-lg border border-border bg-card p-4">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="oklch(0.3 0.02 250 / 20%)"
+              stroke="oklch(0.82 0.01 250 / 40%)"
             />
             <XAxis
               dataKey="wavelength"
               type="number"
               domain={[350, 900]}
               tickCount={12}
-              tick={{ fill: "oklch(0.6 0.05 250)", fontSize: 12 }}
+              tick={{ fill: "oklch(0.35 0.03 250)", fontSize: 12 }}
               label={{
                 value: "Wavelength (nm)",
                 position: "insideBottom",
                 offset: -10,
-                fill: "oklch(0.6 0.05 250)",
+                fill: "oklch(0.35 0.03 250)",
                 fontSize: 12,
               }}
             />
             <YAxis
               domain={[0, 100]}
-              tick={{ fill: "oklch(0.6 0.05 250)", fontSize: 12 }}
+              tick={{ fill: "oklch(0.35 0.03 250)", fontSize: 12 }}
               label={{
                 value: "Normalized Intensity (%)",
                 angle: -90,
                 position: "insideLeft",
-                fill: "oklch(0.6 0.05 250)",
+                fill: "oklch(0.35 0.03 250)",
                 fontSize: 12,
               }}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "oklch(0.18 0.025 255)",
-                border: "1px solid oklch(0.4 0.02 250 / 15%)",
-                borderRadius: "8px",
-                color: "oklch(0.96 0.005 250)",
+                backgroundColor: "oklch(0.995 0.001 75)",
+                border: "1px solid oklch(0.85 0.02 250 / 40%)",
+                borderRadius: "6px",
+                color: "oklch(0.15 0.02 250)",
+                boxShadow: "0 2px 8px oklch(0.15 0.02 250 / 8%)",
               }}
-              labelStyle={{ color: "oklch(0.96 0.005 250)" }}
-              itemStyle={{ color: "oklch(0.96 0.005 250)" }}
+              labelStyle={{ color: "oklch(0.15 0.02 250)" }}
+              itemStyle={{ color: "oklch(0.35 0.03 250)" }}
               labelFormatter={(value) => `${value} nm`}
             />
             <Legend
               verticalAlign="top"
               height={36}
-              wrapperStyle={{ color: "oklch(0.96 0.005 250)" }}
+              wrapperStyle={{ color: "oklch(0.35 0.03 250)" }}
             />
             {seriesData.map((series) => (
               <Line
