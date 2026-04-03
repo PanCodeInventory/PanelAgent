@@ -1,0 +1,17 @@
+{
+  "entity_key": {
+    "species": "Mouse (小鼠)",
+    "normalized_marker": "cd8",
+    "clone": "53-6.7",
+    "brand": "BioLegend",
+    "catalog_number": "100766",
+    "lot_number": null
+  },
+  "feedback_key": null,
+  "issue_count": 1,
+  "latest_issues": [
+    "这个抗体荧光太弱"
+  ],
+  "aggregate_status": "flagged",
+  "dedup_count": 0
+}
