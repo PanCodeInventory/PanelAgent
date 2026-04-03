@@ -1,0 +1,107 @@
+=== docker compose config ===
+name: panelagent
+services:
+  backend:
+    build:
+      context: /home/user/PanChongshi/Repo/PanelAgent
+      dockerfile: Dockerfile.backend
+    container_name: panelagent-backend
+    environment:
+      BACKEND_CORS_ORIGINS: http://localhost:13000,http://localhost:3000,http://192.168.1.100:13000
+      OPENAI_API_BASE: https://aihubmix.com/v1
+      OPENAI_API_KEY: sk-QS83kWckHXKtOf5JA170C538A05d43EcA5591977185aB58f
+      OPENAI_MODEL_NAME: gpt-5.2
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')
+      timeout: 5s
+      interval: 30s
+      retries: 3
+      start_period: 10s
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 8000
+        published: "18000"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /home/user/PanChongshi/Repo/PanelAgent/data/quality_registry
+        target: /app/data/quality_registry
+        bind: {}
+  frontend:
+    build:
+      context: /home/user/PanChongshi/Repo/PanelAgent/frontend
+      dockerfile: ../Dockerfile.frontend
+    container_name: panelagent-frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+        required: true
+    environment:
+      BACKEND_INTERNAL_URL: http://backend:8000
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://localhost:3000/').then(r=>{process.exit(r.ok?0:1)}).catch(()=>process.exit(1))
+      timeout: 5s
+      interval: 30s
+      retries: 3
+      start_period: 10s
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 3000
+        published: "13000"
+        protocol: tcp
+    restart: unless-stopped
+networks:
+  default:
+    name: panelagent_default
+
+=== docker compose ps ===
+NAME                  IMAGE                 COMMAND                   SERVICE    CREATED          STATUS                    PORTS
+panelagent-backend    panelagent-backend    "uvicorn backend.app…"   backend    49 seconds ago   Up 48 seconds (healthy)   0.0.0.0:18000->8000/tcp, [::]:18000->8000/tcp
+panelagent-frontend   panelagent-frontend   "docker-entrypoint.s…"   frontend   49 seconds ago   Up 42 seconds (healthy)   0.0.0.0:13000->3000/tcp, [::]:13000->3000/tcp
+
+=== curl backend health ===
+{"status":"ok","version":"1.0.0"}
+
+=== curl frontend ===
+HTTP/1.1 200 OK
+Vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding
+x-nextjs-cache: HIT
+x-nextjs-prerender: 1
+x-nextjs-prerender: 1
+x-nextjs-stale-time: 300
+X-Powered-By: Next.js
+Cache-Control: s-maxage=31536000
+ETag: "10nijo8zlnzuiw"
+Content-Type: text/html; charset=utf-8
+Content-Length: 39560
+Date: Fri, 03 Apr 2026 12:14:44 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+
+=== docker compose logs ===
+panelagent-frontend  | ▲ Next.js 16.2.1
+panelagent-frontend  | - Local:         http://localhost:3000
+panelagent-frontend  | - Network:       http://0.0.0.0:3000
+panelagent-frontend  | ✓ Ready in 144ms
+panelagent-backend   | INFO:     Started server process [1]
+panelagent-backend   | INFO:     Waiting for application startup.
+panelagent-backend   | INFO:     Application startup complete.
+panelagent-backend   | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+panelagent-backend   | INFO:     127.0.0.1:57468 - "GET /api/v1/health HTTP/1.1" 200 OK
+panelagent-backend   | INFO:     172.18.0.1:43198 - "GET /api/v1/health HTTP/1.1" 200 OK
+panelagent-backend   | INFO:     127.0.0.1:46020 - "GET /api/v1/health HTTP/1.1" 200 OK
+panelagent-backend   | INFO:     172.18.0.1:50322 - "GET /api/v1/health HTTP/1.1" 200 OK

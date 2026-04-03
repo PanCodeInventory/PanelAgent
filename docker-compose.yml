@@ -1,0 +1,58 @@
+# =============================================================================
+# PanelAgent - Staged LAN Docker Compose Stack
+# =============================================================================
+# Validation ports: frontend 13000, backend 18000
+# Live tmux ports (3000/8000) remain untouched.
+#
+# Usage:
+#   docker compose -f docker-compose.yml config   # validate
+#   docker compose -f docker-compose.yml build     # build images
+#   docker compose -f docker-compose.yml up -d      # start stack
+#   docker compose -f docker-compose.yml ps         # check status
+#   docker compose -f docker-compose.yml logs -f    # stream logs
+#   docker compose -f docker-compose.yml down       # tear down
+# =============================================================================
+
+services:
+  # ── Backend (FastAPI + uvicorn) ────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: panelagent-backend
+    ports:
+      - "18000:8000"
+    env_file:
+      - .env
+    environment:
+      BACKEND_CORS_ORIGINS: "http://localhost:13000,http://localhost:3000,http://192.168.1.100:13000"
+    volumes:
+      - ./data/quality_registry:/app/data/quality_registry
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # ── Frontend (Next.js production) ──────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../Dockerfile.frontend
+    container_name: panelagent-frontend
+    ports:
+      - "13000:3000"
+    environment:
+      BACKEND_INTERNAL_URL: "http://backend:8000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/').then(r=>{process.exit(r.ok?0:1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped

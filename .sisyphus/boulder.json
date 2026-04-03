@@ -6,7 +6,8 @@
     "ses_2acd6ccbbffe4XveZgPaRdnxDs",
     "ses_2acd46114ffetUwSFKRJV0z80j",
     "ses_2acd4c2b4ffe2lbDWF5s6K3cNv",
-    "ses_2acd4951effeKsdgciniTF5P4Y"
+    "ses_2acd4951effeKsdgciniTF5P4Y",
+    "ses_2acbff7a1ffeP055MatdNepQi5"
   ],
   "plan_name": "docker-lan-compose-migration",
   "agent": "atlas",
@@ -28,6 +29,15 @@
       "agent": "Sisyphus-Junior",
       "category": "unspecified-high",
       "updated_at": "2026-04-03T12:03:55.424Z"
+    },
+    "todo:5": {
+      "task_key": "todo:5",
+      "task_label": "5",
+      "task_title": "Compose the Staged LAN Stack on Alternate Ports",
+      "session_id": "ses_2acbff7a1ffeP055MatdNepQi5",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-04-03T12:15:22.837Z"
     }
   }
 }

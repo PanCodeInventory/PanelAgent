@@ -137,7 +137,7 @@ Wave 2: staged validation, persistence, rollback, documentation
 
   **Commit**: YES | Message: `docs(deploy): define docker migration runtime contract` | Files: `.sisyphus/*` or deployment docs only
 
-- [ ] 2. Add Backend Production Container
+- [x] 2. Add Backend Production Container
 
   **What to do**: Create a backend Dockerfile that runs FastAPI/Uvicorn in production mode on `0.0.0.0:8000`, uses repo-root-aware working directory so config path resolution continues to work, loads env from Compose injection, and can read mounted data/inventory/reference files. Add a backend healthcheck command that uses `/api/v1/health`.
   **Must NOT do**: Do not use reload mode. Do not assume localhost-only binding. Do not bake secrets into the image.
@@ -177,7 +177,7 @@ Wave 2: staged validation, persistence, rollback, documentation
 
   **Commit**: YES | Message: `chore(docker): add backend production container` | Files: `Dockerfile.backend`, optional helper scripts/docs
 
-- [ ] 3. Add Frontend Production Container
+- [x] 3. Add Frontend Production Container
 
   **What to do**: Create a frontend Dockerfile using a production build flow (`next build` plus production runtime). Configure container runtime so the app listens on `0.0.0.0:3000` and uses `BACKEND_INTERNAL_URL=http://backend:8000` inside Compose. Preserve the current `/api/v1/*` browser behavior.
   **Must NOT do**: Do not use `next dev` as the target LAN-serving runtime. Do not force classmates to use a different public path.
@@ -216,7 +216,7 @@ Wave 2: staged validation, persistence, rollback, documentation
 
   **Commit**: YES | Message: `chore(docker): add frontend production container` | Files: `Dockerfile.frontend`, optional nginx/runtime config
 
-- [ ] 4. Make Container-Safe Runtime Config Minimal and Explicit
+- [x] 4. Make Container-Safe Runtime Config Minimal and Explicit
 
   **What to do**: Introduce only the minimum app changes needed for container correctness: env-driven backend CORS origins, container-safe host binding assumptions, and clear separation between host-side `.env` ownership and container runtime injection. If path assumptions need tightening, do so without changing app semantics.
   **Must NOT do**: Do not refactor unrelated config. Do not redesign the API interface. Do not move data files unless tests prove it necessary.
@@ -255,7 +255,7 @@ Wave 2: staged validation, persistence, rollback, documentation
 
   **Commit**: YES | Message: `refactor(config): make docker runtime settings env-driven` | Files: backend config/CORS files and tests only
 
-- [ ] 5. Compose the Staged LAN Stack on Alternate Ports
+- [x] 5. Compose the Staged LAN Stack on Alternate Ports
 
   **What to do**: Add `docker-compose.yml` for a two-service staged stack using internal service DNS (`backend`) and alternate host ports (`13000:3000`, `18000:8000`). Add restart policies, healthchecks, env injection, and explicit mounts for `data/quality_registry/`. Keep backend optionally unpublished internally if frontend proxying is sufficient for staged verification.
   **Must NOT do**: Do not bind to live ports `3000/8000`. Do not couple Compose startup to the tmux stack.
