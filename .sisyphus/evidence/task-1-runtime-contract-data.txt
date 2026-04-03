@@ -1,0 +1,23 @@
+data/quality_registry/:
+总计 20
+drwxrwxr-x 4 user user 4096  4月  3 18:25 .
+drwxrwxr-x 3 user user 4096  4月  3 17:43 ..
+drwxrwxr-x 2 user user 4096  4月  3 18:25 audit
+-rw------- 1 user user 1916  4月  3 18:25 issues.json
+drwxrwxr-x 2 user user 4096  4月  3 18:25 projections
+
+data/quality_registry/audit/:
+总计 20
+drwxrwxr-x 2 user user 4096  4月  3 18:25 .
+drwxrwxr-x 4 user user 4096  4月  3 18:25 ..
+-rw------- 1 user user 1017  4月  2 20:12 3b2b2fb6-49a2-4a07-a5f8-b79ac82f5b02.json
+-rw------- 1 user user 1011  4月  3 18:22 f0f4dfe6-b6ec-4504-af24-020b67596530.json
+-rw------- 1 user user 1008  4月  3 18:25 f29ec371-91c7-413f-9a8e-30bd521f4ef2.json
+
+data/quality_registry/projections/:
+总计 20
+drwxrwxr-x 2 user user 4096  4月  3 18:25 .
+drwxrwxr-x 4 user user 4096  4月  3 18:25 ..
+-rw------- 1 user user  348  4月  3 18:25 0c57f1d09e6ec2f2.json
+-rw------- 1 user user  342  4月  2 20:12 742f022000ef1c7f.json
+-rw------- 1 user user  351  4月  3 18:22 fc079be6637ea3f7.json

@@ -1,0 +1,11 @@
+{"status":"ok","version":"1.0.0"}
+HTTP/1.1 200 OK
+Vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding
+link: </_next/static/media/13971731025ec697-s.p.woff2?v=1775216753997>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/bb3ef058b751a6ad-s.p.woff2?v=1775216753997>; rel=preload; as="font"; crossorigin=""; type="font/woff2"
+Cache-Control: no-cache, must-revalidate
+X-Powered-By: Next.js
+Content-Type: text/html; charset=utf-8
+Date: Fri, 03 Apr 2026 11:45:54 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+

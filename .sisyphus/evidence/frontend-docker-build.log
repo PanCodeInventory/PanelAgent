@@ -1,0 +1,29 @@
+=== Docker Build ===
+IMAGE                        ID             DISK USAGE   CONTENT SIZE   EXTRA
+panelagent-frontend:latest   0cbc90c96046       2.13GB          417MB   U    
+
+=== Container Runtime ===
+▲ Next.js 16.2.1
+- Local:         http://localhost:3000
+- Network:       http://0.0.0.0:3000
+✓ Ready in 148ms
+
+=== HTTP Test ===
+HTTP/1.1 200 OK
+Vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding
+x-nextjs-cache: HIT
+x-nextjs-prerender: 1
+x-nextjs-prerender: 1
+x-nextjs-stale-time: 300
+X-Powered-By: Next.js
+Cache-Control: s-maxage=31536000
+ETag: "10nijo8zlnzuiw"
+Content-Type: text/html; charset=utf-8
+Content-Length: 39560
+Date: Fri, 03 Apr 2026 12:04:00 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+
+=== Runtime Env ===
+BACKEND_INTERNAL_URL=http://127.0.0.1:18000
