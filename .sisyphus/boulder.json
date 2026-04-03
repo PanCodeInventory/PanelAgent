@@ -1,146 +1,38 @@
 {
-  "active_plan": "/home/user/PanChongshi/Repo/PanelAgent/.sisyphus/plans/antibody-quality-registry-panel-llm.md",
-  "started_at": "2026-04-02T01:50:13.915Z",
+  "active_plan": "/home/user/PanChongshi/Repo/PanelAgent/.sisyphus/plans/cytoflex-mapping-maintenance.md",
+  "started_at": "2026-04-03T09:38:47.537Z",
   "session_ids": [
-    "ses_2b44dafe2ffeyPXlhQCpuGlxy4",
-    "ses_2b41c994affeRonjQitdKzjTe2",
-    "ses_2b40f4dfcffe4oSQ3Yh7jR2CN8",
-    "ses_2b40890b6ffexitTwnGad392UW",
-    "ses_2b3fa849cffeHzYfY7JKmpezec",
-    "ses_2b3eedc8bffeGhRXY2Q7qrRtVt",
-    "ses_2b3e7a038ffeCZuh6phIcY1930",
-    "ses_2b3e000a2ffeGPsK3t5wOMJPZs",
-    "ses_2b3daaefcffe17K6p4G1hj7jak",
-    "ses_2b3d3631effeN0FAXycc5Z0ck9",
-    "ses_2b3c5be13ffe7ztq7hK0lP7mA6",
-    "ses_2b3bba2b8ffeU1VLcXaD0rVgWa",
-    "ses_2b3a65dddffeDDiw8JsRN5I8Uo",
-    "ses_2b3a21669ffeY9vE9gjp4P3CZC",
-    "ses_2b3a1d5caffe983rqM1lJurR44",
-    "ses_2b3a1e7f8ffeTkWywbgzaUttlf",
-    "ses_2b3a2046dffellSIe0aNr8efGP",
-    "ses_2b39d2e96ffe6QGKbvFQ5tDYtv",
-    "ses_2b394b084ffetJPUAhskSPJ5t1",
-    "ses_2b394d1f9ffep8dTLQaFzbikRe",
-    "ses_2b394be6affe5C9zZWlUEmEnjH",
-    "ses_2b394e6b6ffeLlmAAWpuW72elO",
-    "ses_2b390a977ffe6dPCvVbF9VJIPl",
-    "ses_2b387eae5ffeAa3HqrYkGVLVOX",
-    "ses_2b387cf8affeWLxfv6J9L1UO77",
-    "ses_2b3845012ffeDwhSXFysfgJzpC",
-    "ses_2b381321bffehHYuFjIehVLyHa",
-    "ses_2b1fa22c1ffeiYE1CLOROC6R7Y"
+    "ses_2ad52ba16ffeeSMqsacMPtRh9x",
+    "ses_2ad489179ffebFwhfj60yDUvYe",
+    "ses_2ad40c58dffes2B0hoq5h6EKx1",
+    "ses_2ad3c888cffe0TcI5l3dK6IX0y",
+    "ses_2ad3cb9e0ffeA5OqBrR66zfsTz",
+    "ses_2ad3c9cfcffeKrd8VYV3p3QN6n",
+    "ses_2ad3c40fdffeoCkXtNnUJqEecB",
+    "ses_2ad39b12fffe8QOy4JbxIzK83i",
+    "ses_2ad362ccdffefEE6QgdXN6cBEE",
+    "ses_2ad35e8c8ffeiNIChx73HAAM3r",
+    "ses_2ad33940dffekNXQE4d0P04F3y"
   ],
-  "plan_name": "antibody-quality-registry-panel-llm",
+  "plan_name": "cytoflex-mapping-maintenance",
   "agent": "atlas",
   "task_sessions": {
-    "todo:1": {
-      "task_key": "todo:1",
-      "task_label": "1",
-      "task_title": "Define dual-key identity contracts (feedback key + entity key)",
-      "session_id": "ses_2b41c994affeRonjQitdKzjTe2",
-      "agent": "Sisyphus-Junior",
-      "category": "deep",
-      "updated_at": "2026-04-02T02:04:52.789Z"
-    },
     "todo:2": {
       "task_key": "todo:2",
       "task_label": "2",
-      "task_title": "Implement dedicated registry persistence and immutable audit history",
-      "session_id": "ses_2b40f4dfcffe4oSQ3Yh7jR2CN8",
-      "agent": "Sisyphus-Junior",
-      "category": "unspecified-high",
-      "updated_at": "2026-04-02T02:12:40.029Z"
-    },
-    "todo:3": {
-      "task_key": "todo:3",
-      "task_label": "3",
-      "task_title": "Build save-time incremental organization/projection at antibody level",
-      "session_id": "ses_2b40890b6ffexitTwnGad392UW",
-      "agent": "Sisyphus-Junior",
-      "category": "deep",
-      "updated_at": "2026-04-02T02:27:46.826Z"
-    },
-    "todo:4": {
-      "task_key": "todo:4",
-      "task_label": "4",
-      "task_title": "Add registry API contracts and endpoint tests first (TDD)",
-      "session_id": "ses_2b3fa849cffeHzYfY7JKmpezec",
-      "agent": "Sisyphus-Junior",
-      "category": "deep",
-      "updated_at": "2026-04-02T02:37:46.719Z"
-    },
-    "todo:6": {
-      "task_key": "todo:6",
-      "task_label": "6",
-      "task_title": "Inject quality context into panel evaluation LLM path",
-      "session_id": "ses_2b3e7a038ffeCZuh6phIcY1930",
-      "agent": "Sisyphus-Junior",
-      "category": "unspecified-high",
-      "updated_at": "2026-04-02T02:56:38.495Z"
-    },
-    "todo:7": {
-      "task_key": "todo:7",
-      "task_label": "7",
-      "task_title": "Inject quality context into marker recommendation LLM path",
-      "session_id": "ses_2b3e000a2ffeGPsK3t5wOMJPZs",
-      "agent": "Sisyphus-Junior",
-      "category": "unspecified-high",
-      "updated_at": "2026-04-02T03:01:12.649Z"
-    },
-    "todo:8": {
-      "task_key": "todo:8",
-      "task_label": "8",
-      "task_title": "Add frontend API client + hook support for quality registry",
-      "session_id": "ses_2b3daaefcffe17K6p4G1hj7jak",
+      "task_title": "Create Formal Maintenance Document Skeleton",
+      "session_id": "ses_2ad40c58dffes2B0hoq5h6EKx1",
       "agent": "Sisyphus-Junior",
       "category": "quick",
-      "updated_at": "2026-04-02T03:08:09.992Z"
-    },
-    "todo:9": {
-      "task_key": "todo:9",
-      "task_label": "9",
-      "task_title": "Build frontend registration + list + history page",
-      "session_id": "ses_2b3d3631effeN0FAXycc5Z0ck9",
-      "agent": "Sisyphus-Junior",
-      "category": "visual-engineering",
-      "updated_at": "2026-04-02T03:23:58.928Z"
-    },
-    "todo:10": {
-      "task_key": "todo:10",
-      "task_label": "10",
-      "task_title": "Add end-to-end flow tests across backend + UI + prompt integration",
-      "session_id": "ses_2b3c5be13ffe7ztq7hK0lP7mA6",
-      "agent": "Sisyphus-Junior",
-      "category": "unspecified-high",
-      "updated_at": "2026-04-02T03:36:00.552Z"
-    },
-    "todo:11": {
-      "task_key": "todo:11",
-      "task_label": "11",
-      "task_title": "Harden edge cases: free-text safety, dedupe drift, and concurrency",
-      "session_id": "ses_2b3bba2b8ffeU1VLcXaD0rVgWa",
-      "agent": "Sisyphus-Junior",
-      "category": "deep",
-      "updated_at": "2026-04-02T03:59:19.923Z"
-    },
-    "todo:12": {
-      "task_key": "todo:12",
-      "task_label": "12",
-      "task_title": "Final integration gate and quality evidence packaging",
-      "session_id": "ses_2b3a65dddffeDDiw8JsRN5I8Uo",
-      "agent": "Sisyphus-Junior",
-      "category": "unspecified-high",
-      "updated_at": "2026-04-02T04:04:48.972Z"
+      "updated_at": "2026-04-03T09:50:29.747Z"
     },
     "final-wave:f1": {
       "task_key": "final-wave:f1",
       "task_label": "F1",
-      "task_title": "Plan Compliance Audit — oracle",
-      "session_id": "ses_2b3845012ffeDwhSXFysfgJzpC",
-      "agent": "Sisyphus-Junior",
-      "category": "quick",
-      "updated_at": "2026-04-02T04:40:45.422Z"
+      "task_title": "Plan Compliance Audit - oracle",
+      "session_id": "ses_2ad33940dffekNXQE4d0P04F3y",
+      "agent": "oracle",
+      "updated_at": "2026-04-03T10:04:02.354Z"
     }
   }
 }
