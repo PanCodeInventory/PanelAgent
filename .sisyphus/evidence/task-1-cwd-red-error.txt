@@ -1,0 +1,13 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______________ test_generate_candidate_panels_is_cwd_independent _______________
+/home/user/PanChongshi/Repo/PanelAgent/tests/test_json_path_resolution.py:94: in test_generate_candidate_panels_is_cwd_independent
+    assert mock_aggregate.brightness_received, (
+E   AssertionError: Brightness data should be loaded even from non-root CWD. FAILURE proves the bug: panel_generator.py line 272 uses open('fluorochrome_brightness.json', 'r') which is CWD-dependent. Got brightness: {}
+E   assert {}
+E    +  where {} = <MagicMock name='aggregate_antibodies_by_marker' id='138972346544688'>.brightness_received
+----------------------------- Captured stdout call -----------------------------
+--- Generating Candidate Panels for: ['CD3', 'CD4'] ---
+=========================== short test summary info ============================
+FAILED tests/test_json_path_resolution.py::test_generate_candidate_panels_is_cwd_independent
+1 failed in 0.42s
