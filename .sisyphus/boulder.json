@@ -7,7 +7,8 @@
     "ses_2acd46114ffetUwSFKRJV0z80j",
     "ses_2acd4c2b4ffe2lbDWF5s6K3cNv",
     "ses_2acd4951effeKsdgciniTF5P4Y",
-    "ses_2acbff7a1ffeP055MatdNepQi5"
+    "ses_2acbff7a1ffeP055MatdNepQi5",
+    "ses_2acba515effeNrex5LerERjiCP"
   ],
   "plan_name": "docker-lan-compose-migration",
   "agent": "atlas",
@@ -38,6 +39,15 @@
       "agent": "Sisyphus-Junior",
       "category": "unspecified-high",
       "updated_at": "2026-04-03T12:15:22.837Z"
+    },
+    "todo:6": {
+      "task_key": "todo:6",
+      "task_label": "6",
+      "task_title": "Prove End-to-End UI, API, and Persistence Parity",
+      "session_id": "ses_2acba515effeNrex5LerERjiCP",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-04-03T12:21:31.134Z"
     }
   }
 }

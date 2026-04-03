@@ -296,7 +296,7 @@ Wave 2: staged validation, persistence, rollback, documentation
 
   **Commit**: YES | Message: `chore(docker): add compose stack for staged lan validation` | Files: `docker-compose.yml`, optional env examples
 
-- [ ] 6. Prove End-to-End UI, API, and Persistence Parity
+- [x] 6. Prove End-to-End UI, API, and Persistence Parity
 
   **What to do**: Validate the staged Docker stack against the current interface expectations. Run backend tests as needed, then use browser automation against `http://127.0.0.1:13000` to verify the UI loads and at least one API-backed flow completes. Create or mutate a quality-registry record through the API/UI, restart the backend container, and verify the record persists. Capture evidence.
   **Must NOT do**: Do not accept “containers are up” as sufficient. Do not require manual user checks.

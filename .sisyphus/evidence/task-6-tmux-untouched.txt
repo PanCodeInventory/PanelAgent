@@ -1,0 +1,23 @@
+=== tmux Stack Untouched Verification ===
+Date: 2026-04-03
+
+--- Test 1: tmux backend health (port 8000) ---
+$ curl -s http://127.0.0.1:8000/api/v1/health
+{"status":"ok","version":"1.0.0"}
+RESULT: PASS — tmux backend fully operational
+
+--- Test 2: tmux frontend (port 3000) ---
+$ curl -sI http://127.0.0.1:3000 | head -5
+HTTP/1.1 200 OK
+Vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding
+link: </_next/static/media/...>; rel=preload; as="font"; ...
+Cache-Control: no-cache, must-revalidate
+X-Powered-By: Next.js
+RESULT: PASS — tmux frontend serving Next.js pages normally
+
+--- Summary ---
+tmux stack (ports 3000/8000) is completely unaffected by Docker Compose operations.
+Both stacks coexist without conflict:
+  - Docker stack: backend=18000, frontend=13000
+  - tmux stack:   backend=8000,  frontend=3000
+No interference between the two runtime environments.

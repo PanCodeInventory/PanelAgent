@@ -33,3 +33,22 @@
 ### Gotchas
 - `--network=host` flag not supported on `docker compose build` subcommand
 - Make sure quality_registry volume mount target matches Dockerfile's `RUN mkdir` path (`/app/data/quality_registry`)
+
+## T6: End-to-End Parity Verification
+
+### Key Findings
+- Docker frontend (port 13000) correctly proxies `/api/v1/*` to backend via Compose internal DNS (`backend:8000`)
+- Actual API routes differ from README documentation:
+  - Quality registry: `/api/v1/quality-registry/issues` (not `/api/v1/quality-registry`)
+  - Spectra: `/api/v1/spectra/render-data` (not `/api/v1/spectra`)
+  - No DELETE endpoint exists for quality-registry issues (only GET + POST)
+- Quality registry persistence confirmed: write → restart backend → data survives
+- Backend restarts and becomes healthy in ~4 seconds (2 polling attempts)
+- Bind mount `./data/quality_registry:/app/data/quality_registry` ensures data durability across container restarts
+- Both stacks (Docker on 13000/18000, tmux on 3000/8000) coexist without any interference
+- tmux stack was completely unaffected by Docker Compose `backend` container restart
+
+### Gotchas
+- API schema uses `QualityIssueCreate` with required fields: `issue_text`, `reported_by`, `species`, `marker`, `fluorochrome`, `brand`
+- Marker names are normalized to lowercase (`TEST_DOCKER_PERSISTENCE` → `test_docker_persistence`)
+- Test records cannot be programmatically deleted (no DELETE endpoint in API)
