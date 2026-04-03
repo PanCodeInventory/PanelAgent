@@ -19,8 +19,8 @@ MOCK_LLM_RESPONSE = {
     "status": "success",
     "candidates": [
         {
-            "CD3": {"fluorochrome": "PE", "system_code": "B", "brightness": 5},
-            "CD4": {"fluorochrome": "APC", "system_code": "C", "brightness": 4},
+            "CD3": {"fluorochrome": "PE", "system_code": "Y1_PE", "brightness": 5},
+            "CD4": {"fluorochrome": "APC", "system_code": "R1_APC", "brightness": 4},
         }
     ],
     "rationale": "Test rationale",

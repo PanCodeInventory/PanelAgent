@@ -7,7 +7,7 @@ def _candidates_fixture():
     return [
         {
             "CD3": {
-                "system_code": "APC-A",
+                "system_code": "R1_APC",
                 "fluorochrome": "APC",
                 "brightness": 4,
                 "clone": "17A2",
@@ -16,7 +16,7 @@ def _candidates_fixture():
                 "target": "CD3",
             },
             "CD8a": {
-                "system_code": "PE-Cy7-A",
+                "system_code": "Y4_PC7",
                 "fluorochrome": "PE/Cyanine7",
                 "brightness": 5,
                 "clone": "53-6.7",
@@ -27,7 +27,7 @@ def _candidates_fixture():
         },
         {
             "CD3": {
-                "system_code": "APC-A",
+                "system_code": "R1_APC",
                 "fluorochrome": "APC",
                 "brightness": 4,
                 "clone": "17A2",
@@ -36,7 +36,7 @@ def _candidates_fixture():
                 "target": "CD3",
             },
             "CD8a": {
-                "system_code": "BV510-A",
+                "system_code": "V2_KO525",
                 "fluorochrome": "Brilliant Violet 510™",
                 "brightness": 3,
                 "clone": "53-6.7",

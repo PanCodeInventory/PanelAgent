@@ -28,12 +28,12 @@ MOCK_LLM_RESPONSE = json.dumps({
 })
 
 CANDIDATE_A = {
-    "CD3": {"fluorochrome": "PE", "system_code": "B", "brightness": 5},
-    "CD4": {"fluorochrome": "APC", "system_code": "C", "brightness": 4},
+    "CD3": {"fluorochrome": "PE", "system_code": "Y1_PE", "brightness": 5},
+    "CD4": {"fluorochrome": "APC", "system_code": "R1_APC", "brightness": 4},
 }
 CANDIDATE_B = {
-    "CD3": {"fluorochrome": "FITC", "system_code": "A", "brightness": 3},
-    "CD4": {"fluorochrome": "APC", "system_code": "C", "brightness": 4},
+    "CD3": {"fluorochrome": "FITC", "system_code": "B1_FITC", "brightness": 3},
+    "CD4": {"fluorochrome": "APC", "system_code": "R1_APC", "brightness": 4},
 }
 CANDIDATES = [CANDIDATE_A, CANDIDATE_B]
 

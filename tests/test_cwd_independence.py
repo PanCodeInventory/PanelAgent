@@ -34,7 +34,7 @@ def _candidates_fixture():
     return [
         {
             "CD3": {
-                "system_code": "APC-A",
+                "system_code": "R1_APC",
                 "fluorochrome": "APC",
                 "brightness": 4,
                 "clone": "17A2",
@@ -43,7 +43,7 @@ def _candidates_fixture():
                 "target": "CD3",
             },
             "CD8a": {
-                "system_code": "PE-Cy7-A",
+                "system_code": "Y4_PC7",
                 "fluorochrome": "PE/Cyanine7",
                 "brightness": 5,
                 "clone": "53-6.7",
@@ -65,7 +65,7 @@ async def test_api_panels_generate_from_nonroot_cwd(client, monkeypatch, tmp_pat
     """
     llm_response = (
         '{"candidates": ['
-        '{"CD3": {"system_code": "APC-A", "fluorochrome": "APC", "brightness": 4, '
+        '{"CD3": {"system_code": "R1_APC", "fluorochrome": "APC", "brightness": 4, '
         '"clone": "17A2", "brand": "BioLegend", "catalog_number": "100235", "target": "CD3"}}'
         '], "missing_markers": []}'
     )

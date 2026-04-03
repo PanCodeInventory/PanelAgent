@@ -9,6 +9,8 @@
   "PE": { "peak": 575, "sigma": 18, "color": "#FFFF00", "category": "Blue/Yellow Laser" },
   "PE/Cyanine7": { "peak": 778, "sigma": 25, "color": "#800080", "category": "Blue/Yellow Laser" },
   "PE-Cy7": { "peak": 778, "sigma": 25, "color": "#800080", "category": "Blue/Yellow Laser" },
+  "Alexa Fluor 594": { "peak": 618, "sigma": 20, "color": "#FF6347", "category": "Yellow Laser" },
+  "Alexa Fluor® 594": { "peak": 618, "sigma": 20, "color": "#FF6347", "category": "Yellow Laser" },
   "PE-CF594": { "peak": 612, "sigma": 20, "color": "#FF4500", "category": "Blue/Yellow Laser" },
   "PE-Dazzle 594": { "peak": 610, "sigma": 20, "color": "#FF4500", "category": "Blue/Yellow Laser" },
   "PE/Dazzle™ 594": { "peak": 610, "sigma": 20, "color": "#FF4500", "category": "Blue/Yellow Laser" },
@@ -39,6 +41,8 @@
   
   "Brilliant Violet 510™": { "peak": 510, "sigma": 15, "color": "#FFA500", "category": "Violet Laser" },
   "BV510": { "peak": 510, "sigma": 15, "color": "#FFA500", "category": "Violet Laser" },
+  "KIRAVIA Blue 520": { "peak": 520, "sigma": 15, "color": "#00BFFF", "category": "Violet Laser" },
+  "KIRAVIA Blue 520™": { "peak": 520, "sigma": 15, "color": "#00BFFF", "category": "Violet Laser" },
   
   "Brilliant Violet 605™": { "peak": 605, "sigma": 20, "color": "#FF1493", "category": "Violet Laser" },
   "BV605": { "peak": 605, "sigma": 20, "color": "#FF1493", "category": "Violet Laser" },
