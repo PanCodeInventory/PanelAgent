@@ -18,6 +18,9 @@ class Settings(BaseSettings):
         case_sensitive=True,
     )
 
+    # CORS
+    BACKEND_CORS_ORIGINS: str = "http://localhost:3000,http://localhost:8501"
+
     # LLM / OpenAI-compatible API
     OPENAI_API_BASE: str = "http://127.0.0.1:1234/v1"
     OPENAI_API_KEY: str = "lm-studio"

@@ -11,11 +11,12 @@ from backend.app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
 
+settings = get_settings()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan — startup and shutdown hooks."""
-    settings = get_settings()
     logger.info(
         "Starting FlowCyt Panel API  |  LLM endpoint: %s  |  Model: %s",
         settings.OPENAI_API_BASE,
@@ -34,7 +35,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:8501"],
+    allow_origins=[o.strip() for o in settings.BACKEND_CORS_ORIGINS.split(",") if o.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
