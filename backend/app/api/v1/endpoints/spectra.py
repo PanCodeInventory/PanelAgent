@@ -1,11 +1,10 @@
 import json
 import importlib
-from pathlib import Path
 
 import numpy as np
 from fastapi import APIRouter, HTTPException
 
-from ....core.config import get_settings, resolve_static_data_path
+from ....core.config import resolve_static_data_path
 
 _spectra_schemas = importlib.import_module("backend.app.schemas.spectra")
 SpectraRenderRequest = _spectra_schemas.SpectraRenderRequest

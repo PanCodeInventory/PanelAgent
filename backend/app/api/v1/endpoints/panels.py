@@ -141,7 +141,6 @@ async def diagnose_panels(payload: DiagnoseRequest) -> DiagnoseResponse:
             detail="Inventory file is empty or invalid.",
         )
 
-    settings = get_settings()
     brightness_file = resolve_static_data_path("brightness_mapping")
     try:
         with open(brightness_file, "r", encoding="utf-8") as f:
