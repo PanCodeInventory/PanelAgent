@@ -4,17 +4,13 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 
-from ....core.config import get_settings
+from ....core.config import get_settings, project_root, resolve_static_data_path
 
 _recommendations_schemas = importlib.import_module("backend.app.schemas.recommendations")
 MarkerRecommendationRequest = _recommendations_schemas.MarkerRecommendationRequest
 MarkerRecommendationResponse = _recommendations_schemas.MarkerRecommendationResponse
 
 router = APIRouter(prefix="/recommendations")
-
-
-def _project_root() -> Path:
-    return Path(__file__).resolve().parents[5]
 
 
 def _load_domain_modules():
@@ -25,7 +21,7 @@ def _load_domain_modules():
 
 def _resolve_inventory_path(inventory_file: str | None, species: str | None) -> Path | None:
     settings = get_settings()
-    root = _project_root()
+    root = project_root()
     inventory_dir = root / settings.INVENTORY_DIR
 
     if inventory_file:
@@ -56,10 +52,8 @@ def _resolve_inventory_path(inventory_file: str | None, species: str | None) -> 
 
 
 def _load_inventory_df(inventory_path: Path):
-    settings = get_settings()
-    root = _project_root()
-    mapping_file = root / settings.CHANNEL_MAPPING_FILE
     data_preprocessing, _ = _load_domain_modules()
+    mapping_file = resolve_static_data_path("channel_mapping")
     return data_preprocessing.load_antibody_data(str(inventory_path), mapping_file=str(mapping_file))
 
 

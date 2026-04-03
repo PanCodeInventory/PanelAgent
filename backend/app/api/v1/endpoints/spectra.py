@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 from fastapi import APIRouter, HTTPException
 
-from ....core.config import get_settings
+from ....core.config import get_settings, resolve_static_data_path
 
 _spectra_schemas = importlib.import_module("backend.app.schemas.spectra")
 SpectraRenderRequest = _spectra_schemas.SpectraRenderRequest
@@ -15,15 +15,9 @@ SpectraSeries = _spectra_schemas.SpectraSeries
 router = APIRouter(prefix="/spectra")
 
 
-def _project_root() -> Path:
-    return Path(__file__).resolve().parents[5]
-
-
 def _load_spectral_db() -> dict:
     """Load spectral_data.json from project root."""
-    settings = get_settings()
-    root = _project_root()
-    filepath = root / settings.SPECTRAL_DATA_FILE
+    filepath = resolve_static_data_path("spectral_data")
     try:
         with open(filepath, "r", encoding="utf-8") as f:
             return json.load(f)

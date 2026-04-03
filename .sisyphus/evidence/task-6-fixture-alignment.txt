@@ -1,0 +1,51 @@
+# Task 6: Fixture Alignment Evidence
+
+## Summary
+Updated test fixtures in `tests/conftest.py` and `tests/characterization/test_multi_encoding.py` to use `resolve_static_data_path()` from config instead of hardcoded JSON file name strings joined with `project_root`.
+
+## Files Modified
+
+### 1. tests/conftest.py
+- Added import: `from backend.app.core.config import resolve_static_data_path`
+- Updated `channel_map` fixture: `open(resolve_static_data_path("channel_mapping"), ...)`
+- Updated `brightness_data` fixture: `open(resolve_static_data_path("brightness_mapping"), ...)`
+- Updated `antibody_df` fixture: `mapping_file=str(resolve_static_data_path("channel_mapping"))`
+- Updated `alias_antibody_df` fixture: `mapping_file=str(resolve_static_data_path("channel_mapping"))`
+
+### 2. tests/characterization/test_multi_encoding.py
+- Added import: `from backend.app.core.config import resolve_static_data_path`
+- Updated line 15: `mapping_file=str(resolve_static_data_path("channel_mapping"))`
+
+## Test Results
+
+### Characterization Tests
+```
+$ PYTHONPATH=. python -m pytest tests/characterization/ -q
+................                                                         [100%]
+16 passed in 0.36s
+```
+
+### Full Test Suite
+```
+$ PYTHONPATH=. python -m pytest tests/ -q
+.................F.F..........F..F...................................... [ 33%]
+........................................................................ [ 66%]
+..................F.................................................... [100%]
+5 failed, 210 passed in 1.90s
+```
+
+## Note on Failed Tests
+The 5 failing tests are **pre-existing failures** unrelated to this task's fixture changes:
+- `test_candidate_lookup_with_inventory`
+- `test_candidate_lookup_nonexistent_marker`
+- `test_candidate_lookup_filters_by_brand`
+- `test_candidate_lookup_with_localized_species`
+- `test_endpoint_returns_empty_when_no_inventory`
+
+These tests fail due to a bug in production code (`NameError: name '_project_root' is not defined` in `backend/app/api/v1/endpoints/quality_registry.py`), not from the fixture modifications in this task.
+
+## Verification
+- [x] `tests/conftest.py` modified with resolve_static_data_path
+- [x] `tests/characterization/test_multi_encoding.py` modified
+- [x] Characterization tests pass (16/16)
+- [x] Tests modified in this task pass

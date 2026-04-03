@@ -5,7 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
-from ....core.config import get_settings
+from ....core.config import get_settings, project_root, resolve_static_data_path
 
 _panels_schemas = importlib.import_module("backend.app.schemas.panels")
 DiagnoseRequest = _panels_schemas.DiagnoseRequest
@@ -18,10 +18,6 @@ PanelEvaluateResponse = _panels_schemas.PanelEvaluateResponse
 router = APIRouter(prefix="/panels")
 
 
-def _project_root() -> Path:
-    return Path(__file__).resolve().parents[5]
-
-
 def _load_domain_modules():
     data_preprocessing = importlib.import_module("data_preprocessing")
     panel_generator = importlib.import_module("panel_generator")
@@ -30,7 +26,7 @@ def _load_domain_modules():
 
 def _resolve_inventory_path(inventory_file: str | None, species: str | None) -> Path | None:
     settings = get_settings()
-    root = _project_root()
+    root = project_root()
     inventory_dir = root / settings.INVENTORY_DIR
 
     if inventory_file:
@@ -61,10 +57,8 @@ def _resolve_inventory_path(inventory_file: str | None, species: str | None) -> 
 
 
 def _load_inventory_df(inventory_path: Path):
-    settings = get_settings()
-    root = _project_root()
-    mapping_file = root / settings.CHANNEL_MAPPING_FILE
     data_preprocessing, _ = _load_domain_modules()
+    mapping_file = resolve_static_data_path("channel_mapping")
     return data_preprocessing.load_antibody_data(str(inventory_path), mapping_file=str(mapping_file))
 
 
@@ -148,8 +142,7 @@ async def diagnose_panels(payload: DiagnoseRequest) -> DiagnoseResponse:
         )
 
     settings = get_settings()
-    root = _project_root()
-    brightness_file = root / settings.BRIGHTNESS_MAPPING_FILE
+    brightness_file = resolve_static_data_path("brightness_mapping")
     try:
         with open(brightness_file, "r", encoding="utf-8") as f:
             brightness_data = json.load(f)

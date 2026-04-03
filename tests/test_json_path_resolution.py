@@ -101,3 +101,107 @@ def test_generate_candidate_panels_is_cwd_independent(
             f"Brightness data should match project root data. "
             f"Expected {brightness_data}, got {mock_aggregate.brightness_received}"
         )
+
+
+def test_generate_candidate_panels_missing_brightness_fallback_contract(
+    monkeypatch,
+    project_root: Path,
+    panel_inventory_csv_path: Path,
+    mock_consult_gpt_oss,
+):
+    """Verify that when brightness JSON is missing, function falls back to {} gracefully."""
+    antibody_df = load_antibody_data(
+        str(panel_inventory_csv_path),
+        mapping_file=str(project_root / "channel_mapping.json"),
+    )
+
+    assert antibody_df is not None and not antibody_df.empty, "Antibody data should load"
+
+    # Monkeypatch resolve_static_data_path to return a non-existent file path
+    non_existent_path = "/tmp/non_existent_brightness_file_12345.json"
+    
+    def mock_resolve_static_data_path(name):
+        return non_existent_path
+    
+    monkeypatch.setattr(panel_generator, "resolve_static_data_path", mock_resolve_static_data_path)
+
+    # Track what brightness data is used
+    with patch.object(panel_generator, "consult_gpt_oss", mock_consult_gpt_oss), \
+         patch("llm_api_client.consult_gpt_oss", mock_consult_gpt_oss), \
+         patch("panel_generator.aggregate_antibodies_by_marker") as mock_aggregate:
+
+        def aggregate_side_effect(df, brightness):
+            mock_aggregate.brightness_received = brightness
+            return {}, {}
+
+        mock_aggregate.side_effect = aggregate_side_effect
+
+        result = panel_generator.generate_candidate_panels(
+            user_markers=["CD3", "CD4"],
+            antibody_df=antibody_df,
+            max_solutions=1,
+        )
+
+        # When brightness file is missing (FileNotFoundError):
+        # - Code catches exception and sets brightness_data = {}
+        # - mock_aggregate should receive empty dict
+        assert mock_aggregate.brightness_received == {}, (
+            f"When brightness file is missing, fallback should be empty dict. "
+            f"Got: {mock_aggregate.brightness_received}"
+        )
+
+
+def test_generate_candidate_panels_missing_brightness_fallback_contract_strictness(
+    monkeypatch,
+    project_root: Path,
+    panel_inventory_csv_path: Path,
+    mock_consult_gpt_oss,
+):
+    """Verify that the fallback contract is strict: brightness_data IS {} when file is missing."""
+    antibody_df = load_antibody_data(
+        str(panel_inventory_csv_path),
+        mapping_file=str(project_root / "channel_mapping.json"),
+    )
+
+    assert antibody_df is not None and not antibody_df.empty, "Antibody data should load"
+
+    # Use a path to a file that exists but is not a valid JSON (corrupted)
+    # This ensures the FileNotFoundError is raised via our mock
+    non_existent_path = "/tmp/this_file_definitely_does_not_exist_98765.json"
+    
+    def mock_resolve_static_data_path_strict(name):
+        return non_existent_path
+    
+    monkeypatch.setattr(panel_generator, "resolve_static_data_path", mock_resolve_static_data_path_strict)
+
+    # Track what brightness data is used
+    with patch.object(panel_generator, "consult_gpt_oss", mock_consult_gpt_oss), \
+         patch("llm_api_client.consult_gpt_oss", mock_consult_gpt_oss), \
+         patch("panel_generator.aggregate_antibodies_by_marker") as mock_aggregate:
+
+        def aggregate_side_effect(df, brightness):
+            mock_aggregate.brightness_received = brightness
+            return {}, {}
+
+        mock_aggregate.side_effect = aggregate_side_effect
+
+        result = panel_generator.generate_candidate_panels(
+            user_markers=["CD3", "CD4"],
+            antibody_df=antibody_df,
+            max_solutions=1,
+        )
+
+        # Strictness test: verify the fallback is EXACTLY {}, not None, not other falsy value
+        assert mock_aggregate.brightness_received is not None, (
+            "Fallback should be {}, not None"
+        )
+        assert mock_aggregate.brightness_received == {}, (
+            f"Fallback contract is strict: must be exactly empty dict. Got: {mock_aggregate.brightness_received}"
+        )
+        # Verify it's literally an empty dict, not just falsy
+        assert isinstance(mock_aggregate.brightness_received, dict), (
+            f"Fallback must be dict instance, got {type(mock_aggregate.brightness_received)}"
+        )
+        assert len(mock_aggregate.brightness_received) == 0, (
+            "Fallback dict must be empty"
+        )

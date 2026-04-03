@@ -1,0 +1,68 @@
+TASK 5: ENDPOINT UNIFICATION — REFACTORING SUMMARY
+====================================================
+
+Date: 2026-04-03
+Task: Refactor 4 backend endpoint modules to use shared helpers from config.py
+
+FILES MODIFIED
+--------------
+1. backend/app/api/v1/endpoints/panels.py
+2. backend/app/api/v1/endpoints/recommendations.py
+3. backend/app/api/v1/endpoints/spectra.py
+4. backend/app/api/v1/endpoints/quality_registry.py
+
+CHANGES MADE
+------------
+
+1. panels.py:
+   - Updated import: Added `project_root, resolve_static_data_path` to existing config import
+   - Removed local `_project_root()` function (line 21-22)
+   - Updated `_resolve_inventory_path()`: Changed `_project_root()` to `project_root()`
+   - Updated `_load_inventory_df()`: Changed `root / settings.CHANNEL_MAPPING_FILE` to `resolve_static_data_path("channel_mapping")`
+   - Updated `diagnose_panels()`: Changed `root / settings.BRIGHTNESS_MAPPING_FILE` to `resolve_static_data_path("brightness_mapping")`
+
+2. recommendations.py:
+   - Updated import: Added `project_root, resolve_static_data_path` to existing config import
+   - Removed local `_project_root()` function (line 16-17)
+   - Updated `_resolve_inventory_path()`: Changed `_project_root()` to `project_root()`
+   - Updated `_load_inventory_df()`: Changed `root / settings.CHANNEL_MAPPING_FILE` to `resolve_static_data_path("channel_mapping")`
+
+3. spectra.py:
+   - Updated import: Added `resolve_static_data_path` to existing config import
+   - Removed local `_project_root()` function (line 18-19)
+   - Updated `_load_spectral_db()`: Changed `root / settings.SPECTRAL_DATA_FILE` to `resolve_static_data_path("spectral_data")`
+   - Removed `settings = get_settings()` from `_load_spectral_db()` (no longer needed)
+
+4. quality_registry.py:
+   - Updated import: Added `project_root, resolve_static_data_path` to existing config import
+   - Removed local `_project_root()` function (line 77-78)
+   - Updated `_resolve_inventory_path()`: Changed `_project_root()` to `project_root()`
+   - Updated `_load_inventory_df()`: Changed `root / settings.CHANNEL_MAPPING_FILE` to `resolve_static_data_path("channel_mapping")`
+
+PRESERVED BEHAVIOR
+------------------
+- All uses of `settings.INVENTORY_DIR` and `settings.SPECIES_INVENTORY_MAP` remain intact
+- `project_root()` is still used where inventory path resolution is needed
+- API endpoints and request/response schemas unchanged
+- No changes to test files
+
+TEST RESULTS
+------------
+✓ API tests: 44 passed in 0.99s
+✓ Full suite: 215 passed in 1.46s
+
+VERIFICATION
+------------
+- No LSP diagnostics errors
+- All tests pass
+- Code follows existing patterns
+- No breaking changes
+
+SUMMARY
+-------
+Successfully unified path resolution logic across 4 endpoint modules by:
+1. Eliminating duplicate `_project_root()` implementations
+2. Using centralized `project_root()` for inventory directory resolution
+3. Using centralized `resolve_static_data_path()` for static JSON file resolution
+
+This reduces code duplication and ensures consistent path resolution behavior.

@@ -1,5 +1,6 @@
 import pytest
 
+from backend.app.core.config import resolve_static_data_path
 from data_preprocessing import load_antibody_data
 
 
@@ -12,7 +13,7 @@ def test_load_antibody_data_supports_encoding(project_root, encoding, tmp_path):
 
     result = load_antibody_data(
         str(csv_path),
-        mapping_file=str(project_root / "channel_mapping.json"),
+        mapping_file=str(resolve_static_data_path("channel_mapping")),
     )
 
     assert result is not None

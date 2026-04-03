@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from backend.app.core.config import resolve_static_data_path
 from data_preprocessing import aggregate_antibodies_by_marker, load_antibody_data
 
 
@@ -19,13 +20,13 @@ def fixtures_dir(project_root: Path) -> Path:
 
 @pytest.fixture(scope="session")
 def channel_map(project_root: Path) -> dict:
-    with open(project_root / "channel_mapping.json", "r", encoding="utf-8") as f:
+    with open(resolve_static_data_path("channel_mapping"), "r", encoding="utf-8") as f:
         return json.load(f)
 
 
 @pytest.fixture(scope="session")
 def brightness_data(project_root: Path) -> dict:
-    with open(project_root / "fluorochrome_brightness.json", "r", encoding="utf-8") as f:
+    with open(resolve_static_data_path("brightness_mapping"), "r", encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -48,7 +49,7 @@ def alias_inventory_csv_path(fixtures_dir: Path) -> Path:
 def antibody_df(project_root: Path, panel_inventory_csv_path: Path):
     return load_antibody_data(
         str(panel_inventory_csv_path),
-        mapping_file=str(project_root / "channel_mapping.json"),
+        mapping_file=str(resolve_static_data_path("channel_mapping")),
     )
 
 
@@ -56,7 +57,7 @@ def antibody_df(project_root: Path, panel_inventory_csv_path: Path):
 def alias_antibody_df(project_root: Path, alias_inventory_csv_path: Path):
     return load_antibody_data(
         str(alias_inventory_csv_path),
-        mapping_file=str(project_root / "channel_mapping.json"),
+        mapping_file=str(resolve_static_data_path("channel_mapping")),
     )
 
 
