@@ -1,0 +1,40 @@
+# ── PanelAgent Backend ────────────────────────────────────────────────
+# Production Dockerfile for the FastAPI backend.
+# Build:  docker build -f Dockerfile.backend -t panelagent-backend .
+# Run:    docker run -p 8000:8000 --env-file .env panelagent-backend
+# ──────────────────────────────────────────────────────────────────────
+
+FROM docker.m.daocloud.io/library/python:3.13-slim AS base
+
+WORKDIR /app
+
+# Install Python dependencies first (layer caching)
+COPY backend/requirements.txt ./backend/requirements.txt
+RUN pip install --no-cache-dir -r backend/requirements.txt
+
+# Copy backend source
+COPY backend/ ./backend/
+
+# Copy static data files that config.py resolves via project_root()
+COPY channel_mapping.json     ./channel_mapping.json
+COPY fluorochrome_brightness.json ./fluorochrome_brightness.json
+COPY spectral_data.json       ./spectral_data.json
+
+# Copy inventory directory
+COPY inventory/ ./inventory/
+
+# Copy data directory (contains spectra/, channel_mapping.csv, etc.)
+COPY data/ ./data/
+
+# Ensure mutable data directory exists and is writable
+RUN mkdir -p /app/data/quality_registry && chmod 777 /app/data/quality_registry
+
+ENV PYTHONPATH=/app
+
+EXPOSE 8000
+
+# Python-based healthcheck (no curl needed, avoids apt-get in restricted networks)
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=10s \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')" || exit 1
+
+CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
