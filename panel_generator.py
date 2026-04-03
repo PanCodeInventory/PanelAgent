@@ -8,6 +8,7 @@ from backend.app.services.quality_registry_store import QualityRegistryStore
 from backend.app.services.quality_projection import QualityProjector
 from backend.app.services.quality_context_formatter import format_quality_context, QUALITY_CONTEXT_HEADER
 from backend.app.schemas.quality_registry import AntibodyQualityProjection
+from backend.app.core.config import resolve_static_data_path
 
 _quality_store = QualityRegistryStore()
 _quality_projector = QualityProjector(_quality_store)
@@ -269,7 +270,8 @@ def generate_candidate_panels(user_markers, antibody_df, max_solutions=10):
         return {"status": "error", "message": "Antibody data is empty or invalid."}
     
     try:
-        with open('fluorochrome_brightness.json', 'r') as f:
+        brightness_path = resolve_static_data_path("brightness_mapping")
+        with open(brightness_path, 'r') as f:
             brightness_data = json.load(f)
     except FileNotFoundError:
         brightness_data = {} 

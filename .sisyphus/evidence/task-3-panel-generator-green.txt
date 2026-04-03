@@ -1,0 +1,27 @@
+# Evidence: T1 Regression Test Passes - GREEN Phase
+
+## Task: Fix CWD-dependent JSON path in panel_generator.py
+
+## Date: 2026-04-03
+
+## Changes Made:
+1. Added import at line 12: `from backend.app.core.config import resolve_static_data_path`
+2. Replaced lines 271-275:
+   - BEFORE: `with open('fluorochrome_brightness.json', 'r') as f:`
+   - AFTER: `brightness_path = resolve_static_data_path("brightness_mapping")` + `open(brightness_path, 'r')`
+
+## T1 Test Result:
+```
+tests/test_json_path_resolution.py::test_generate_candidate_panels_is_cwd_independent PASSED [100%]
+```
+
+## Full Test Suite:
+```
+213 passed in 1.57s
+```
+
+## Evidence:
+- T1 regression test passes
+- All 213 existing tests pass
+- Code changes limited to JSON path resolution only
+- FileNotFoundError fallback preserved for robustness
