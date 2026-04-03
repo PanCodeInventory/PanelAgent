@@ -1,0 +1,84 @@
+# =============================================================================
+# PanelAgent Frontend - Production Docker Image
+# =============================================================================
+# Multi-stage build for Next.js 16 frontend
+# BACKEND_INTERNAL_URL is configurable at runtime (server-side rewrite config)
+#
+# Build:  docker build -f Dockerfile.frontend -t panelagent-frontend ./frontend
+# Run:    docker run -p 3000:3000 -e BACKEND_INTERNAL_URL=http://backend:8000 panelagent-frontend
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Stage 1: Dependencies - install all node_modules (including devDeps for build)
+# ---------------------------------------------------------------------------
+FROM node:20-alpine AS deps
+
+WORKDIR /app
+
+# Copy lockfile first for better cache hits
+COPY package.json package-lock.json ./
+
+# Install all dependencies (dev + prod) needed for the build step
+RUN npm ci
+
+# ---------------------------------------------------------------------------
+# Stage 2: Build - compile Next.js production bundle
+# ---------------------------------------------------------------------------
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy installed node_modules from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy source files
+COPY . .
+
+# BACKEND_INTERNAL_URL is a server-side rewrite config, NOT baked at build time.
+# Set a placeholder default; the real value is injected at runtime.
+ENV BACKEND_INTERNAL_URL=http://backend:8000
+
+RUN npm run build
+
+# ---------------------------------------------------------------------------
+# Stage 3: Runtime - minimal production image
+# ---------------------------------------------------------------------------
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+# No extra packages needed — healthcheck uses Node.js built-in fetch
+
+# Set production environment
+ENV NODE_ENV=production
+ENV BACKEND_INTERNAL_URL=http://backend:8000
+
+# Don't run as root
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Copy package manifests for production install
+COPY package.json package-lock.json ./
+
+# Install only production dependencies
+RUN npm ci --omit=dev && \
+    npm cache clean --force
+
+# Copy Next.js build output
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.ts ./
+
+# Ensure nextjs user owns the app directory
+RUN chown -R nextjs:nodejs /app
+
+USER nextjs
+
+EXPOSE 3000
+
+# Healthcheck: verify the Next.js server responds using Node.js built-in fetch
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "fetch('http://localhost:3000/').then(r=>{process.exit(r.ok?0:1)}).catch(()=>process.exit(1))"
+
+# Run Next.js in production mode, binding to all interfaces
+CMD ["npx", "next", "start", "-H", "0.0.0.0", "-p", "3000"]
