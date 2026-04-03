@@ -29,17 +29,16 @@ BUV805,BUV805,UNSUPPORTED,unsupported,UV-excited dye not appropriate on current 
 BV421,BV421,V1_PB450,mapped,Violet 450/45 detector
 BV510,BV510,V2_KO525,mapped,Violet 525/40 detector
 BV605,BV605,V3_V610,mapped,Violet 610/20 detector
-BV650,BV650,V4_V660,mapped,Violet 660/20 detector
-BV711,BV711,UNSUPPORTED,unsupported,No matching 710-range violet detector in current model assumption
-BV785,BV785,V5_V780,mapped,User confirmed 785 channel is detectable on this instrument
-BV786,BV786,V5_V780,mapped,User confirmed 785/786 detector class is available on this instrument
+BV650,BV650,V4_V660,mapped,Violet 660/20 mapping retained for inventory reference; detector is disabled on the lab instrument and ignored during panel generation
+BV785,BV785,V4_V780,mapped,User confirmed 785 channel is detectable on this instrument
+BV786,BV786,V4_V780,mapped,User confirmed 785/786 detector class is available on this instrument
 Brilliant Violet 421™,BV421,V1_PB450,mapped,Canonicalized to BV421
 Brilliant Violet 510™,BV510,V2_KO525,mapped,Canonicalized to BV510
 Brilliant Violet 605™,BV605,V3_V610,mapped,Canonicalized to BV605
-Brilliant Violet 650™,BV650,V4_V660,mapped,Canonicalized to BV650
+Brilliant Violet 650™,BV650,V4_V660,mapped,Canonicalized to BV650; detector is disabled on the lab instrument and ignored during panel generation
 Brilliant Violet 711™,BV711,UNSUPPORTED,unsupported,No matching 710-range violet detector in current model assumption
-Brilliant Violet 785™,BV785,V5_V780,mapped,User confirmed 785 detector availability
-Brilliant Violet 786™,BV786,V5_V780,mapped,User confirmed 785 detector availability
+Brilliant Violet 785™,BV785,V4_V780,mapped,User confirmed 785 detector availability
+Brilliant Violet 786™,BV786,V4_V780,mapped,User confirmed 785 detector availability
 DAPI,DAPI,V1_PB450,mapped,Violet-excited nuclear dye detected in 450/45 channel
 FITC,FITC,B1_FITC,mapped,Blue laser 525/40 detector
 KIRAVIA Blue 520™,KIRAVIA Blue 520,V2_KO525,mapped,Violet 525/40 detector family

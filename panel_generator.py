@@ -12,6 +12,11 @@ from backend.app.core.config import resolve_static_data_path
 
 _quality_store = QualityRegistryStore()
 _quality_projector = QualityProjector(_quality_store)
+BLOCKED_SYSTEM_CODES = {"V4_V660"}
+
+
+def _is_usable_system_code(code):
+    return bool(code) and code != 'UNKNOWN' and code not in BLOCKED_SYSTEM_CODES
 
 
 def _build_quality_context_section(marker_names: list[str]) -> str:
@@ -186,7 +191,7 @@ def find_valid_panels(markers, antibodies_by_marker, max_solutions=3):
 
         for ab in options_shuffled:
             code = ab.get('system_code')
-            if code and code != 'UNKNOWN' and code not in used_system_codes:
+            if _is_usable_system_code(code) and code not in used_system_codes:
                 # Choose this antibody
                 current_panel[marker] = ab
                 used_system_codes.add(code)
@@ -214,7 +219,7 @@ def diagnose_conflicts(markers, antibodies_by_marker):
     marker_codes = {}
     for m in markers:
         options = antibodies_by_marker.get(m, [])
-        codes = sorted(list(set(ab['system_code'] for ab in options if ab.get('system_code') != 'UNKNOWN')))
+        codes = sorted(list(set(ab['system_code'] for ab in options if _is_usable_system_code(ab.get('system_code')))))
         marker_codes[m] = codes
 
     # 2. Check for markers with NO available antibodies

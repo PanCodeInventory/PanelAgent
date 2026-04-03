@@ -24,8 +24,8 @@ def test_load_antibody_data_supports_encoding(project_root, encoding, tmp_path):
 @pytest.mark.parametrize(
     ("fluorochrome", "expected_code"),
     [
-        ("Brilliant Violet 785™", "V5_V780"),
-        ("Brilliant Violet 786™", "V5_V780"),
+        ("Brilliant Violet 785™", "V4_V780"),
+        ("Brilliant Violet 786™", "V4_V780"),
         ("Alexa Fluor® 594", "Y2_ECD"),
         ("Alexa Fluor 594", "Y2_ECD"),
         ("KIRAVIA Blue 520™", "V2_KO525"),

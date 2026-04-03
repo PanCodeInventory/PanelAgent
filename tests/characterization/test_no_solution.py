@@ -14,3 +14,19 @@ def test_diagnose_conflicts_reports_impossible_shared_channel_group(impossible_c
     assert impossible_case["shared_channel"] in diagnosis
     for marker in markers:
         assert marker in diagnosis
+
+
+def test_diagnose_conflicts_treats_blocked_channels_as_unavailable():
+    markers = ["cd3"]
+    antibodies_by_marker = {
+        "cd3": [
+            {"fluorochrome": "BV650", "system_code": "V4_V660"},
+        ]
+    }
+
+    panels = find_valid_panels(markers, antibodies_by_marker, max_solutions=1)
+    assert panels == []
+
+    diagnosis = diagnose_conflicts(markers, antibodies_by_marker)
+    assert "没有可用的有效抗体" in diagnosis
+    assert "cd3" in diagnosis

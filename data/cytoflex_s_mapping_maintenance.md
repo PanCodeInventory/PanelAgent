@@ -55,8 +55,8 @@ All matching is case-insensitive at runtime.
 | Violet | V1_PB450 | 450/45 | Pacific Blue, BV421, DAPI |
 | Violet | V2_KO525 | 525/40 | BV510, AmCyan, KIRAVIA Blue 520 |
 | Violet | V3_V610 | 610/20 | BV605 |
-| Violet | V4_V660 | 660/20 | BV650 |
-| Violet | V5_V780 | 780/60 | BV785, BV786 |
+| Violet | V4_V660 | 660/20 | BV650 (disabled on the current lab instrument; ignored during panel generation) |
+| Violet | V4_V780 | 780/60 | BV785, BV786 |
 | Blue | B1_FITC | 525/40 | FITC, Alexa Fluor 488, BB515 |
 | Blue | B2_PerCP | 690/50 | PerCP, PerCP-Cy5.5 |
 | Yellow-Green | Y1_PE | 585/42 | PE |
@@ -74,6 +74,8 @@ All matching is case-insensitive at runtime.
 | `mapped` | Fluorochrome name exists as a key in `channel_mapping.json` |
 | `alias` | Known abbreviation or shorthand — documented for reference but may not be a direct key in `channel_mapping.json` |
 | `unsupported` | No compatible detector on this instrument configuration |
+
+Blocked detector note: `V4_V660` remains documented for inventory/reference fidelity, but the current lab instrument does not have that detector installed. Panel generation and conflict diagnosis ignore antibodies assigned to `V4_V660`.
 
 ## Update Workflow
 
@@ -97,7 +99,7 @@ python3 << 'EOF'
 import json
 with open('channel_mapping.json') as f:
     codes = set(v for v in json.load(f).values() if v != 'UNSUPPORTED')
-valid = {'V1_PB450', 'V2_KO525', 'V3_V610', 'V4_V660', 'V5_V780',
+valid = {'V1_PB450', 'V2_KO525', 'V3_V610', 'V4_V660', 'V4_V780',
          'B1_FITC', 'B2_PerCP', 'Y1_PE', 'Y2_ECD', 'Y3_PC5', 'Y4_PC7',
          'R1_APC', 'R2_A700', 'R3_A750'}
 unknown = codes - valid
@@ -145,7 +147,7 @@ python3 << 'EOF'
 import json
 with open('channel_mapping.json') as f:
     codes = set(v for v in json.load(f).values() if v != 'UNSUPPORTED')
-valid = {'V1_PB450', 'V2_KO525', 'V3_V610', 'V4_V660', 'V5_V780',
+valid = {'V1_PB450', 'V2_KO525', 'V3_V610', 'V4_V660', 'V4_V780',
          'B1_FITC', 'B2_PerCP', 'Y1_PE', 'Y2_ECD', 'Y3_PC5', 'Y4_PC7',
          'R1_APC', 'R2_A700', 'R3_A750'}
 unknown = codes - valid
@@ -191,7 +193,7 @@ python3 << 'EOF'
 import json
 with open('channel_mapping.json') as f:
     codes = set(v for v in json.load(f).values() if v != 'UNSUPPORTED')
-valid = {'V1_PB450', 'V2_KO525', 'V3_V610', 'V4_V660', 'V5_V780',
+valid = {'V1_PB450', 'V2_KO525', 'V3_V610', 'V4_V660', 'V4_V780',
          'B1_FITC', 'B2_PerCP', 'Y1_PE', 'Y2_ECD', 'Y3_PC5', 'Y4_PC7',
          'R1_APC', 'R2_A700', 'R3_A750'}
 unknown = codes - valid
@@ -209,4 +211,3 @@ EOF
 | Date | Change | Author | Commit |
 |------|--------|--------|--------|
 | | | | |
-

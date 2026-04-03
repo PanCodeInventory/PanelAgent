@@ -26,3 +26,21 @@ def test_find_valid_panels_respects_max_solutions_cap(antibodies_by_marker):
 
     assert len(panels) <= 2
     assert len(panels) == 2
+
+
+def test_find_valid_panels_ignores_blocked_system_codes():
+    markers = ["cd3", "cd4"]
+    antibodies_by_marker = {
+        "cd3": [
+            {"fluorochrome": "BV650", "system_code": "V4_V660"},
+            {"fluorochrome": "PE", "system_code": "Y1_PE"},
+        ],
+        "cd4": [
+            {"fluorochrome": "APC", "system_code": "R1_APC"},
+        ],
+    }
+
+    panels = find_valid_panels(markers, antibodies_by_marker, max_solutions=3)
+
+    assert panels
+    assert all(panel["cd3"]["system_code"] != "V4_V660" for panel in panels)
