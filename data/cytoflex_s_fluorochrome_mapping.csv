@@ -1,0 +1,69 @@
+fluorochrome,canonical_name,system_code,status,notes
+7-AAD,7-AAD,Y3_PC5,mapped,561nm excited viability dye best grouped with PC5/690 channel
+AF488,Alexa Fluor 488,B1_FITC,alias,Alias of Alexa Fluor 488
+AF647,Alexa Fluor 647,R1_APC,alias,Alias of Alexa Fluor 647
+AF700,Alexa Fluor 700,R2_A700,alias,Alias of Alexa Fluor 700
+APC,APC,R1_APC,mapped,Red laser 660/20 detector
+APC-Cy7,APC-Cy7,R3_A750,mapped,Red laser 780/60 tandem detector
+APC-Fire 750,APC-Fire 750,R3_A750,alias,Canonical name for APC/Fire™ 750
+APC-H7,APC-H7,R3_A750,mapped,Red laser 780/60 tandem detector
+APC-R700,APC-R700,R2_A700,mapped,Red laser 712/25 detector
+APC/Cyanine7,APC-Cy7,R3_A750,mapped,Canonicalized to APC-Cy7 family
+APC/Fire™ 750,APC-Fire 750,R3_A750,mapped,Red laser 780/60 tandem detector
+Alexa Fluor 488,Alexa Fluor 488,B1_FITC,mapped,Blue laser 525/40 detector
+Alexa Fluor 647,Alexa Fluor 647,R1_APC,mapped,Red laser 660/20 detector
+Alexa Fluor 700,Alexa Fluor 700,R2_A700,mapped,Red laser 712/25 detector
+Alexa Fluor® 488,Alexa Fluor 488,B1_FITC,mapped,Unicode brand variant of Alexa Fluor 488
+Alexa Fluor® 594,Alexa Fluor 594,Y2_ECD,mapped,Yellow-green 610/20 detector
+Alexa Fluor 594,Alexa Fluor 594,Y2_ECD,alias,ASCII variant of Alexa Fluor 594
+Alexa Fluor® 647,Alexa Fluor 647,R1_APC,mapped,Unicode brand variant of Alexa Fluor 647
+Alexa Fluor® 700,Alexa Fluor 700,R2_A700,mapped,Unicode brand variant of Alexa Fluor 700
+AmCyan,AmCyan,V2_KO525,mapped,Violet-excited cyan dye grouped to 525/40 violet detector
+BB515,BB515,B1_FITC,mapped,Blue laser green detector family
+BUV395,BUV395,UNSUPPORTED,unsupported,UV-excited dye not appropriate on current CytoFLEX S configuration
+BUV496,BUV496,UNSUPPORTED,unsupported,UV-excited dye not appropriate on current CytoFLEX S configuration
+BUV563,BUV563,UNSUPPORTED,unsupported,UV-excited dye not appropriate on current CytoFLEX S configuration
+BUV661,BUV661,UNSUPPORTED,unsupported,UV-excited dye not appropriate on current CytoFLEX S configuration
+BUV737,BUV737,UNSUPPORTED,unsupported,UV-excited dye not appropriate on current CytoFLEX S configuration
+BUV805,BUV805,UNSUPPORTED,unsupported,UV-excited dye not appropriate on current CytoFLEX S configuration
+BV421,BV421,V1_PB450,mapped,Violet 450/45 detector
+BV510,BV510,V2_KO525,mapped,Violet 525/40 detector
+BV605,BV605,V3_V610,mapped,Violet 610/20 detector
+BV650,BV650,V4_V660,mapped,Violet 660/20 detector
+BV711,BV711,UNSUPPORTED,unsupported,No matching 710-range violet detector in current model assumption
+BV785,BV785,V5_V780,mapped,User confirmed 785 channel is detectable on this instrument
+BV786,BV786,V5_V780,mapped,User confirmed 785/786 detector class is available on this instrument
+Brilliant Violet 421™,BV421,V1_PB450,mapped,Canonicalized to BV421
+Brilliant Violet 510™,BV510,V2_KO525,mapped,Canonicalized to BV510
+Brilliant Violet 605™,BV605,V3_V610,mapped,Canonicalized to BV605
+Brilliant Violet 650™,BV650,V4_V660,mapped,Canonicalized to BV650
+Brilliant Violet 711™,BV711,UNSUPPORTED,unsupported,No matching 710-range violet detector in current model assumption
+Brilliant Violet 785™,BV785,V5_V780,mapped,User confirmed 785 detector availability
+Brilliant Violet 786™,BV786,V5_V780,mapped,User confirmed 785 detector availability
+DAPI,DAPI,V1_PB450,mapped,Violet-excited nuclear dye detected in 450/45 channel
+FITC,FITC,B1_FITC,mapped,Blue laser 525/40 detector
+KIRAVIA Blue 520™,KIRAVIA Blue 520,V2_KO525,mapped,Violet 525/40 detector family
+KIRAVIA Blue 520,KIRAVIA Blue 520,V2_KO525,alias,ASCII variant of KIRAVIA Blue 520
+PB,Pacific Blue,V1_PB450,alias,Alias of Pacific Blue
+PE,PE,Y1_PE,mapped,Yellow-green 585/42 detector
+PE-CF594,PE-CF594,Y2_ECD,mapped,Yellow-green 610/20 detector
+PE-Cy5,PE-Cy5,Y3_PC5,mapped,Yellow-green 690/30 detector
+PE-Cy5.5,PE-Cy5.5,Y3_PC5,mapped,Yellow-green 690/30 detector
+PE-Cy7,PE-Cy7,Y4_PC7,mapped,Yellow-green 780/60 detector
+PE-Dazzle 594,PE-Dazzle 594,Y2_ECD,mapped,Yellow-green 610/20 detector
+PE/Cyanine7,PE-Cy7,Y4_PC7,mapped,Canonicalized to PE-Cy7
+PE/Dazzle™ 594,PE-Dazzle 594,Y2_ECD,mapped,Canonicalized to PE-Dazzle 594
+Pacific Blue,Pacific Blue,V1_PB450,mapped,Violet 450/45 detector
+Pacific Blue™,Pacific Blue,V1_PB450,mapped,Unicode brand variant of Pacific Blue
+PerCP,PerCP,B2_PerCP,mapped,Blue laser 690/50 detector
+PerCP-Cy5.5,PerCP-Cy5.5,B2_PerCP,mapped,Blue laser 690/50 detector family
+PerCP/Cyanine5.5,PerCP-Cy5.5,B2_PerCP,mapped,Canonicalized to PerCP-Cy5.5
+SB436,Super Bright 436,V1_PB450,alias,Alias of Super Bright 436
+Super Bright 436,Super Bright 436,V1_PB450,alias,Canonical name for Super Bright™ 436
+Super Bright™ 436,Super Bright 436,V1_PB450,mapped,Violet 450/45 detector
+V450,V450,V1_PB450,mapped,Violet 450/45 detector family
+V500,V500,V2_KO525,mapped,Violet 525/40 detector family
+Zombie Aqua,Zombie Aqua,V2_KO525,alias,Canonical name for Zombie Aqua™
+Zombie Aqua™,Zombie Aqua,V2_KO525,mapped,Violet viability dye detected in 525/40 channel
+Zombie NIR,Zombie NIR,R3_A750,alias,Canonical name for Zombie NIR™
+Zombie NIR™,Zombie NIR,R3_A750,mapped,Red 780/60 viability dye
