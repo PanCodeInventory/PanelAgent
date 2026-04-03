@@ -8,7 +8,8 @@
     "ses_2acd4c2b4ffe2lbDWF5s6K3cNv",
     "ses_2acd4951effeKsdgciniTF5P4Y",
     "ses_2acbff7a1ffeP055MatdNepQi5",
-    "ses_2acba515effeNrex5LerERjiCP"
+    "ses_2acba515effeNrex5LerERjiCP",
+    "ses_2acb4cf54ffeUyHHx4qOSadqcY"
   ],
   "plan_name": "docker-lan-compose-migration",
   "agent": "atlas",
@@ -48,6 +49,15 @@
       "agent": "Sisyphus-Junior",
       "category": "unspecified-high",
       "updated_at": "2026-04-03T12:21:31.134Z"
+    },
+    "todo:7": {
+      "task_key": "todo:7",
+      "task_label": "7",
+      "task_title": "Add Rollback Runbook and Controlled Cutover Procedure",
+      "session_id": "ses_2acb4cf54ffeUyHHx4qOSadqcY",
+      "agent": "Sisyphus-Junior",
+      "category": "writing",
+      "updated_at": "2026-04-03T12:28:04.928Z"
     }
   }
 }

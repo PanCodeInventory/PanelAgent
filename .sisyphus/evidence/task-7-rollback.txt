@@ -1,0 +1,252 @@
+# Task 7 Evidence: Rollback Runbook and Rehearsal
+
+**Date**: 2026-04-03
+**Task**: Write rollback runbook and controlled cutover procedure for PanelAgent Docker migration
+
+---
+
+## Evidence Summary
+
+All rollback rehearsal steps completed successfully. Docker stack was safely stopped, tmux remained operational, and Docker was restarted successfully.
+
+---
+
+## 1. Initial State Verification
+
+### 1.1 Docker Stack Running (Before Rehearsal)
+
+```
+$ docker compose ps
+NAME                  IMAGE                 COMMAND                   SERVICE    CREATED          STATUS                    PORTS
+panelagent-backend    panelagent-backend    "uvicorn backend.app…"   backend    11 minutes ago   Up 6 minutes (healthy)    0.0.0.0:18000->8000/tcp, [::]:18000->8000/tcp
+panelagent-frontend   panelagent-frontend   "docker-entrypoint.s…"   frontend   11 minutes ago   Up 10 minutes (healthy)   0.0.0.0:13000->3000/tcp, [::]:13000->3000/tcp
+```
+
+### 1.2 tmux Services Running (Before Rehearsal)
+
+```
+$ curl -s http://127.0.0.1:8000/api/v1/health
+{"status":"ok","version":"1.0.0"}
+
+$ curl -sI http://127.0.0.1:3000 | head -1
+HTTP/1.1 200 OK
+```
+
+---
+
+## 2. Rollback Rehearsal Steps
+
+### Step 1: Stop Docker Stack
+
+```
+$ docker compose down
+ Container panelagent-frontend Stopping
+ Container panelagent-frontend Stopped
+ Container panelagent-frontend Removing
+ Container panelagent-frontend Removed
+ Container panelagent-backend Stopping
+ Container panelagent-backend Stopped
+ Container panelagent-backend Removing
+ Container panelagent-backend Removed
+ Network panelagent_default Removing
+ Network panelagent_default Removed
+```
+
+**Result**: Docker stack stopped successfully.
+
+### Step 2: Verify Docker is Down
+
+```
+$ docker compose ps
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+```
+
+**Result**: No containers running.
+
+### Step 3: Verify tmux Backend Still Responding
+
+```
+$ curl -s http://127.0.0.1:8000/api/v1/health
+{"status":"ok","version":"1.0.0"}
+```
+
+**Result**: tmux backend healthy and responding.
+
+### Step 4: Verify tmux Frontend Still Responding
+
+```
+$ curl -sI http://127.0.0.1:3000 | head -1
+HTTP/1.1 200 OK
+```
+
+**Result**: tmux frontend healthy and responding.
+
+### Step 5: Restart Docker Stack
+
+```
+$ docker compose up -d
+ Network panelagent_default Creating
+ Network panelagent_default Created
+ Container panelagent-backend Creating
+ Container panelagent-backend Created
+ Container panelagent-frontend Creating
+ Container panelagent-frontend Created
+ Container panelagent-backend Starting
+ Container panelagent-backend Started
+ Container panelagent-backend Waiting
+ Container panelagent-backend Healthy
+ Container panelagent-frontend Starting
+ Container panelagent-frontend Started
+```
+
+**Result**: Docker stack restarted successfully.
+
+### Step 6: Verify Docker is Healthy Again
+
+```
+$ docker compose ps
+NAME                  IMAGE                 COMMAND                   SERVICE    CREATED       STATUS                   PORTS
+panelagent-backend    panelagent-backend    "uvicorn backend.app…"   backend    14 seconds ago   Up 13 seconds (healthy)   0.0.0.0:18000->8000/tcp, [::]:18000->8000/tcp
+panelagent-frontend   panelagent-frontend   "docker-entrypoint.s…"   frontend   14 seconds ago   Up 8 seconds (healthy)    0.0.0.0:13000->3000/tcp, [::]:13000->3000/tcp
+
+$ curl -s http://127.0.0.1:18000/api/v1/health
+{"status":"ok","version":"1.0.0"}
+```
+
+**Result**: Docker backend responding on staging port 18000.
+
+---
+
+## 3. Backup Verification
+
+### Step 1: Check Quality Registry Directory
+
+```
+$ ls -la data/quality_registry/
+总计 20
+drwxrwxr-x 4 user user 4096  4月  3 20:17 .
+drwxrwxr-x 3 user user 4096  4月  3 17:43 ..
+drwxrwxr-x 2 user user 4096  4月  3 20:17 audit
+-rw------- 1 root root 2427  4月  3 20:17 issues.json
+drwxrwxr-x 2 user user 4096  4月  3 20:17 projections
+```
+
+### Step 2: Create Backup Using Docker
+
+Note: Files are owned by root (from container), so we used Docker to create the backup:
+
+```
+$ docker exec panelagent-backend tar czf /tmp/quality_registry_backup.tar.gz -C /app/data quality_registry/
+$ docker cp panelagent-backend:/tmp/quality_registry_backup.tar.gz /tmp/quality_registry_backup_final.tar.gz
+```
+
+### Step 3: Verify Archive Contents
+
+```
+$ tar tzf /tmp/quality_registry_backup_final.tar.gz | head -10
+quality_registry/
+quality_registry/audit/
+quality_registry/audit/f0f4dfe6-b6ec-4504-af24-020b67596530.json
+quality_registry/audit/b48d3627-c9a2-48a6-95ac-3ce7f2847cb9.json
+quality_registry/audit/3b2b2fb6-49a2-4a07-a5f8-b79ac82f5b02.json
+quality_registry/audit/f29ec371-91c7-413f-9a8e-30bd521f4ef2.json
+quality_registry/projections/
+quality_registry/projections/dab89c6205e9f853.json
+quality_registry/projections/fc079be6637ea3f7.json
+quality_registry/projections/0c57f1d09e6ec2f2.json
+```
+
+### Step 4: Verify Source Directory Untouched
+
+```
+$ ls -la data/quality_registry/
+总计 20
+drwxrwxr-x 4 user user 4096  4月  3 20:17 .
+drwxrwxr-x 3 user user 4096  4月  3 17:43 ..
+drwxrwxr-x 2 user user 4096  4月  3 20:17 audit
+-rw------- 1 root root 2427  4月  3 20:17 issues.json
+drwxrwxr-x 2 user user 4096  4月  3 20:17 projections
+```
+
+**Result**: Source directory unchanged after backup.
+
+### Step 5: Clean Up Temp Archive
+
+```
+$ rm /tmp/quality_registry_backup.tar.gz /tmp/quality_registry_backup_final.tar.gz
+```
+
+---
+
+## 4. Final State Verification
+
+### tmux Services (Live)
+
+```
+$ curl -s http://127.0.0.1:8000/api/v1/health
+{"status":"ok","version":"1.0.0"}
+
+$ curl -sI http://127.0.0.1:3000 | head -1
+HTTP/1.1 200 OK
+```
+
+### Docker Stack (Staging)
+
+```
+$ docker compose ps
+NAME                  IMAGE                 COMMAND                   SERVICE    CREATED              STATUS                        PORTS
+panelagent-backend    panelagent-backend    "uvicorn backend.app…"   backend    About a minute ago   Up About a minute (healthy)   0.0.0.0:18000->8000/tcp, [::]:18000->8000/tcp
+panelagent-frontend   panelagent-frontend   "docker-entrypoint.s…"   frontend   About a minute ago   Up About a minute (healthy)   0.0.0.0:13000->3000/tcp, [::]:13000->3000/tcp
+
+$ curl -s http://127.0.0.1:18000/api/v1/health
+{"status":"ok","version":"1.0.0"}
+```
+
+---
+
+## 5. Checklist Status
+
+| Item | Status |
+|------|--------|
+| Rollback runbook created | PASS |
+| All required sections present | PASS |
+| Rollback rehearsal executed | PASS |
+| Docker stopped successfully | PASS |
+| tmux remained operational | PASS |
+| Docker restarted successfully | PASS |
+| Backup verification completed | PASS |
+| Evidence file created | PASS |
+| Docker stack running after rehearsal | PASS |
+
+---
+
+## 6. Conclusion
+
+The rollback runbook was created successfully with all required sections:
+
+1. Quick Reference
+2. Prerequisites
+3. Starting the Docker Stack (Staging)
+4. Validation Checklist
+5. Backup Procedure
+6. Rollback Procedure
+7. Cutover Procedure (Future)
+8. Common Issues and Troubleshooting
+9. Reference Commands
+10. Contact and Escalation
+
+All rollback rehearsal commands executed successfully:
+- Docker stack stopped without issues
+- tmux services remained operational throughout
+- Docker stack restarted and passed health checks
+- Backup procedure verified (using Docker-based approach due to root-owned files)
+- Evidence captured in this file
+
+The system is now in the expected final state:
+- tmux running on ports 3000/8000 (live)
+- Docker running on ports 13000/18000 (staging)
+- Both systems healthy and responding
+
+---
+
+*Evidence file generated: .sisyphus/evidence/task-7-rollback.txt*

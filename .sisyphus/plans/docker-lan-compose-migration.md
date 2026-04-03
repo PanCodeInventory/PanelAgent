@@ -335,7 +335,7 @@ Wave 2: staged validation, persistence, rollback, documentation
 
   **Commit**: YES | Message: `test(deploy): validate compose ui api and persistence parity` | Files: validation scripts/tests/evidence helpers only
 
-- [ ] 7. Add Rollback Runbook and Controlled Cutover Procedure
+- [x] 7. Add Rollback Runbook and Controlled Cutover Procedure
 
   **What to do**: Write the exact operational steps for validation, rollback, and eventual cutover. Include backup instructions for `data/quality_registry/`, the explicit rule that tmux remains primary until approval, the command sequence to stop staged Docker safely, and the later cutover step that rebinds Docker to `3000/8000` only after all checks pass.
   **Must NOT do**: Do not actually cut over. Do not stop tmux services. Do not promise zero-risk without a tested rollback.
