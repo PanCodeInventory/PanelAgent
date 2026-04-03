@@ -1,0 +1,80 @@
+TASK 7: Cross-Flow CWD-Independence Regression Test
+====================================================
+
+OBJECTIVE
+---------
+Add a cross-flow CWD-independence regression test that verifies the full API flow
+(panels generate, recommendations, evaluation) works when pytest is executed from
+a non-project-root working directory.
+
+DELIVERABLES
+------------
+1. File created: tests/test_cwd_independence.py
+   - New regression test module with 3 tests
+   - Tests cover all three main API endpoints
+
+2. Test: test_api_panels_generate_from_nonroot_cwd
+   - Uses ASGI test client to call /api/v1/panels/generate
+   - Changes CWD to /tmp using monkeypatch.chdir(tmp_path)
+   - Mocks LLM calls to prevent network dependencies
+   - Verifies successful response with candidates
+
+3. Test: test_api_recommendations_from_nonroot_cwd
+   - Uses ASGI test client to call /api/v1/recommendations/markers
+   - Changes CWD to /tmp using monkeypatch.chdir(tmp_path)
+   - Mocks LLM calls to prevent network dependencies
+   - Verifies successful response with selected markers
+
+4. Test: test_api_evaluation_from_nonroot_cwd
+   - Uses ASGI test client to call /api/v1/panels/evaluate
+   - Changes CWD to /tmp using monkeypatch.chdir(tmp_path)
+   - Mocks LLM calls to prevent network dependencies
+   - Verifies successful response with selected panel
+
+TEST RESULTS
+------------
+Individual test results:
+- test_api_panels_generate_from_nonroot_cwd: PASSED
+- test_api_recommendations_from_nonroot_cwd: PASSED
+- test_api_evaluation_from_nonroot_cwd: PASSED
+
+Full test suite results:
+- Total tests: 218
+- Passed: 218
+- Failed: 0
+
+VERIFICATION COMMANDS
+---------------------
+Run CWD independence tests:
+PYTHONPATH=. python -m pytest tests/test_cwd_independence.py -v
+
+Run full test suite:
+PYTHONPATH=. python -m pytest tests/ -q
+
+TECHNICAL DETAILS
+-----------------
+The tests verify CWD independence by:
+
+1. Changing CWD to tmp_path (simulating /tmp)
+2. Asserting that CWD is actually changed
+3. Calling API endpoints with mocked LLM responses
+4. Verifying successful responses
+
+Key technical aspects:
+- Uses ASGITransport for FastAPI app testing
+- Uses monkeypatch.chdir(tmp_path) for CWD manipulation
+- Patches both llm_api_client.consult_gpt_oss and panel_generator.consult_gpt_oss
+- Follows existing test patterns from tests/api/conftest.py and API test files
+
+WHY THIS WORKS
+--------------
+The API works from non-root CWD because:
+1. panel_generator.py now uses resolve_static_data_path() for absolute paths
+2. Endpoints use project_root() and resolve_static_data_path() for absolute paths
+3. Test fixtures use resolve_static_data_path() for absolute paths
+
+This regression test ensures future changes don't break this CWD independence.
+
+DATE
+----
+2026-04-03
