@@ -1,6 +1,7 @@
 """Application settings loaded from environment variables and .env file."""
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -41,3 +42,36 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Return a cached Settings instance."""
     return Settings()
+
+
+_NAME_MAP = {
+    "channel_mapping": "CHANNEL_MAPPING_FILE",
+    "brightness_mapping": "BRIGHTNESS_MAPPING_FILE",
+    "spectral_data": "SPECTRAL_DATA_FILE",
+}
+
+
+def project_root() -> Path:
+    """Return the absolute path to the project root.
+
+    The config.py file is located at backend/app/core/config.py,
+    so we use parents[3] to reach the project root.
+    """
+    return Path(__file__).resolve().parents[3]
+
+
+def resolve_static_data_path(name: str) -> Path:
+    """Resolve a static data file path by name.
+
+    Args:
+        name: One of "channel_mapping", "brightness_mapping", "spectral_data"
+
+    Returns:
+        Absolute Path to the requested static data file
+
+    Raises:
+        KeyError: If name is not recognized
+    """
+    settings = get_settings()
+    attr = _NAME_MAP[name]
+    return project_root() / getattr(settings, attr)

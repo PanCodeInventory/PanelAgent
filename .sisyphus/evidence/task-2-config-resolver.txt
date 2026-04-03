@@ -1,0 +1,57 @@
+Task 2: Config Resolver - Evidence
+
+IMPLEMENTATION SUMMARY
+=====================
+
+Files Modified:
+- backend/app/core/config.py
+  - Added import: from pathlib import Path
+  - Added _NAME_MAP dictionary mapping logical names to Settings attributes
+  - Added project_root() function that resolves from __file__ using parents[3]
+  - Added resolve_static_data_path(name) function that maps names to absolute paths
+
+Files Created:
+- tests/test_config_static_paths.py
+  - Test class TestProjectRoot with 3 tests
+  - Test class TestResolveStaticDataPath with 5 tests
+
+VERIFICATION RESULTS
+===================
+
+Test execution: PYTHONPATH=. python -m pytest tests/test_config_static_paths.py -q
+Result: 8 passed in 0.08s
+
+All tests verified:
+1. project_root() returns absolute path ✓
+2. project_root() contains backend/ directory ✓
+3. project_root() contains tests/ directory ✓
+4. resolve_static_data_path("channel_mapping") points to channel_mapping.json ✓
+5. resolve_static_data_path("brightness_mapping") points to fluorochrome_brightness.json ✓
+6. resolve_static_data_path("spectral_data") points to spectral_data.json ✓
+7. All resolved paths are absolute ✓
+8. resolve_static_data_path() raises KeyError for unknown names ✓
+
+BACKWARD COMPATIBILITY
+=====================
+
+Settings class: Unchanged (no modifications to fields or defaults)
+get_settings() function: Unchanged (behavior preserved)
+Existing imports and usage patterns remain valid
+
+DESIGN DECISIONS
+================
+
+1. parents[3] in project_root(): Correct because config.py is at backend/app/core/config.py
+   - Path(__file__) = .../backend/app/core/config.py
+   - parents[0] = .../backend/app/core/
+   - parents[1] = .../backend/app/
+   - parents[2] = .../backend/
+   - parents[3] = .../ (project root)
+
+2. _NAME_MAP mapping: Provides abstraction layer between logical names and Settings attributes
+   - Allows changing Settings field names without breaking API
+   - Clear semantic names vs. implementation details
+
+3. resolve_static_data_path() uses project_root() internally
+   - Ensures consistency across all static data paths
+   - Centralized path resolution logic
