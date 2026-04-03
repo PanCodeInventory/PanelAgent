@@ -4,6 +4,49 @@ import random
 import ast
 from data_preprocessing import load_antibody_data, normalize_marker_name, aggregate_antibodies_by_marker
 from llm_api_client import consult_gpt_oss
+from backend.app.services.quality_registry_store import QualityRegistryStore
+from backend.app.services.quality_projection import QualityProjector
+from backend.app.services.quality_context_formatter import format_quality_context, QUALITY_CONTEXT_HEADER
+from backend.app.schemas.quality_registry import AntibodyQualityProjection
+
+_quality_store = QualityRegistryStore()
+_quality_projector = QualityProjector(_quality_store)
+
+
+def _build_quality_context_section(marker_names: list[str]) -> str:
+    """Build quality context section for LLM prompt injection.
+
+    Returns empty string if no relevant quality issues exist.
+    This is context-only guidance — does NOT filter candidates.
+    """
+    try:
+        projections = _quality_projector.get_projections_for_markers(marker_names)
+        if not projections:
+            return ""
+
+        # Convert ProjectionRecord -> AntibodyQualityProjection for formatter
+        schema_projections = []
+        for proj in projections:
+            if proj.entity_key is not None:
+                schema_projections.append(AntibodyQualityProjection(
+                    entity_key=proj.entity_key,
+                    issue_count=proj.issue_count,
+                    latest_issues=proj.latest_issues,
+                    aggregate_status=proj.aggregate_status,
+                ))
+
+        if not schema_projections:
+            return ""
+
+        ctx = format_quality_context(schema_projections)
+        if ctx.total_chars == 0:
+            return ""
+
+        # Reconstruct the full text from entries
+        return QUALITY_CONTEXT_HEADER + "\n".join(ctx.entries)
+    except Exception:
+        # Quality context is best-effort — never break the main flow
+        return ""
 
 
 def _infer_marker_type(marker_name, experimental_goal):
@@ -316,6 +359,18 @@ def evaluate_candidates_with_llm(candidates, missing_markers=[]):
             ab = cand.get(m, {})
             diff_str += f"- {m}: {ab.get('fluorochrome', '?')} (Brightness: {ab.get('brightness', '?')})\n"
 
+    try:
+        quality_section = _build_quality_context_section(markers)
+    except Exception:
+        quality_section = ""
+
+    quality_prompt_section = ""
+    if quality_section:
+        quality_prompt_section = f"""
+- **Antibody Quality Notes (Reference ONLY — do NOT auto-exclude):**
+{quality_section}
+"""
+
     prompt = f"""
 You are a flow cytometry panel design expert.
 
@@ -328,7 +383,7 @@ You are a flow cytometry panel design expert.
 
 - **KEY DIFFERENCES (Focus your decision here):**
 {diff_str}
-
+{quality_prompt_section}
 **Evaluation Criteria:**
 1. **Brightness Matching:** High expression markers -> Dim fluorochromes. Low expression -> Bright fluorochromes.
 2. **Spillover:** Minimize spectral overlap in critical co-expressed markers.
@@ -426,7 +481,19 @@ def recommend_markers_from_inventory(experimental_goal, num_colors, available_ta
     
     # Convert list to string for prompt
     targets_str = ", ".join(sorted(available_targets_list))
-    
+
+    try:
+        quality_section = _build_quality_context_section(available_targets_list)
+    except Exception:
+        quality_section = ""
+
+    quality_prompt_section = ""
+    if quality_section:
+        quality_prompt_section = f"""
+**Antibody Quality Notes (Reference ONLY — do NOT auto-exclude):**
+{quality_section}
+"""
+
     prompt = f"""
 You are a senior flow cytometry expert.
 
@@ -435,7 +502,7 @@ You are a senior flow cytometry expert.
 
 **Constraint:** You can ONLY select markers from the following **Available Inventory**:
 [{targets_str}]
-
+{quality_prompt_section}
 **Task:**
 1. Select the most critical markers from the inventory to achieve the research goal.
 2. Categorize each marker (e.g., Lineage, Activation, Exhaustion, Functional).

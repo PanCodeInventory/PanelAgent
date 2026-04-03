@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const allowedDevOrigins = Array.from(
@@ -14,6 +15,9 @@ const allowedDevOrigins = Array.from(
 
 const nextConfig: NextConfig = {
   allowedDevOrigins,
+  turbopack: {
+    root: path.join(__dirname),
+  },
   async rewrites() {
     return [
       {

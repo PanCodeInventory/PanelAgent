@@ -1,0 +1,25 @@
+[
+  {
+    "id": "3b2b2fb6-49a2-4a07-a5f8-b79ac82f5b02",
+    "feedback_key": {
+      "species": "Mouse (小鼠)",
+      "normalized_marker": "perforin",
+      "fluorochrome": "APC",
+      "brand": "biol",
+      "clone": "S16009A"
+    },
+    "entity_key": {
+      "species": "Mouse (小鼠)",
+      "normalized_marker": "perforin",
+      "clone": "S16009A",
+      "brand": "BioLegend",
+      "catalog_number": "154304",
+      "lot_number": null
+    },
+    "issue_text": "功能测试",
+    "reported_by": "潘崇实",
+    "status": "confirmed",
+    "created_at": "2026-04-02T12:12:41.061606Z",
+    "updated_at": "2026-04-02T12:12:41.081219Z"
+  }
+]

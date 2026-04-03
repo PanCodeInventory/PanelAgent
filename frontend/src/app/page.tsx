@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Brain, Wrench, Search, Bot, BarChart3 } from "lucide-react";
+import { BarChart3, Bot, Brain, Search, ShieldAlert, Wrench } from "lucide-react";
 
 export default function Home() {
   return (
@@ -29,7 +29,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="mt-16 grid gap-6 md:grid-cols-2">
+        <div className="mt-16 grid gap-6 md:grid-cols-3">
           <Card className="group bg-card border border-border hover:border-primary/20 transition-colors duration-200 rounded-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
@@ -84,6 +84,24 @@ export default function Home() {
                 >
                   Generate Panel
                 </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="group bg-card border border-border hover:border-primary/20 transition-colors duration-200 rounded-xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <ShieldAlert className="h-5 w-5" />
+                </div>
+                <span className="text-foreground">Quality Registry</span>
+              </CardTitle>
+              <CardDescription>Report antibody quality issues and help improve panel recommendations</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">Submit feedback about antibodies that do not perform well. AI will find matching candidates from your inventory for confirmation.</p>
+              <Link href="/quality-registry" className="block">
+                <Button className="w-full transition-all duration-200" variant="default">Report Issue</Button>
               </Link>
             </CardContent>
           </Card>

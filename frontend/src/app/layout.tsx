@@ -69,6 +69,15 @@ export default function RootLayout({
                   <span className="absolute inset-x-0 -bottom-1 h-px bg-primary opacity-0 transition-opacity hover:opacity-100" />
                 </span>
               </Link>
+              <Link
+                href="/quality-registry"
+                className="relative px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <span className="relative">
+                  Quality Registry
+                  <span className="absolute inset-x-0 -bottom-1 h-px bg-primary opacity-0 transition-opacity hover:opacity-100" />
+                </span>
+              </Link>
             </nav>
           </div>
         </header>

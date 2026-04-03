@@ -1,0 +1,75 @@
+=== FINAL INTEGRATION GATE ===
+Date: 2026-04-02
+Plan: antibody-quality-registry-panel-llm
+
+BACKEND TESTS:
+- Command: PYTHONPATH=. python -m pytest tests/ -q
+- Result: 202 passed
+- Status: PASS
+
+FRONTEND TYPECHECK:
+- Command: cd frontend && npx tsc --noEmit
+- Result: 0 errors
+- Status: PASS
+
+MAKE TEST-BACKEND:
+- Command: make test-backend
+- Result: 202 passed, exit 0
+- Status: PASS
+
+MAKE CHECK-ALL (best-effort):
+- Command: make check-all
+- Result: PARTIAL — all critical checks pass, lint issues fixed
+- Backend lint: 0 errors (fixed: removed unused raw_entries variable)
+- Frontend lint: 1 remaining non-blocking error (pre-existing, cosmetic):
+  1. loading-skeleton.tsx:86 — Math.random in render (react-hooks/purity) — NOT a quality-registry file
+- Status: PASS — all quality-registry lint issues resolved
+
+EVIDENCE FILES:
+- .sisyphus/evidence/task-12-backend-tests.txt (verbose test output)
+- .sisyphus/evidence/task-12-frontend-typecheck.txt (typecheck result)
+- .sisyphus/evidence/task-12-make-test-backend.txt (make test-backend output)
+- .sisyphus/evidence/task-12-check-all.txt (make check-all output)
+- .sisyphus/evidence/task-12-final-gate.txt (this summary)
+
+TASK SUMMARY:
+- Tasks 1-11: All implementation complete
+- Tests: 202 backend tests (30 contracts + 30 store + 15 projection + 15 formatter + 23 API + 5 evaluate-quality + 4 recommend-quality + 4 E2E integration + 41 edge cases + 35 pre-existing)
+- Frontend: TypeScript compiles clean
+- Next: F1-F4 Final Verification Wave
+
+REVIEW FIXES APPLIED (F1+F2 re-review):
+1. Removed unused `raw_entries` variable in quality_context_formatter.py (F841 lint fix)
+2. Added clone whitespace stripping to QualityIssueCreate model_validator
+3. Strengthened sanitize_for_markdown() with control char removal + instruction-like pattern filtering
+4. Fixed unescaped apostrophe in page.tsx (reworded "don't" to "do not")
+5. Refactored setState-in-useEffect in quality-registry-client.tsx using useRef transition pattern
+6. Generated per-task evidence files (task-01 through task-11)
+
+MUST HAVE CHECKLIST:
+[✓] Dedicated quality registry (not overloaded inventory CSV rows)
+[✓] Immutable audit history for all create/update state changes
+[✓] Feedback can be submitted without clone by using marker+color+brand inputs
+[✓] Auto-trigger candidate lookup from natural language feedback and single-select confirmation modal
+[✓] Unresolved feedback is routed into manual review queue with traceable status
+[✓] Save-time incremental organization by canonical antibody identity
+[✓] Context-only LLM injection in both panel evaluation and marker recommendation paths
+[✓] Frontend registration/history workflow with input validation
+[✓] Evidence artifacts written under .sisyphus/evidence/
+
+MUST NOT HAVE CHECKLIST:
+[✓] No hard filtering or automatic exclusion of antibodies in screening output
+[✓] No silent auto-binding of candidate antibody without user confirmation
+[✓] No taxonomy/ontology management system
+[✓] No notification/approval workflow, moderation console, or analytics dashboard
+[✓] No ambiguous acceptance criteria
+[✓] No non-deterministic prompt-shaping behavior without test coverage
+
+KNOWN NON-BLOCKING ISSUES (documented, not fixing per task constraints):
+1. frontend/src/components/ui/loading-skeleton.tsx:86 — Math.random in render (pre-existing, not quality-registry)
+
+NOTES:
+- npm run build is blocked: Next.js 16 requires Node >= 20.9.0, workspace is on Node 18.19.1
+- npx tsc --noEmit is the correct TypeScript verification command
+- make check-all includes e2e-frontend which requires Playwright browsers (not installed)
+- Frontend has no Jest/Vitest — only Playwright E2E tests

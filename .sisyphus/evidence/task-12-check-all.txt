@@ -1,0 +1,63 @@
+F841 Local variable `raw_entries` is assigned to but never used
+   --> backend/app/services/quality_context_formatter.py:108:5
+    |
+107 |     # Build raw entries
+108 |     raw_entries: list[str] = [_format_entry(p) for p in projections]
+    |     ^^^^^^^^^^^
+109 |
+110 |     # Deterministic sort key function applied to projections, but we need
+    |
+help: Remove assignment to unused variable `raw_entries`
+
+Found 1 error.
+No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
+SKIP: ruff not installed — run 'pip install ruff' to enable
+PYTHONPATH=. python -m pytest tests/ -q
+........................................................................ [ 36%]
+........................................................................ [ 72%]
+.......................................................                  [100%]
+199 passed in 1.46s
+npm run lint --prefix frontend
+
+> frontend@0.1.0 lint
+> eslint
+
+
+/home/user/PanChongshi/Repo/PanelAgent/frontend/src/app/page.tsx
+  102:101  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/user/PanChongshi/Repo/PanelAgent/frontend/src/app/quality-registry/quality-registry-client.tsx
+  160:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/user/PanChongshi/Repo/PanelAgent/frontend/src/app/quality-registry/quality-registry-client.tsx:160:7
+  158 |   useEffect(() => {
+  159 |     if (!lookupReady) {
+> 160 |       setCandidateModalOpen(false);
+      |       ^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  161 |       setSelectedCandidateKey("");
+  162 |       setConfirmedCandidate(null);
+  163 |       setConfirmedLookupKey("");  react-hooks/set-state-in-effect
+
+/home/user/PanChongshi/Repo/PanelAgent/frontend/src/components/ui/loading-skeleton.tsx
+  86:37  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/home/user/PanChongshi/Repo/PanelAgent/frontend/src/components/ui/loading-skeleton.tsx:86:37
+  84 |             key={`line-${index}`}
+  85 |             className="h-4 animate-pulse rounded bg-muted/40"
+> 86 |             style={{ width: `${85 + Math.random() * 15}%` }}
+     |                                     ^^^^^^^^^^^^^ Cannot call impure function
+  87 |           />
+  88 |         ))}
+  89 |       </div>  react-hooks/purity
+
+✖ 3 problems (3 errors, 0 warnings)
+
+make: *** [Makefile:14：lint-frontend] 错误 1
