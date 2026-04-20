@@ -1,31 +1,28 @@
 # =============================================================================
-# PanelAgent - Staged LAN Docker Compose Stack
+# PanelAgent - Docker Compose Stack
 # =============================================================================
-# Validation ports: frontend 13000, backend 18000
-# Live tmux ports (3000/8000) remain untouched.
+# Ports: frontend 3000, backend 8000
 #
 # Usage:
-#   docker compose -f docker-compose.yml config   # validate
-#   docker compose -f docker-compose.yml build     # build images
-#   docker compose -f docker-compose.yml up -d      # start stack
-#   docker compose -f docker-compose.yml ps         # check status
-#   docker compose -f docker-compose.yml logs -f    # stream logs
-#   docker compose -f docker-compose.yml down       # tear down
+#   docker compose build     # build images
+#   docker compose up -d     # start stack
+#   docker compose ps        # check status
+#   docker compose logs -f   # stream logs
+#   docker compose down      # tear down
 # =============================================================================
 
 services:
-  # ── Backend (FastAPI + uvicorn) ────────────────────────────────────────────
   backend:
     build:
       context: .
       dockerfile: Dockerfile.backend
     container_name: panelagent-backend
     ports:
-      - "18000:8000"
+      - "8000:8000"
     env_file:
       - .env
     environment:
-      BACKEND_CORS_ORIGINS: "http://localhost:13000,http://localhost:3000,http://192.168.1.100:13000"
+      BACKEND_CORS_ORIGINS: "http://localhost:3000,http://192.168.1.100:3000,http://192.168.1.105:3000"
     volumes:
       - ./data/quality_registry:/app/data/quality_registry
     healthcheck:
@@ -36,7 +33,6 @@ services:
       start_period: 10s
     restart: unless-stopped
 
-  # ── Frontend (Next.js production) ──────────────────────────────────────────
   frontend:
     build:
       context: ./frontend

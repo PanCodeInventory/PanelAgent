@@ -15,6 +15,11 @@ RUN pip install --no-cache-dir -r backend/requirements.txt
 # Copy backend source
 COPY backend/ ./backend/
 
+# Copy root-level Python modules imported by backend via importlib
+COPY data_preprocessing.py  ./data_preprocessing.py
+COPY panel_generator.py     ./panel_generator.py
+COPY llm_api_client.py      ./llm_api_client.py
+
 # Copy static data files that config.py resolves via project_root()
 COPY channel_mapping.json     ./channel_mapping.json
 COPY fluorochrome_brightness.json ./fluorochrome_brightness.json

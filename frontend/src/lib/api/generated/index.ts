@@ -129,6 +129,8 @@ export interface components {
             catalog_number?: string | null;
             /** Target */
             target?: string | null;
+            /** Stock */
+            stock?: number | null;
         };
         /** DiagnoseRequest */
         DiagnoseRequest: {
