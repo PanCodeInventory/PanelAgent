@@ -56,7 +56,6 @@ def _atomic_write(path: Path, data: str) -> None:
             f.write(data)
         os.replace(tmp_path, str(path))
     except BaseException:
-        # Clean up temp file on failure
         try:
             os.unlink(tmp_path)
         except OSError:
@@ -65,14 +64,17 @@ def _atomic_write(path: Path, data: str) -> None:
 
 
 def _read_json(path: Path) -> list:
-    """Read JSON array from file, returning [] if missing/empty."""
+    """Read JSON array from file, returning [] if missing/empty/unreadable."""
     if not path.exists():
         return []
-    with open(path, "r", encoding="utf-8") as f:
-        content = f.read().strip()
-        if not content:
-            return []
-        return json.loads(content)
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            content = f.read().strip()
+            if not content:
+                return []
+            return json.loads(content)
+    except PermissionError:
+        return []
 
 
 def _write_json(path: Path, data: list) -> None:

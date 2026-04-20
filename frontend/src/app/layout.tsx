@@ -14,8 +14,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FlowCyt Panel Assistant",
-  description: "Hybrid AI tool for multi-color flow cytometry panel design",
+  title: "PanelAgent 流式配色助手",
+  description: "结合确定性算法与AI评估，基于实验室真实库存生成有效的配色方案",
 };
 
 export default function RootLayout({
@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="zh-CN"
       className={`${dmSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans">
@@ -34,10 +34,10 @@ export default function RootLayout({
             <div className="flex items-center gap-3">
               <Link href="/" className="flex items-center gap-2 group">
                 <span className="text-xl font-semibold tracking-tight text-primary transition-colors">
-                  FlowCyt
+                  PanelAgent
                 </span>
                 <span className="text-xl font-light tracking-tight text-muted-foreground">
-                  Panel Assistant
+                  流式配色助手
                 </span>
               </Link>
             </div>
@@ -47,7 +47,7 @@ export default function RootLayout({
                 className="relative px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 <span className="relative">
-                  Home
+                  首页
                   <span className="absolute inset-x-0 -bottom-1 h-px bg-primary opacity-0 transition-opacity group-hover:opacity-100" />
                 </span>
               </Link>
@@ -56,7 +56,7 @@ export default function RootLayout({
                 className="relative px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 <span className="relative">
-                  Experimental Design
+                  实验设计
                   <span className="absolute inset-x-0 -bottom-1 h-px bg-primary opacity-0 transition-opacity hover:opacity-100" />
                 </span>
               </Link>
@@ -65,7 +65,7 @@ export default function RootLayout({
                 className="relative px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 <span className="relative">
-                  Panel Generation
+                  配色方案
                   <span className="absolute inset-x-0 -bottom-1 h-px bg-primary opacity-0 transition-opacity hover:opacity-100" />
                 </span>
               </Link>
@@ -74,7 +74,7 @@ export default function RootLayout({
                 className="relative px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 <span className="relative">
-                  Quality Registry
+                  质量登记
                   <span className="absolute inset-x-0 -bottom-1 h-px bg-primary opacity-0 transition-opacity hover:opacity-100" />
                 </span>
               </Link>
@@ -84,8 +84,8 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
         <footer className="border-t border-border bg-background">
           <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 text-xs text-muted-foreground sm:px-6 lg:px-8">
-            <span>FlowCyt Panel Assistant</span>
-            <span className="font-mono">Powered by Backtracking + LLM</span>
+            <span>PanelAgent 流式配色助手</span>
+            <span className="font-mono">由回溯搜索 + LLM 驱动</span>
           </div>
         </footer>
       </body>

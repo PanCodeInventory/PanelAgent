@@ -21,7 +21,7 @@ function ErrorState({ message, onRetry, className }: ErrorStateProps) {
       </div>
       <div className="space-y-2">
         <h3 className="text-sm font-semibold text-foreground">
-          Error
+          错误
         </h3>
         <p className="max-w-md text-sm text-muted-foreground">
           {message}
@@ -29,7 +29,7 @@ function ErrorState({ message, onRetry, className }: ErrorStateProps) {
       </div>
       {onRetry && (
         <Button variant="default" onClick={onRetry} size="sm">
-          Try Again
+          重试
         </Button>
       )}
     </div>

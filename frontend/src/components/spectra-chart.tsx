@@ -104,7 +104,7 @@ export function SpectraChart({ fluorochromes }: SpectraChartProps) {
     return (
       <div className="rounded-lg border border-border bg-secondary/20 p-8">
         <div className="text-center text-muted-foreground">
-          <p className="text-sm">Select a panel candidate to view spectral data</p>
+          <p className="text-sm">选择一个候选方案以查看光谱数据</p>
         </div>
       </div>
     );
@@ -118,7 +118,7 @@ export function SpectraChart({ fluorochromes }: SpectraChartProps) {
     return (
       <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
         <p className="text-sm text-destructive">
-          <span className="font-semibold">Error: </span>
+          <span className="font-semibold">错误：</span>
           {error}
         </p>
       </div>
@@ -129,7 +129,7 @@ export function SpectraChart({ fluorochromes }: SpectraChartProps) {
     return (
       <div className="rounded-lg border border-border bg-secondary/20 p-8">
         <div className="text-center text-muted-foreground">
-          <p className="text-sm">No spectral data available for these fluorochromes</p>
+          <p className="text-sm">这些荧光素暂无可用的光谱数据</p>
         </div>
       </div>
     );
@@ -140,7 +140,7 @@ export function SpectraChart({ fluorochromes }: SpectraChartProps) {
       {warnings.length > 0 && (
         <div className="rounded-lg border p-4" style={{ borderColor: 'var(--warning-border)', backgroundColor: 'var(--warning-bg)' }}>
           <p className="mb-2 text-sm font-medium" style={{ color: 'var(--warning-text)' }}>
-            Unknown fluorochromes:
+            未知荧光素：
           </p>
           <div className="flex flex-wrap gap-2">
             {warnings.map((warning) => (
@@ -166,7 +166,7 @@ export function SpectraChart({ fluorochromes }: SpectraChartProps) {
               tickCount={12}
               tick={{ fill: "oklch(0.35 0.03 250)", fontSize: 12 }}
               label={{
-                value: "Wavelength (nm)",
+                value: "波长 (nm)",
                 position: "insideBottom",
                 offset: -10,
                 fill: "oklch(0.35 0.03 250)",
@@ -177,7 +177,7 @@ export function SpectraChart({ fluorochromes }: SpectraChartProps) {
               domain={[0, 100]}
               tick={{ fill: "oklch(0.35 0.03 250)", fontSize: 12 }}
               label={{
-                value: "Normalized Intensity (%)",
+                value: "归一化强度 (%)",
                 angle: -90,
                 position: "insideLeft",
                 fill: "oklch(0.35 0.03 250)",

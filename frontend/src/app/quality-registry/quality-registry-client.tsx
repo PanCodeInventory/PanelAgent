@@ -29,19 +29,16 @@ import type {
   CandidateMatch,
   EntityKey,
   QualityIssueCreate,
-  ReviewItemResponse,
 } from "@/lib/api/quality-registry";
 import {
   CheckCircle2,
   ClipboardList,
-  FlaskConical,
   History,
-  Microscope,
   Search,
   ShieldAlert,
 } from "lucide-react";
 
-type TabValue = "register" | "history" | "review";
+type TabValue = "register" | "history";
 type BadgeVariant = "default" | "secondary" | "destructive" | "outline" | "ghost" | "link";
 
 interface FormState {
@@ -56,13 +53,6 @@ interface FormState {
 interface FormErrors {
   issue_text?: string;
   reported_by?: string;
-}
-
-interface ReviewDraft {
-  reviewer: string;
-  clone: string;
-  catalog_number: string;
-  lot_number: string;
 }
 
 const initialFormState: FormState = {
@@ -88,24 +78,6 @@ function getStatusVariant(status: string): BadgeVariant {
   return "secondary";
 }
 
-function buildReviewEntityKey(item: ReviewItemResponse, draft: ReviewDraft): EntityKey | null {
-  const clone = draft.clone.trim();
-  const catalogNumber = draft.catalog_number.trim();
-
-  if (!clone || !catalogNumber) {
-    return null;
-  }
-
-  return {
-    species: item.feedback_key.species,
-    normalized_marker: item.feedback_key.normalized_marker,
-    clone,
-    brand: item.feedback_key.brand,
-    catalog_number: catalogNumber,
-    lot_number: draft.lot_number.trim() || undefined,
-  };
-}
-
 export default function QualityRegistryPage() {
   const {
     state,
@@ -128,16 +100,14 @@ export default function QualityRegistryPage() {
   const [confirmedCandidate, setConfirmedCandidate] = useState<CandidateMatch | null>(null);
   const [confirmedLookupKey, setConfirmedLookupKey] = useState("");
   const [dismissedLookupKey, setDismissedLookupKey] = useState("");
-  const [reviewDrafts, setReviewDrafts] = useState<Record<string, ReviewDraft>>({});
-  const [reviewErrors, setReviewErrors] = useState<Record<string, string>>({});
 
   const currentLookupKey = useMemo(
-    () => [form.species, form.marker.trim(), form.fluorochrome.trim(), form.brand.trim()].join("::"),
-    [form.brand, form.fluorochrome, form.marker, form.species]
+    () => [form.species, form.marker.trim(), form.fluorochrome.trim()].join("::"),
+    [form.fluorochrome, form.marker, form.species]
   );
 
   const lookupReady = Boolean(
-    form.marker.trim() && form.fluorochrome.trim() && form.brand.trim()
+    form.marker.trim() && form.fluorochrome.trim()
   );
 
   const historyEvents = useMemo(
@@ -150,12 +120,6 @@ export default function QualityRegistryPage() {
   }, [listIssues]);
 
   useEffect(() => {
-    if (activeTab === "review") {
-      void loadReviewQueue();
-    }
-  }, [activeTab, loadReviewQueue]);
-
-  useEffect(() => {
     if (!lookupReady) {
       return;
     }
@@ -163,14 +127,13 @@ export default function QualityRegistryPage() {
     let cancelled = false;
     const timeoutId = window.setTimeout(async () => {
       const candidates = await lookupCandidates({
-        text: [form.marker, form.fluorochrome, form.brand, form.issue_text]
+        text: [form.marker, form.fluorochrome, form.issue_text]
           .map((value) => value.trim())
           .filter(Boolean)
           .join(" "),
         species: form.species,
         marker: form.marker.trim(),
         fluorochrome: form.fluorochrome.trim(),
-        brand: form.brand.trim() || undefined,
       });
 
       if (cancelled) {
@@ -203,7 +166,6 @@ export default function QualityRegistryPage() {
     confirmedLookupKey,
     currentLookupKey,
     dismissedLookupKey,
-    form.brand,
     form.fluorochrome,
     form.issue_text,
     form.marker,
@@ -221,7 +183,7 @@ export default function QualityRegistryPage() {
     setForm((prev) => ({ ...prev, [field]: value }));
     setFormErrors((prev) => ({ ...prev, [field]: undefined }));
 
-    if (field === "marker" || field === "fluorochrome" || field === "brand" || field === "species") {
+    if (field === "marker" || field === "fluorochrome" || field === "species") {
       setCandidateModalOpen(false);
       setSelectedCandidateKey("");
       setConfirmedCandidate(null);
@@ -291,10 +253,10 @@ export default function QualityRegistryPage() {
 
     const nextErrors: FormErrors = {};
     if (!form.issue_text.trim()) {
-      nextErrors.issue_text = "Please describe the observed quality issue.";
+      nextErrors.issue_text = "请描述观察到的质量问题。";
     }
     if (!form.reported_by.trim()) {
-      nextErrors.reported_by = "Reporter name is required.";
+      nextErrors.reported_by = "请填写报告人姓名。";
     }
 
     setFormErrors(nextErrors);
@@ -337,81 +299,14 @@ export default function QualityRegistryPage() {
     setActiveTab("history");
   };
 
-  const handleReviewDraftChange = (
-    issueId: string,
-    field: keyof ReviewDraft,
-    value: string
-  ) => {
-    setReviewDrafts((prev) => ({
-      ...prev,
-      [issueId]: {
-        reviewer: prev[issueId]?.reviewer ?? "",
-        clone: prev[issueId]?.clone ?? "",
-        catalog_number: prev[issueId]?.catalog_number ?? "",
-        lot_number: prev[issueId]?.lot_number ?? "",
-        [field]: value,
-      },
-    }));
-    setReviewErrors((prev) => ({ ...prev, [issueId]: "" }));
-  };
-
-  const handleResolveReview = async (item: ReviewItemResponse) => {
-    const draft = reviewDrafts[item.id] ?? {
-      reviewer: "",
-      clone: "",
-      catalog_number: "",
-      lot_number: "",
-    };
-
-    if (!draft.reviewer.trim()) {
-      setReviewErrors((prev) => ({ ...prev, [item.id]: "Reviewer name is required." }));
-      return;
-    }
-
-    const hasPartialBinding = Boolean(
-      (draft.clone.trim() && !draft.catalog_number.trim()) ||
-        (!draft.clone.trim() && draft.catalog_number.trim())
-    );
-
-    if (hasPartialBinding) {
-      setReviewErrors((prev) => ({
-        ...prev,
-        [item.id]: "Provide both clone and catalog number to attach an entity binding.",
-      }));
-      return;
-    }
-
-    const entityKey = buildReviewEntityKey(item, draft);
-    const resolved = await resolveReview(item.id, {
-      reviewer: draft.reviewer.trim(),
-      entity_key: entityKey,
-    });
-
-    if (!resolved) {
-      return;
-    }
-
-    setReviewDrafts((prev) => {
-      const next = { ...prev };
-      delete next[item.id];
-      return next;
-    });
-    setReviewErrors((prev) => ({ ...prev, [item.id]: "" }));
-    await listIssues();
-    await loadReviewQueue();
-    if (selectedIssueId === item.id) {
-      await getHistory(item.id);
-    }
-  };
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          Antibody Quality Registry
+          抗体质量登记
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Capture reagent issues, confirm likely inventory matches, and keep a transparent audit trail for review.
+          记录试剂问题，确认可能的库存匹配，并维护透明的审核追溯记录。
         </p>
       </div>
 
@@ -428,21 +323,14 @@ export default function QualityRegistryPage() {
             className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary"
             data-testid="quality-register-tab"
           >
-            Register
+            登记
           </TabsTrigger>
           <TabsTrigger
             value="history"
             className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary"
             data-testid="quality-history-tab"
           >
-            Issue History
-          </TabsTrigger>
-          <TabsTrigger
-            value="review"
-            className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary"
-            data-testid="quality-review-tab"
-          >
-            Review Queue
+            问题历史
           </TabsTrigger>
         </TabsList>
 
@@ -453,17 +341,17 @@ export default function QualityRegistryPage() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
                   <ShieldAlert className="h-4 w-4 text-primary" />
                 </div>
-                Issue Registration
+                问题登记
               </CardTitle>
               <CardDescription>
-                Describe the antibody problem in plain language and let the registry search for likely inventory matches.
+                用自然语言描述抗体问题，系统将自动搜索可能的库存匹配。
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
                 <div className="flex flex-col gap-2">
                   <label className="text-sm font-medium text-foreground" htmlFor="quality-issue-text">
-                    Issue description
+                    问题描述
                   </label>
                   <textarea
                     id="quality-issue-text"
@@ -472,7 +360,7 @@ export default function QualityRegistryPage() {
                     rows={5}
                     aria-invalid={Boolean(formErrors.issue_text)}
                     data-testid="quality-issue-textarea"
-                    placeholder="e.g., CD8 APC lot shows weak staining and increased background in activated mouse splenocytes"
+                    placeholder="例如：CD8 APC 批次在小鼠活化脾细胞中染色偏弱且背景升高"
                     className="w-full resize-none rounded-lg border border-border bg-secondary/50 px-3 py-2.5 text-sm text-foreground ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50"
                   />
                   {formErrors.issue_text && (
@@ -483,7 +371,7 @@ export default function QualityRegistryPage() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium text-foreground" htmlFor="quality-reporter">
-                      Reporter
+                      报告人
                     </label>
                     <Input
                       id="quality-reporter"
@@ -491,7 +379,7 @@ export default function QualityRegistryPage() {
                       onChange={(event) => handleFormChange("reported_by", event.target.value)}
                       aria-invalid={Boolean(formErrors.reported_by)}
                       data-testid="quality-reporter-input"
-                      placeholder="Your name or team"
+                      placeholder="您的姓名或团队"
                       className="bg-secondary/50 border-border"
                     />
                     {formErrors.reported_by && (
@@ -501,7 +389,7 @@ export default function QualityRegistryPage() {
 
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium text-foreground" htmlFor="quality-species">
-                      Species
+                      物种
                     </label>
                     <select
                       id="quality-species"
@@ -516,10 +404,10 @@ export default function QualityRegistryPage() {
                   </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-2">
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium text-foreground" htmlFor="quality-marker">
-                      Marker
+                      标志物
                     </label>
                     <Input
                       id="quality-marker"
@@ -533,7 +421,7 @@ export default function QualityRegistryPage() {
 
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium text-foreground" htmlFor="quality-fluorochrome">
-                      Fluorochrome
+                      荧光素
                     </label>
                     <Input
                       id="quality-fluorochrome"
@@ -544,47 +432,33 @@ export default function QualityRegistryPage() {
                       className="bg-secondary/50 border-border"
                     />
                   </div>
-
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-foreground" htmlFor="quality-brand">
-                      Brand
-                    </label>
-                    <Input
-                      id="quality-brand"
-                      value={form.brand}
-                      onChange={(event) => handleFormChange("brand", event.target.value)}
-                      data-testid="quality-brand-input"
-                      placeholder="BioLegend"
-                      className="bg-secondary/50 border-border"
-                    />
-                  </div>
                 </div>
 
                 <div className="rounded-lg border border-border bg-secondary/10 p-4">
                   <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                     <Search className="h-4 w-4 text-primary" />
-                    Candidate lookup
+                    候选抗体查找
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Inventory lookup runs automatically 500ms after marker, fluorochrome, and brand are filled.
+                    在填写标志物和荧光素后，库存查找将在500毫秒后自动运行。
                   </p>
                   {state.isLookingUp && (
                     <p className="mt-3 text-sm text-muted-foreground">
-                      Searching inventory for candidate antibodies...
+                      正在搜索库存中的候选抗体...
                     </p>
                   )}
                   {confirmedCandidate && (
                     <div className="mt-4 rounded-lg border border-border bg-card/70 p-4">
                       <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                         <CheckCircle2 className="h-4 w-4 text-primary" />
-                        Confirmed candidate
+                        已确认候选
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2 text-sm text-muted-foreground">
                         <Badge variant="secondary">{confirmedCandidate.matched_marker ?? confirmedCandidate.entity_key.normalized_marker}</Badge>
                         <Badge variant="outline">{confirmedCandidate.entity_key.clone}</Badge>
                         <Badge variant="outline">{confirmedCandidate.entity_key.brand}</Badge>
                         <Badge variant="outline">{confirmedCandidate.entity_key.catalog_number}</Badge>
-                        <Badge variant="outline">{form.fluorochrome.trim() || "Fluorochrome pending"}</Badge>
+                        <Badge variant="outline">{form.fluorochrome.trim() || "荧光素待定"}</Badge>
                       </div>
                     </div>
                   )}
@@ -597,7 +471,7 @@ export default function QualityRegistryPage() {
                     data-testid="quality-submit-btn"
                   >
                     <ShieldAlert data-icon="inline-start" />
-                    {state.isLoading || state.isConfirming ? "Submitting..." : "Register Issue"}
+                    {state.isLoading || state.isConfirming ? "提交中..." : "登记问题"}
                   </Button>
                 </div>
               </form>
@@ -612,10 +486,10 @@ export default function QualityRegistryPage() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
                   <History className="h-4 w-4 text-primary" />
                 </div>
-                Reported Issues
+                已报告问题
               </CardTitle>
               <CardDescription>
-                Review submissions, status changes, and select an issue to inspect its audit timeline.
+                查看提交记录、状态变更，选择问题以查看其审核时间线。
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -623,8 +497,8 @@ export default function QualityRegistryPage() {
                 <TableSkeleton rows={6} columns={6} />
               ) : state.issues.length === 0 ? (
                 <EmptyState
-                  title="No quality issues yet"
-                  description="Submitted antibody quality records will appear here once the first report is registered."
+                  title="暂无质量问题"
+                  description="当第一份报告登记后，已提交的抗体质量记录将显示在此处。"
                 />
               ) : (
                 <div
@@ -634,12 +508,12 @@ export default function QualityRegistryPage() {
                   <table className="w-full text-sm">
                     <thead className="border-b border-border bg-secondary/30">
                       <tr>
-                        <th className="px-4 py-3 text-left font-medium text-foreground">Marker</th>
-                        <th className="px-4 py-3 text-left font-medium text-foreground">Fluorochrome</th>
-                        <th className="px-4 py-3 text-left font-medium text-foreground">Brand</th>
-                        <th className="px-4 py-3 text-left font-medium text-foreground">Status</th>
-                        <th className="px-4 py-3 text-left font-medium text-foreground">Reporter</th>
-                        <th className="px-4 py-3 text-left font-medium text-foreground">Created</th>
+                        <th className="px-4 py-3 text-left font-medium text-foreground">标志物</th>
+                        <th className="px-4 py-3 text-left font-medium text-foreground">荧光素</th>
+                        <th className="px-4 py-3 text-left font-medium text-foreground">品牌</th>
+                        <th className="px-4 py-3 text-left font-medium text-foreground">状态</th>
+                        <th className="px-4 py-3 text-left font-medium text-foreground">报告人</th>
+                        <th className="px-4 py-3 text-left font-medium text-foreground">创建时间</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -682,10 +556,10 @@ export default function QualityRegistryPage() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
                   <ClipboardList className="h-4 w-4 text-primary" />
                 </div>
-                Audit Timeline
+                审核时间线
               </CardTitle>
               <CardDescription>
-                Audit events are shown in chronological order for the currently selected issue.
+                审核事件按时间顺序展示当前选定问题的完整记录。
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -694,13 +568,13 @@ export default function QualityRegistryPage() {
                   <CardSkeleton lines={5} />
                 ) : !selectedIssueId ? (
                   <EmptyState
-                    title="Select an issue"
-                    description="Choose a row from the issue list to browse creation, binding, and review events."
+                    title="选择一个问题"
+                    description="从问题列表中选择一行以查看创建、绑定和审核事件。"
                   />
                 ) : historyEvents.length === 0 ? (
                   <EmptyState
-                    title="No audit events"
-                    description="Audit history will appear here once activity exists for the selected issue."
+                    title="暂无审核事件"
+                    description="当所选问题有活动记录后，审核历史将显示在此处。"
                   />
                 ) : (
                   <div className="relative flex flex-col gap-4">
@@ -733,110 +607,6 @@ export default function QualityRegistryPage() {
             </CardContent>
           </Card>
         </TabsContent>
-
-        <TabsContent value="review" className="flex flex-col gap-6">
-          <Card className="bg-card border border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                  <Microscope className="h-4 w-4 text-primary" />
-                </div>
-                Manual Review Queue
-              </CardTitle>
-              <CardDescription>
-                Resolve unresolved submissions and optionally attach a canonical antibody entity during review.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {state.isLoading && state.reviewQueue.length === 0 ? (
-                <CardSkeleton lines={5} />
-              ) : state.reviewQueue.length === 0 ? (
-                <EmptyState
-                  title="No pending reviews"
-                  description="Items requiring manual adjudication will appear here when the backend marks them as pending review."
-                />
-              ) : (
-                <div className="flex flex-col gap-4">
-                  {state.reviewQueue.map((item) => {
-                    const draft = reviewDrafts[item.id] ?? {
-                      reviewer: "",
-                      clone: "",
-                      catalog_number: "",
-                      lot_number: "",
-                    };
-
-                    return (
-                      <div
-                        key={item.id}
-                        data-testid={`quality-review-item-${item.id}`}
-                        className="rounded-lg border border-border bg-secondary/10 p-5"
-                      >
-                        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                          <div className="flex-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <Badge variant={getStatusVariant(item.status)}>{item.status}</Badge>
-                              <Badge variant="outline">{item.feedback_key.normalized_marker}</Badge>
-                              <Badge variant="outline">{item.feedback_key.fluorochrome}</Badge>
-                              <Badge variant="outline">{item.feedback_key.brand}</Badge>
-                            </div>
-                            <p className="mt-3 text-sm text-foreground">{item.issue_text}</p>
-                            <p className="mt-2 text-sm text-muted-foreground">
-                              Reported by {item.reported_by} on {formatDateTime(item.created_at)}
-                            </p>
-                          </div>
-
-                          <div className="grid gap-3 lg:min-w-[340px]">
-                            <Input
-                              value={draft.reviewer}
-                              onChange={(event) => handleReviewDraftChange(item.id, "reviewer", event.target.value)}
-                              placeholder="Reviewer name"
-                              data-testid={`quality-reviewer-input-${item.id}`}
-                              className="bg-card border-border"
-                            />
-                            <div className="grid gap-3 md:grid-cols-2">
-                              <Input
-                                value={draft.clone}
-                                onChange={(event) => handleReviewDraftChange(item.id, "clone", event.target.value)}
-                                placeholder="Clone (optional)"
-                                data-testid={`quality-review-clone-input-${item.id}`}
-                                className="bg-card border-border"
-                              />
-                              <Input
-                                value={draft.catalog_number}
-                                onChange={(event) => handleReviewDraftChange(item.id, "catalog_number", event.target.value)}
-                                placeholder="Catalog number (optional)"
-                                data-testid={`quality-review-catalog-input-${item.id}`}
-                                className="bg-card border-border"
-                              />
-                            </div>
-                            <Input
-                              value={draft.lot_number}
-                              onChange={(event) => handleReviewDraftChange(item.id, "lot_number", event.target.value)}
-                              placeholder="Lot number (optional)"
-                              data-testid={`quality-review-lot-input-${item.id}`}
-                              className="bg-card border-border"
-                            />
-                            {reviewErrors[item.id] && (
-                              <p className="text-sm text-destructive">{reviewErrors[item.id]}</p>
-                            )}
-                            <Button
-                              onClick={() => void handleResolveReview(item)}
-                              data-testid={`quality-resolve-btn-${item.id}`}
-                              disabled={state.isLoading}
-                            >
-                              <FlaskConical data-icon="inline-start" />
-                              Resolve Review
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
 
       <Dialog open={candidateModalOpen} onOpenChange={handleCandidateModalChange}>
@@ -845,9 +615,9 @@ export default function QualityRegistryPage() {
           data-testid="quality-candidate-modal"
         >
           <DialogHeader>
-            <DialogTitle>Select a candidate antibody</DialogTitle>
+            <DialogTitle>选择候选抗体</DialogTitle>
             <DialogDescription>
-              Choose the closest inventory record. The confirmed match will be attached when the issue is submitted.
+              选择最匹配的库存记录。确认的匹配将在问题提交时附加。
             </DialogDescription>
           </DialogHeader>
 
@@ -856,13 +626,13 @@ export default function QualityRegistryPage() {
               <table className="w-full text-sm">
                 <thead className="border-b border-border bg-secondary/30">
                   <tr>
-                    <th className="px-4 py-3 text-left font-medium text-foreground">Select</th>
-                    <th className="px-4 py-3 text-left font-medium text-foreground">Marker</th>
-                    <th className="px-4 py-3 text-left font-medium text-foreground">Clone</th>
-                    <th className="px-4 py-3 text-left font-medium text-foreground">Brand</th>
-                    <th className="px-4 py-3 text-left font-medium text-foreground">Catalog</th>
-                    <th className="px-4 py-3 text-left font-medium text-foreground">Fluorochrome</th>
-                    <th className="px-4 py-3 text-left font-medium text-foreground">Confidence</th>
+                    <th className="px-4 py-3 text-left font-medium text-foreground">选择</th>
+                    <th className="px-4 py-3 text-left font-medium text-foreground">标志物</th>
+                    <th className="px-4 py-3 text-left font-medium text-foreground">克隆号</th>
+                    <th className="px-4 py-3 text-left font-medium text-foreground">品牌</th>
+                    <th className="px-4 py-3 text-left font-medium text-foreground">目录号</th>
+                    <th className="px-4 py-3 text-left font-medium text-foreground">荧光素</th>
+                    <th className="px-4 py-3 text-left font-medium text-foreground">置信度</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -914,7 +684,7 @@ export default function QualityRegistryPage() {
               onClick={handleCandidateDismiss}
               data-testid="quality-cancel-candidate-btn"
             >
-              Cancel
+              取消
             </Button>
             <Button
               onClick={handleCandidateConfirm}
@@ -922,7 +692,7 @@ export default function QualityRegistryPage() {
               data-testid="quality-confirm-candidate-btn"
             >
               <CheckCircle2 data-icon="inline-start" />
-              Confirm Candidate
+              确认候选
             </Button>
           </DialogFooter>
         </DialogContent>

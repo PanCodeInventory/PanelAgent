@@ -43,7 +43,7 @@ services:
       dockerfile: ../Dockerfile.frontend
     container_name: panelagent-frontend
     ports:
-      - "13000:3000"
+      - "3000:3000"
     environment:
       BACKEND_INTERNAL_URL: "http://backend:8000"
     depends_on:

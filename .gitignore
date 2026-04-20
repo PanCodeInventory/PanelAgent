@@ -29,5 +29,10 @@ secrets.json
 config_private.json
 openai_key.txt
 
+# --- Runtime data (Docker volume mounted) ---
+data/quality_registry/issues.json
+data/quality_registry/audit/
+data/quality_registry/projections/
+
 .gemini/
 gha-creds-*.json

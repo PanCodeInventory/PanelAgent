@@ -374,12 +374,14 @@ def evaluate_candidates_with_llm(candidates, missing_markers=[]):
     quality_prompt_section = ""
     if quality_section:
         quality_prompt_section = f"""
-- **Antibody Quality Notes (Reference ONLY — do NOT auto-exclude):**
+- **抗体质量备注（仅供参考 — 不要自动排除）：**
 {quality_section}
 """
 
     prompt = f"""
 You are a flow cytometry panel design expert.
+
+**重要：请使用中文回答所有内容（rationale、gating_detail 等所有文本字段）。JSON 的 key 保持英文。**
 
 **Goal:** Compare {len(candidates)} candidate panels and select the BEST one.
 
@@ -397,28 +399,28 @@ You are a flow cytometry panel design expert.
 
 **Task:**
 1. **Select** the best option index.
-2. **Rationale:** Focus ONLY on why the specific assignments in the chosen option are better than the others.
-3. **Gating Strategy:** Provide a **structured hierarchical list** (e.g., "1. CD45+ -> 2. CD3+ ...").
+2. **Rationale:** Focus ONLY on why the specific assignments in the chosen option are better than the others. 请用中文撰写。
+3. **Gating Strategy:** Provide a **structured hierarchical list** (e.g., "1. CD45+ -> 2. CD3+ ..."). 请用中文描述每一步。
 
 **Output Format (Strict JSON):**
 Return ONLY a valid JSON object. Do NOT use Markdown code blocks. Use DOUBLE QUOTES for ALL keys and string values.
 {{
   "selected_option_index": 1, 
-  "rationale": "Option X is better because...",
+  "rationale": "选择方案X的原因是...",
   "gating_detail": [
     {{ 
       "step": 1, 
-      "parent": "All Events", 
+      "parent": "所有事件", 
       "axis": "FSC-A / SSC-A", 
-      "gate": "Polygon around lymphocytes", 
-      "population": "Lymphocytes" 
+      "gate": "淋巴细胞区域多边形门", 
+      "population": "淋巴细胞" 
     }},
     {{
        "step": 2,
-       "parent": "Lymphocytes",
+       "parent": "淋巴细胞",
        "axis": "CD3 / CD19",
        "gate": "CD3+",
-       "population": "T Cells"
+       "population": "T细胞"
     }}
   ]
 }}
@@ -497,12 +499,14 @@ def recommend_markers_from_inventory(experimental_goal, num_colors, available_ta
     quality_prompt_section = ""
     if quality_section:
         quality_prompt_section = f"""
-**Antibody Quality Notes (Reference ONLY — do NOT auto-exclude):**
+**抗体质量备注（仅供参考 — 不要自动排除）：**
 {quality_section}
 """
 
     prompt = f"""
 You are a senior flow cytometry expert.
+
+**重要：请使用中文回答所有内容（reason 等所有文本字段）。JSON 的 key 保持英文。**
 
 **User's Research Goal:** {experimental_goal}
 **Target Panel Size:** {num_colors} colors (approximately)
@@ -513,15 +517,15 @@ You are a senior flow cytometry expert.
 **Task:**
 1. Select the most critical markers from the inventory to achieve the research goal.
 2. Categorize each marker (e.g., Lineage, Activation, Exhaustion, Functional).
-3. Provide a brief reason for selecting it.
+3. Provide a brief reason for selecting it. 请用中文撰写理由。
 
 **Output Format (Strict JSON):**
 Return a SINGLE JSON object containing a list called "markers_detail". 
 Do NOT use Markdown code blocks. Use DOUBLE QUOTES for ALL keys and string values.
 {{
   "markers_detail": [
-    {{ "marker": "MarkerName", "type": "Category", "reason": "Short explanation..." }},
-    {{ "marker": "MarkerName", "type": "Category", "reason": "Short explanation..." }}
+    {{ "marker": "MarkerName", "type": "Category", "reason": "选择该标志物的简短理由..." }},
+    {{ "marker": "MarkerName", "type": "Category", "reason": "选择该标志物的简短理由..." }}
   ]
 }}
 """

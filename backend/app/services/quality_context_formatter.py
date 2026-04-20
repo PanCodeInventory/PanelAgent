@@ -27,8 +27,8 @@ from backend.app.schemas.quality_registry import (
 MAX_QUALITY_CONTEXT_CHARS: int = 2000
 
 QUALITY_CONTEXT_HEADER: str = (
-    "## Antibody Quality Context\n\n"
-    "The following antibodies have reported quality issues:\n\n"
+    "## 抗体质量上下文\n\n"
+    "以下抗体有已报告的质量问题：\n\n"
 )
 
 QUALITY_CONTEXT_EMPTY: str = ""

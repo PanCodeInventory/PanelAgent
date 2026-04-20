@@ -18,6 +18,7 @@ class AntibodyInfo(BaseModel):
     brand: str | None = None
     catalog_number: str | None = None
     target: str | None = None
+    stock: int | None = None
 
 
 class PanelCandidate(RootModel[dict[str, AntibodyInfo]]):

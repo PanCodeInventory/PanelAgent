@@ -151,15 +151,25 @@ def aggregate_antibodies_by_marker(antibody_df, brightness_data):
 
         # Store the simplified antibody info
         fluorochrome = row['Fluorescein']
-        brightness = brightness_data_lower.get(fluorochrome.lower(), 3) # Default to 3 (Medium)
+        brightness = brightness_data_lower.get(fluorochrome.lower(), 3)
+
+        stock = None
+        for col in ('现有数目', 'Quantity', 'Stock', 'stock', '库存'):
+            if col in row.index and pd.notna(row[col]):
+                try:
+                    stock = int(float(row[col]))
+                except (ValueError, TypeError):
+                    stock = None
+                break
 
         antibody_info = {
             "clone": row['Clone'],
             "fluorochrome": fluorochrome,
             "brightness": brightness,
             "system_code": row.get('System_Code', 'UNKNOWN'),
-            "brand": row.get('Brand', 'N/A'), # Added Brand
-            "catalog_number": row.get('Catalog Number', 'N/A') # Added Catalog Number
+            "brand": row.get('Brand', 'N/A'),
+            "catalog_number": row.get('Catalog Number', 'N/A'),
+            "stock": stock,
         }
 
         # --- FIX: Index antibody under ALL aliases ---

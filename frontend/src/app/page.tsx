@@ -17,15 +17,11 @@ export default function Home() {
       <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
-            <span className="text-primary">FlowCyt</span>{" "}
-            <span className="text-foreground">Panel Assistant</span>
+            <span className="text-primary">PanelAgent</span>{" "}
+            <span className="text-foreground">流式配色助手</span>
           </h1>
           <p className="mt-6 text-xl text-muted-foreground max-w-2xl mx-auto">
-            Hybrid AI tool for multi-color flow cytometry panel design
-          </p>
-          <p className="mt-3 text-base text-muted-foreground max-w-xl mx-auto">
-            Combining deterministic algorithms with LLM evaluation to generate
-            physically valid panels grounded in your real antibody inventory
+            结合确定性算法与AI评估，基于实验室真实库存生成有效的配色方案
           </p>
         </div>
 
@@ -36,24 +32,22 @@ export default function Home() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <Brain className="h-5 w-5" />
                 </div>
-                <span className="text-foreground">AI Experimental Design</span>
+                <span className="text-foreground">AI 实验设计</span>
               </CardTitle>
               <CardDescription>
-                Let AI recommend the best marker combinations for your experiment
+                让AI为您的实验推荐最佳标志物组合
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Describe your experimental goal, and AI will analyze your antibody
-                inventory to recommend optimal marker combinations with detailed
-                rationale.
+                描述您的实验目标，AI将分析您的抗体库存，推荐最优标志物组合并给出详细理由。
               </p>
               <Link href="/exp-design" className="block">
                 <Button 
                   className="w-full transition-all duration-200" 
                   variant="default"
                 >
-                  Start Experimental Design
+                  开始实验设计
                 </Button>
               </Link>
             </CardContent>
@@ -65,24 +59,22 @@ export default function Home() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <Wrench className="h-5 w-5" />
                 </div>
-                <span className="text-foreground">Panel Generation</span>
+                <span className="text-foreground">配色方案生成</span>
               </CardTitle>
               <CardDescription>
-                Generate conflict-free panels from your marker list
+                根据标志物列表生成无冲突的配色方案
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Enter your target markers and let the backtracking solver find all
-                physically valid panel configurations, then have AI evaluate and
-                select the best option.
+                输入您的目标标志物，让回溯求解器找到所有物理有效的配色方案，再由AI评估并选择最优方案。
               </p>
               <Link href="/panel-design" className="block">
                 <Button 
                   className="w-full transition-all duration-200" 
                   variant="default"
                 >
-                  Generate Panel
+                  生成配色方案
                 </Button>
               </Link>
             </CardContent>
@@ -94,14 +86,14 @@ export default function Home() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <ShieldAlert className="h-5 w-5" />
                 </div>
-                <span className="text-foreground">Quality Registry</span>
+                <span className="text-foreground">质量登记</span>
               </CardTitle>
-              <CardDescription>Report antibody quality issues and help improve panel recommendations</CardDescription>
+              <CardDescription>报告抗体质量问题，改进配色方案</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">Submit feedback about antibodies that do not perform well. AI will find matching candidates from your inventory for confirmation.</p>
+              <p className="text-sm text-muted-foreground">提交表现不佳抗体的反馈信息，供同学们进行参考，并在下一次配色生成中避免使用。</p>
               <Link href="/quality-registry" className="block">
-                <Button className="w-full transition-all duration-200" variant="default">Report Issue</Button>
+                <Button className="w-full transition-all duration-200" variant="default">报告问题</Button>
               </Link>
             </CardContent>
           </Card>
@@ -109,10 +101,10 @@ export default function Home() {
 
         <div className="mt-20">
           <h2 className="text-3xl font-bold text-foreground text-center">
-            How It Works
+            工作原理
           </h2>
           <p className="mt-3 text-muted-foreground text-center max-w-lg mx-auto">
-            A search-then-evaluate architecture combining deterministic rigor with AI intelligence
+            搜索-评估架构，融合确定性算法与AI智能
           </p>
           
           <div className="mt-12 relative">
@@ -129,11 +121,10 @@ export default function Home() {
                   </div>
                   <div className="bg-card/50 border border-border rounded-xl p-5 w-full">
                     <h3 className="font-semibold text-card-foreground">
-                      Search Phase
+                      搜索阶段
                     </h3>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      Deterministic backtracking algorithm finds all physically valid
-                      panel configurations with no channel conflicts.
+                      确定性回溯算法找出所有无通道冲突的物理有效配色方案。
                     </p>
                   </div>
                 </div>
@@ -149,11 +140,10 @@ export default function Home() {
                   </div>
                   <div className="bg-card/50 border border-border rounded-xl p-5 w-full">
                     <h3 className="font-semibold text-card-foreground">
-                      AI Evaluation
+                      AI 评估
                     </h3>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      LLM expert evaluates candidates based on brightness matching and
-                      spectral overlap to select the optimal panel.
+                      LLM专家根据亮度匹配和光谱重叠评估候选方案，选出最优配色。
                     </p>
                   </div>
                 </div>
@@ -169,11 +159,10 @@ export default function Home() {
                   </div>
                   <div className="bg-card/50 border border-border rounded-xl p-5 w-full">
                     <h3 className="font-semibold text-card-foreground">
-                      Visualization
+                      可视化
                     </h3>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      Interactive spectral simulation and gating strategy generation for
-                      your final panel selection.
+                      交互式光谱模拟和门控策略生成，助您完成最终配色选择。
                     </p>
                   </div>
                 </div>

@@ -19,7 +19,7 @@ def consult_gpt_oss(prompt):
         response = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL_NAME", "Qwen3-14B"), # Default to Qwen3-14B
             messages=[
-                {"role": "system", "content": "你是一个流式细胞术专家，请以 JSON 格式输出。"},
+                {"role": "system", "content": "你是一个流式细胞术专家，请以 JSON 格式输出。所有文本内容请使用中文回答。"},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.2, # 低温度保证逻辑稳定性

@@ -55,11 +55,13 @@ function CandidateTable({ candidate }: CandidateTableProps) {
       <table className="w-full text-sm">
         <thead className="border-b border-border bg-secondary/30">
           <tr>
-            <th className="px-4 py-2 text-left font-medium text-foreground">Marker</th>
-            <th className="px-4 py-2 text-left font-medium text-foreground">Fluorochrome</th>
-            <th className="px-4 py-2 text-left font-medium text-foreground">System Code</th>
-            <th className="px-4 py-2 text-left font-medium text-foreground">Brightness</th>
-            <th className="px-4 py-2 text-left font-medium text-foreground">Clone</th>
+            <th className="px-4 py-2 text-left font-medium text-foreground">标志物</th>
+            <th className="px-4 py-2 text-left font-medium text-foreground">荧光素</th>
+            <th className="px-4 py-2 text-left font-medium text-foreground">系统通道</th>
+            <th className="px-4 py-2 text-left font-medium text-foreground">亮度</th>
+            <th className="px-4 py-2 text-left font-medium text-foreground">品牌</th>
+            <th className="px-4 py-2 text-left font-medium text-foreground">库存</th>
+            <th className="px-4 py-2 text-left font-medium text-foreground">克隆号</th>
           </tr>
         </thead>
         <tbody>
@@ -91,6 +93,21 @@ function CandidateTable({ candidate }: CandidateTableProps) {
                     />
                   ))}
                 </div>
+              </td>
+              <td className="px-4 py-2 text-sm text-foreground">
+                {entry.brand ?? "—"}
+              </td>
+              <td className="px-4 py-2 text-center">
+                {entry.stock != null ? (
+                  <span className={cn(
+                    "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+                    entry.stock > 0
+                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                      : "bg-red-500/10 text-red-600 dark:text-red-400"
+                  )}>
+                    {entry.stock}
+                  </span>
+                ) : "—"}
               </td>
               <td className="px-4 py-2 font-mono text-xs text-muted-foreground">
                 {entry.clone ?? "—"}
@@ -164,11 +181,10 @@ function PanelDesignPageContent() {
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          Panel Generation
+          配色方案生成
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Generate conflict-free panels from your marker list using backtracking
-          search and AI evaluation
+          使用回溯搜索和AI评估，根据标志物列表生成无冲突的配色方案
         </p>
       </div>
 
@@ -178,10 +194,10 @@ function PanelDesignPageContent() {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
               <Search className="h-4 w-4 text-primary" />
             </div>
-            Marker Input
+            标志物输入
           </CardTitle>
           <CardDescription>
-            Enter target markers separated by commas
+            输入目标标志物，以逗号分隔
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -189,7 +205,7 @@ function PanelDesignPageContent() {
             <Input
               value={markers}
               onChange={(e) => setMarkers(e.target.value)}
-              placeholder="e.g., CD3, CD4, CD8, FoxP3"
+              placeholder="例如：CD3, CD4, CD8, FoxP3"
               className="flex-1 bg-secondary/50 border-border"
               disabled={genState.isLoading}
             />
@@ -211,21 +227,21 @@ function PanelDesignPageContent() {
               {genState.isLoading ? (
                 <>
                   <Search className="mr-2 h-4 w-4 animate-pulse" />
-                  {genState.isDiagnosing ? "Diagnosing..." : "Searching..."}
+                  {genState.isDiagnosing ? "诊断中..." : "搜索中..."}
                 </>
               ) : (
-                <>
-                  <Search className="mr-2 h-4 w-4" />
-                  Search Panels
-                </>
-              )}
-            </Button>
-            <Button variant="outline" onClick={handleClear} disabled={genState.isLoading}>
-              Clear
-            </Button>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Current inventory:</span>
+                  <>
+                    <Search className="mr-2 h-4 w-4" />
+                    搜索方案
+                  </>
+                )}
+              </Button>
+              <Button variant="outline" onClick={handleClear} disabled={genState.isLoading}>
+                清空
+              </Button>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>当前库存：</span>
             <Badge variant="secondary" className="font-mono">{species}</Badge>
           </div>
         </CardContent>
@@ -242,10 +258,10 @@ function PanelDesignPageContent() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2" style={{ color: 'var(--warning-text)' }}>
               <AlertTriangle className="h-5 w-5" />
-              Missing Markers
+              缺失标志物
             </CardTitle>
             <CardDescription style={{ color: 'var(--warning-text)', opacity: 0.7 }}>
-              The following markers were not found in the inventory
+              以下标志物未在库存中找到
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -266,17 +282,17 @@ function PanelDesignPageContent() {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
               <Beaker className="h-4 w-4 text-primary" />
             </div>
-            Candidate Panels
+            候选方案
           </CardTitle>
           <CardDescription>
-            Physically valid panel configurations (no channel conflicts)
+            物理有效的配色方案（无通道冲突）
           </CardDescription>
         </CardHeader>
         <CardContent>
           {genState.candidates.length === 0 && !genState.isLoading && !genState.error && (
             <EmptyState
-              title="No candidates yet"
-              description="Enter markers above and click Search Panels to generate valid panel configurations"
+              title="暂无候选方案"
+              description="在上方输入标志物并点击搜索方案以生成有效的配色方案"
             />
           )}
 
@@ -297,7 +313,7 @@ function PanelDesignPageContent() {
                     value={`option${idx}`}
                     className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary"
                   >
-                    Option {idx + 1}
+                    方案 {idx + 1}
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -317,10 +333,10 @@ function PanelDesignPageContent() {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
               <Bot className="h-4 w-4 text-primary" />
             </div>
-            AI Expert Evaluation
+            AI 专家评估
           </CardTitle>
           <CardDescription>
-            Let AI analyze candidates and select the best panel
+            让AI分析候选方案并选择最优配色
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -332,12 +348,12 @@ function PanelDesignPageContent() {
             {evalState.isLoading ? (
               <>
                 <Sparkles className="mr-2 h-4 w-4 animate-pulse" />
-                Evaluating...
+                评估中...
               </>
             ) : (
               <>
                 <Sparkles className="mr-2 h-4 w-4" />
-                Evaluate with AI
+                AI 评估
               </>
             )}
           </Button>
@@ -345,7 +361,7 @@ function PanelDesignPageContent() {
           {evalState.error && (
             <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
               <p className="text-sm text-destructive">
-                <span className="font-semibold">Error: </span>
+                <span className="font-semibold">错误：</span>
                 {evalState.error}
               </p>
             </div>
@@ -357,7 +373,7 @@ function PanelDesignPageContent() {
             <div className="rounded-lg border border-primary/30 bg-primary/5 p-6">
               <h4 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-xs text-primary">1</span>
-                Recommended Panel
+                推荐方案
               </h4>
               <CandidateTable candidate={evalState.result.selectedPanel} />
             </div>
@@ -367,7 +383,7 @@ function PanelDesignPageContent() {
             <div className="rounded-lg border border-border bg-card/50 p-6">
               <h4 className="mb-3 flex items-center gap-2 font-semibold text-foreground">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-xs text-primary">2</span>
-                Selection Rationale
+                选择理由
               </h4>
               <div className="border-l-2 border-primary pl-4">
                 <p className="text-sm text-muted-foreground leading-relaxed">
@@ -381,7 +397,7 @@ function PanelDesignPageContent() {
             <div className="rounded-lg border border-border bg-card/50 p-6">
               <h4 className="mb-4 flex items-center gap-2 font-semibold text-foreground">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-xs text-primary">3</span>
-                Gating Strategy
+                门控策略
               </h4>
               <div className="relative space-y-4">
                 <div className="absolute left-[11px] top-6 bottom-4 w-px bg-border" />
@@ -394,15 +410,15 @@ function PanelDesignPageContent() {
                       {typeof step === "object" && step !== null ? (
                         <>
                           <div className="flex items-center gap-2 text-sm">
-                            <span className="text-muted-foreground">Parent:</span>
+                            <span className="text-muted-foreground">父群：</span>
                             <span className="font-mono font-medium text-foreground">{(step as { parent?: string }).parent ?? "—"}</span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
-                            <span className="text-muted-foreground">Axis:</span>
+                            <span className="text-muted-foreground">坐标轴：</span>
                             <span className="font-mono text-foreground">{(step as { axis?: string }).axis ?? "—"}</span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
-                            <span className="text-muted-foreground">Gate:</span>
+                            <span className="text-muted-foreground">门：</span>
                             <span className="font-mono text-foreground">{(step as { gate?: string }).gate ?? "—"}</span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
@@ -422,10 +438,9 @@ function PanelDesignPageContent() {
 
           {!evalState.result && !evalState.isLoading && !evalState.error && (
             <div className="rounded-lg border border-border bg-card/50 p-6">
-              <h4 className="mb-2 font-semibold text-foreground">Recommended Panel</h4>
+              <h4 className="mb-2 font-semibold text-foreground">推荐方案</h4>
               <p className="text-sm text-muted-foreground">
-                AI evaluation results will appear here, including the recommended
-                panel and rationale.
+                AI评估结果将显示在此处，包括推荐方案和选择理由。
               </p>
             </div>
           )}
@@ -438,10 +453,10 @@ function PanelDesignPageContent() {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
               <BarChart3 className="h-4 w-4 text-primary" />
             </div>
-            Spectral Visualization
+            光谱可视化
           </CardTitle>
           <CardDescription>
-            Interactive spectral simulation for fluorescence overlap analysis
+            交互式光谱模拟，用于荧光重叠分析
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -455,10 +470,10 @@ function PanelDesignPageContent() {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
               <AlertTriangle className="h-4 w-4 text-primary" />
             </div>
-            Conflict Diagnosis
+            冲突诊断
           </CardTitle>
           <CardDescription>
-            Analysis when no valid panel can be found
+            无法找到有效配色方案时的分析结果
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -466,7 +481,7 @@ function PanelDesignPageContent() {
             <div className="rounded-lg bg-secondary/30 p-4">
               <h4 className="mb-2 flex items-center gap-2 font-semibold text-foreground">
                 <AlertTriangle className="h-4 w-4" style={{ color: 'var(--warning-text)' }} />
-                Diagnosis Report
+                诊断报告
               </h4>
               <p className="whitespace-pre-wrap font-mono text-sm text-muted-foreground">
                 {genState.diagnosis}
@@ -475,9 +490,7 @@ function PanelDesignPageContent() {
           ) : (
             <div className="rounded-lg bg-secondary/30 p-4">
               <p className="text-sm text-muted-foreground">
-                <span className="font-semibold text-foreground">Diagnostic messages</span> will
-                appear here if the solver cannot find a valid panel, including
-                which markers are competing for the same channels.
+                <span className="font-semibold text-foreground">诊断信息</span>将在求解器无法找到有效方案时显示在此处，包括哪些标志物在竞争相同通道。
               </p>
             </div>
           )}

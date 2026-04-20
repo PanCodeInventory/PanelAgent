@@ -44,6 +44,14 @@ def _resolve_inventory_path(inventory_file: str | None, species: str | None) -> 
                 if key.lower() == species.lower():
                     filename = val
                     break
+        if not filename:
+            species_english = species.split("(")[0].split("（")[0].strip()
+            filename = mapping.get(species_english)
+            if not filename:
+                for key, val in mapping.items():
+                    if key.lower() == species_english.lower():
+                        filename = val
+                        break
         if filename:
             return inventory_dir / filename
         return inventory_dir / f"{species}.csv"
@@ -108,6 +116,7 @@ async def generate_panels(payload: PanelGenerateRequest) -> PanelGenerateRespons
                 "brand": antibody.get("brand"),
                 "catalog_number": antibody.get("catalog_number"),
                 "target": marker,
+                "stock": antibody.get("stock"),
             }
         normalized_candidates.append(normalized_candidate)
 
