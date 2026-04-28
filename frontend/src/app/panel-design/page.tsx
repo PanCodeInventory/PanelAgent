@@ -14,7 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePanelGeneration } from "@/lib/hooks/use-panel-generation";
-import { usePanelEvaluation } from "@/lib/hooks/use-panel-evaluation";
+import { usePanelEvaluation, type EvaluateContext } from "@/lib/hooks/use-panel-evaluation";
 import { SpectraChart } from "@/components/spectra-chart";
 import type { components } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
@@ -170,7 +170,21 @@ function PanelDesignPageContent() {
 
   const handleEvaluate = async () => {
     if (genState.candidates.length > 0) {
-      await evaluate(genState.candidates, genState.missingMarkers);
+      const markerList = markers.split(",").map((m) => m.trim()).filter(Boolean);
+      const speciesParam = species.includes("Mouse") ? "Mouse"
+        : species.includes("Human") ? "Human"
+        : species;
+      const inventoryFile = speciesParam === "Mouse"
+        ? "inventory/mouse_inventory.csv"
+        : speciesParam === "Human"
+          ? "inventory/human_inventory.csv"
+          : undefined;
+      const ctx: EvaluateContext = {
+        species: speciesParam,
+        markers: markerList,
+        inventoryFile,
+      };
+      await evaluate(genState.candidates, genState.missingMarkers, ctx);
     }
   };
 

@@ -1,10 +1,13 @@
 """FlowCyt Panel API — FastAPI application entry point."""
 
 import logging
+import os
+import secrets
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from starlette.middleware.sessions import SessionMiddleware
 
 from backend.app.api.v1.router import api_router
 from backend.app.core.config import get_settings
@@ -39,6 +42,19 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+session_secret = os.environ.get("ADMIN_SESSION_SECRET", secrets.token_hex(32))
+is_production = os.environ.get("ENVIRONMENT", "development") == "production"
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=session_secret,
+    session_cookie="panelagent_admin_session",
+    max_age=8 * 60 * 60,
+    path="/",
+    same_site="lax",
+    https_only=is_production,
 )
 
 app.include_router(api_router, prefix="/api/v1")

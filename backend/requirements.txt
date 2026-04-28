@@ -11,3 +11,4 @@ numpy
 scipy
 openai
 python-dotenv
+itsdangerous>=2.1.0

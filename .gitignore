@@ -36,3 +36,12 @@ data/quality_registry/projections/
 
 .gemini/
 gha-creds-*.json
+
+# --- Runtime / Build artifacts ---
+.playwright-mcp/
+data/admin_console.sqlite3
+
+# --- Admin Frontend ---
+admin-frontend/node_modules/
+admin-frontend/.next/
+admin-frontend/tsconfig.tsbuildinfo

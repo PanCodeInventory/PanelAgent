@@ -144,6 +144,23 @@ class QualityIssueCreate(BaseModel):
         return self
 
 
+class QualityIssueUpdate(BaseModel):
+    """Payload for editing an existing quality issue.
+
+    Only ``issue_text`` and ``reported_by`` may be changed.
+    ``feedback_key``, ``entity_key``, and ``status`` are immutable via this schema.
+    """
+
+    issue_text: str = Field(min_length=1, max_length=2000)
+    reported_by: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _strip_blank_fields(self) -> QualityIssueUpdate:
+        if self.issue_text.strip() == "":
+            raise ValueError("issue_text must not be blank")
+        return self
+
+
 class QualityIssueResponse(BaseModel):
     """Full representation of a persisted quality issue."""
 

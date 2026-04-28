@@ -109,6 +109,291 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/quality-registry/issues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Issue
+         * @description Create a new quality issue and trigger projection update.
+         */
+        post: operations["create_issue_api_v1_quality_registry_issues_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/quality-registry/candidates/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Candidate Lookup
+         * @description Look up candidate antibody matches from inventory.
+         *
+         *     Simple heuristic: filter inventory by marker and fluorochrome,
+         *     rank by exactness of match.
+         */
+        post: operations["candidate_lookup_api_v1_quality_registry_candidates_lookup_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/quality-registry/candidates/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Candidate Confirm
+         * @description Confirm a candidate entity selection for a quality issue.
+         */
+        post: operations["candidate_confirm_api_v1_quality_registry_candidates_confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Login
+         * @description Authenticate admin with a single password.
+         *
+         *     Compares the provided password against the ``ADMIN_PASSWORD`` environment
+         *     variable using ``hmac.compare_digest`` (timing-safe).  On success, sets
+         *     session data ``{"is_admin": True, "login_at": <timestamp>}``.
+         *
+         *     Returns 401 on mismatch without setting any cookie.
+         */
+        post: operations["login_api_v1_admin_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Logout
+         * @description Clear admin session cookie.
+         */
+        post: operations["logout_api_v1_admin_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/auth/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Check Session
+         * @description Return current admin authentication status.
+         *
+         *     This endpoint is exempt from the ``require_admin_session`` dependency
+         *     so it can report ``authenticated: false`` instead of returning 401.
+         */
+        get: operations["check_session_api_v1_admin_auth_session_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/llm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Llm Settings */
+        get: operations["get_llm_settings_api_v1_admin_settings_llm_get"];
+        /** Put Llm Settings */
+        put: operations["put_llm_settings_api_v1_admin_settings_llm_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/panel-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List History */
+        get: operations["list_history_api_v1_admin_panel_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/panel-history/{entry_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get History Detail */
+        get: operations["get_history_detail_api_v1_admin_panel_history__entry_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/quality-registry/issues/{issue_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Issue
+         * @description Get a single quality issue by ID.
+         */
+        get: operations["get_issue_api_v1_admin_quality_registry_issues__issue_id__get"];
+        /** Update Issue */
+        put: operations["update_issue_api_v1_admin_quality_registry_issues__issue_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/quality-registry/issues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Issues
+         * @description List quality issues, optionally filtered by status.
+         */
+        get: operations["list_issues_api_v1_admin_quality_registry_issues_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/quality-registry/issues/{issue_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get History
+         * @description Get audit history for a quality issue.
+         */
+        get: operations["get_history_api_v1_admin_quality_registry_issues__issue_id__history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/quality-registry/review-queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Review Queue
+         * @description List all issues in pending_review status.
+         */
+        get: operations["review_queue_api_v1_admin_quality_registry_review_queue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/quality-registry/review-queue/{issue_id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resolve Review
+         * @description Resolve a manual review item.
+         */
+        post: operations["resolve_review_api_v1_admin_quality_registry_review_queue__issue_id__resolve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -132,6 +417,78 @@ export interface components {
             /** Stock */
             stock?: number | null;
         };
+        /**
+         * AuditEvent
+         * @description Immutable record of a single mutation on a quality issue.
+         */
+        AuditEvent: {
+            /** Event Id */
+            event_id?: string;
+            /** Issue Id */
+            issue_id: string;
+            /** Action */
+            action: string;
+            /** Actor */
+            actor: string;
+            /** Details */
+            details?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Timestamp
+             * Format: date-time
+             */
+            timestamp?: string;
+        };
+        /**
+         * CandidateConfirmWithIssue
+         * @description Confirm a candidate entity selection for a specific issue.
+         */
+        CandidateConfirmWithIssue: {
+            /** Issue Id */
+            issue_id: string;
+            entity_key: components["schemas"]["EntityKey"];
+        };
+        /**
+         * CandidateLookupRequest
+         * @description Request to look up candidate antibody matches.
+         */
+        CandidateLookupRequest: {
+            /**
+             * Text
+             * @description Natural-language description of the antibody.
+             */
+            text: string;
+            /** Species */
+            species?: string | null;
+            /** Marker */
+            marker?: string | null;
+            /** Fluorochrome */
+            fluorochrome?: string | null;
+            /** Brand */
+            brand?: string | null;
+        };
+        /**
+         * CandidateLookupResponse
+         * @description Response containing candidate antibody matches.
+         */
+        CandidateLookupResponse: {
+            /** Candidates */
+            candidates?: components["schemas"]["CandidateMatch"][];
+        };
+        /**
+         * CandidateMatch
+         * @description A single candidate match from the lookup.
+         */
+        CandidateMatch: {
+            entity_key: components["schemas"]["EntityKey"];
+            /** Confidence */
+            confidence: number;
+            /** Source */
+            source: string;
+            /** Matched Marker */
+            matched_marker?: string | null;
+        };
         /** DiagnoseRequest */
         DiagnoseRequest: {
             /** Markers */
@@ -148,10 +505,103 @@ export interface components {
             /** Diagnosis */
             diagnosis: string;
         };
+        /**
+         * EntityKey
+         * @description Canonical identity for a specific antibody reagent.
+         *
+         *     Equality & hashing are based on the 5 required fields.
+         *     ``lot_number`` is tracked as metadata but is NOT part of identity.
+         */
+        EntityKey: {
+            /** Species */
+            species: string;
+            /** Normalized Marker */
+            normalized_marker: string;
+            /** Clone */
+            clone: string;
+            /** Brand */
+            brand: string;
+            /** Catalog Number */
+            catalog_number: string;
+            /** Lot Number */
+            lot_number?: string | null;
+        };
+        /**
+         * FeedbackKey
+         * @description Identity key for a quality-feedback submission.
+         *
+         *     Equality & hashing are based on all non-None fields, so two submissions
+         *     that differ only in clone (where one has clone=None) are *not* equal.
+         */
+        FeedbackKey: {
+            /** Species */
+            species: string;
+            /** Normalized Marker */
+            normalized_marker: string;
+            /** Fluorochrome */
+            fluorochrome: string;
+            /** Brand */
+            brand: string;
+            /** Clone */
+            clone?: string | null;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /**
+         * LlmSettingsResponse
+         * @description Response model for GET /api/v1/settings/llm.
+         */
+        LlmSettingsResponse: {
+            /** Api Base */
+            api_base: string;
+            /** Model Name */
+            model_name: string;
+            /** Has Api Key */
+            has_api_key: boolean;
+            /** Api Key Masked */
+            api_key_masked: string | null;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "runtime" | "env-default";
+        };
+        /**
+         * LlmSettingsUpdate
+         * @description Request model for PUT /api/v1/settings/llm.
+         *
+         *     All fields are optional — omitted fields keep their current value.
+         *     Sending ``api_key: ""`` clears the stored key.
+         */
+        LlmSettingsUpdate: {
+            /** Api Base */
+            api_base?: string | null;
+            /** Api Key */
+            api_key?: string | null;
+            /** Model Name */
+            model_name?: string | null;
+        };
+        /**
+         * LoginRequest
+         * @description Request body for admin login.
+         */
+        LoginRequest: {
+            /** Password */
+            password: string;
+        };
+        /**
+         * LoginResponse
+         * @description Response body for successful admin login.
+         */
+        LoginResponse: {
+            /**
+             * Success
+             * @default true
+             */
+            success: boolean;
         };
         /** MarkerDetail */
         MarkerDetail: {
@@ -201,6 +651,12 @@ export interface components {
             }[];
             /** Missing Markers */
             missing_markers?: string[];
+            /** Species */
+            species?: string | null;
+            /** Markers */
+            markers?: string[] | null;
+            /** Inventory File */
+            inventory_file?: string | null;
         };
         /** PanelEvaluateResponse */
         PanelEvaluateResponse: {
@@ -248,6 +704,171 @@ export interface components {
             missing_markers?: string[];
             /** Message */
             message?: string | null;
+        };
+        /** PanelHistoryDetail */
+        PanelHistoryDetail: {
+            /** Id */
+            id: string;
+            /** Created At */
+            created_at: string;
+            /** Species */
+            species: string;
+            /** Inventory File */
+            inventory_file?: string | null;
+            /** Requested Markers */
+            requested_markers: string[];
+            /** Missing Markers */
+            missing_markers: string[];
+            /** Selected Panel */
+            selected_panel: {
+                [key: string]: unknown;
+            }[];
+            /** Rationale */
+            rationale: string;
+            /** Model Name */
+            model_name: string;
+            /** Api Base */
+            api_base: string;
+        };
+        /** PanelHistoryDetailResponse */
+        PanelHistoryDetailResponse: {
+            item: components["schemas"]["PanelHistoryDetail"];
+        };
+        /** PanelHistoryListResponse */
+        PanelHistoryListResponse: {
+            /** Items */
+            items: components["schemas"]["PanelHistorySummary"][];
+            /** Total */
+            total: number;
+        };
+        /** PanelHistorySummary */
+        PanelHistorySummary: {
+            /** Id */
+            id: string;
+            /** Created At */
+            created_at: string;
+            /** Species */
+            species: string;
+            /** Inventory File */
+            inventory_file?: string | null;
+            /** Requested Markers */
+            requested_markers: string[];
+            /** Missing Markers */
+            missing_markers: string[];
+            /** Model Name */
+            model_name: string;
+        };
+        /**
+         * QualityIssueCreate
+         * @description Payload for submitting a new quality issue.
+         */
+        QualityIssueCreate: {
+            /** Issue Text */
+            issue_text: string;
+            /** Reported By */
+            reported_by: string;
+            /** Species */
+            species: string;
+            /** Marker */
+            marker: string;
+            /** Fluorochrome */
+            fluorochrome: string;
+            /** Brand */
+            brand: string;
+            /** Clone */
+            clone?: string | null;
+        };
+        /**
+         * QualityIssueResponse
+         * @description Full representation of a persisted quality issue.
+         */
+        QualityIssueResponse: {
+            /** Id */
+            id: string;
+            feedback_key: components["schemas"]["FeedbackKey"];
+            entity_key?: components["schemas"]["EntityKey"] | null;
+            /** Issue Text */
+            issue_text: string;
+            /** Reported By */
+            reported_by: string;
+            /**
+             * Status
+             * @default submitted
+             */
+            status: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * QualityIssueUpdate
+         * @description Payload for editing an existing quality issue.
+         *
+         *     Only ``issue_text`` and ``reported_by`` may be changed.
+         *     ``feedback_key``, ``entity_key``, and ``status`` are immutable via this schema.
+         */
+        QualityIssueUpdate: {
+            /** Issue Text */
+            issue_text: string;
+            /** Reported By */
+            reported_by: string;
+        };
+        /**
+         * ResolveReviewRequest
+         * @description Resolve a manual review item.
+         */
+        ResolveReviewRequest: {
+            /** Reviewer */
+            reviewer: string;
+            entity_key?: components["schemas"]["EntityKey"] | null;
+        };
+        /**
+         * ReviewItemResponse
+         * @description A quality issue queued for manual review.
+         */
+        ReviewItemResponse: {
+            /** Id */
+            id: string;
+            feedback_key: components["schemas"]["FeedbackKey"];
+            entity_key?: components["schemas"]["EntityKey"] | null;
+            /** Issue Text */
+            issue_text: string;
+            /** Reported By */
+            reported_by: string;
+            /**
+             * Status
+             * @default pending_review
+             */
+            status: string;
+            /** Reviewer */
+            reviewer?: string | null;
+            /** Reviewed At */
+            reviewed_at?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * SessionResponse
+         * @description Response body for session status check.
+         */
+        SessionResponse: {
+            /** Authenticated */
+            authenticated: boolean;
         };
         /** SpectraRenderRequest */
         SpectraRenderRequest: {
@@ -488,6 +1109,479 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SpectraRenderResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_issue_api_v1_quality_registry_issues_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QualityIssueCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QualityIssueResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    candidate_lookup_api_v1_quality_registry_candidates_lookup_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CandidateLookupRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateLookupResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    candidate_confirm_api_v1_quality_registry_candidates_confirm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CandidateConfirmWithIssue"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QualityIssueResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    login_api_v1_admin_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logout_api_v1_admin_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    check_session_api_v1_admin_auth_session_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionResponse"];
+                };
+            };
+        };
+    };
+    get_llm_settings_api_v1_admin_settings_llm_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmSettingsResponse"];
+                };
+            };
+        };
+    };
+    put_llm_settings_api_v1_admin_settings_llm_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LlmSettingsUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmSettingsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_history_api_v1_admin_panel_history_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PanelHistoryListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_history_detail_api_v1_admin_panel_history__entry_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entry_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PanelHistoryDetailResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_issue_api_v1_admin_quality_registry_issues__issue_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                issue_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QualityIssueResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_issue_api_v1_admin_quality_registry_issues__issue_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                issue_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QualityIssueUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QualityIssueResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_issues_api_v1_admin_quality_registry_issues_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QualityIssueResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_history_api_v1_admin_quality_registry_issues__issue_id__history_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                issue_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditEvent"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    review_queue_api_v1_admin_quality_registry_review_queue_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewItemResponse"][];
+                };
+            };
+        };
+    };
+    resolve_review_api_v1_admin_quality_registry_review_queue__issue_id__resolve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                issue_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolveReviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QualityIssueResponse"];
                 };
             };
             /** @description Validation Error */

@@ -21,6 +21,7 @@ from backend.app.schemas.quality_registry import (
     FeedbackKey,
     QualityIssueCreate,
     QualityIssueResponse,
+    QualityIssueUpdate,
 )
 
 
@@ -192,6 +193,39 @@ class QualityRegistryStore:
         self._append_audit(event)
 
         return response
+
+    def update_issue(
+        self,
+        issue_id: str,
+        payload: QualityIssueUpdate,
+    ) -> QualityIssueResponse:
+        issues = self._load_issues()
+        found = self._find_issue(issues, issue_id)
+        if found is None:
+            raise ValueError(f"Issue {issue_id} not found")
+
+        old_issue_text = found.issue_text
+        old_reported_by = found.reported_by
+
+        updated = self._update_issue(issues, issue_id, {
+            "issue_text": payload.issue_text,
+            "reported_by": payload.reported_by,
+        })
+
+        event = AuditEvent(
+            issue_id=issue_id,
+            action="edited",
+            actor=payload.reported_by,
+            details={
+                "old_issue_text": old_issue_text,
+                "new_issue_text": payload.issue_text,
+                "old_reported_by": old_reported_by,
+                "new_reported_by": payload.reported_by,
+            },
+        )
+        self._append_audit(event)
+
+        return updated
 
     def get_issue(self, issue_id: str) -> Optional[QualityIssueResponse]:
         """Return a single issue by ID, or None if not found."""

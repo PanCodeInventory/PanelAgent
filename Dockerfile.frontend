@@ -38,6 +38,11 @@ COPY . .
 # Set a placeholder default; the real value is injected at runtime.
 ENV BACKEND_INTERNAL_URL=http://backend:8000
 
+# NEXT_PUBLIC_ADMIN_PATH_PREFIX is baked into client JS at build time.
+# Empty string = direct access; set to /admin for gateway deployments.
+ARG NEXT_PUBLIC_ADMIN_PATH_PREFIX=""
+ENV NEXT_PUBLIC_ADMIN_PATH_PREFIX=${NEXT_PUBLIC_ADMIN_PATH_PREFIX}
+
 RUN npm run build
 
 # ---------------------------------------------------------------------------

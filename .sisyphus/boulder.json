@@ -1,66 +1,101 @@
 {
-  "active_plan": "/home/user/PanChongshi/Repo/PanelAgent/.sisyphus/plans/docker-lan-compose-migration.md",
-  "started_at": "2026-04-03T11:43:08.747Z",
+  "active_plan": "/home/user/PanChongshi/Repo/PanelAgent/.sisyphus/plans/admin-user-interface-separation.md",
+  "started_at": "2026-04-22T14:15:20.581Z",
   "session_ids": [
-    "ses_2ad52ba16ffeeSMqsacMPtRh9x",
-    "ses_2acd6ccbbffe4XveZgPaRdnxDs",
-    "ses_2acd46114ffetUwSFKRJV0z80j",
-    "ses_2acd4c2b4ffe2lbDWF5s6K3cNv",
-    "ses_2acd4951effeKsdgciniTF5P4Y",
-    "ses_2acbff7a1ffeP055MatdNepQi5",
-    "ses_2acba515effeNrex5LerERjiCP",
-    "ses_2acb4cf54ffeUyHHx4qOSadqcY",
-    "ses_2acaea1d4ffe14jSkzvhyNnJD3",
-    "ses_2acae889cffe5N7HqDhCgHxcHU",
-    "ses_2acaeb014ffe4SoJBH279me9Rr"
+    "ses_25062b237ffe34yGy1gctfCno5",
+    "ses_249b196dbffeVcx5zVJK08JjkY",
+    "ses_249b15bf1ffeiKHnx1TkmR6FSs",
+    "ses_249b12212ffeSI8r0LBrmcVlEY",
+    "ses_249b0e540ffeP0k4tnBfHliV6y"
   ],
-  "plan_name": "docker-lan-compose-migration",
+  "plan_name": "admin-user-interface-separation",
   "agent": "atlas",
   "task_sessions": {
     "todo:1": {
       "task_key": "todo:1",
       "task_label": "1",
-      "task_title": "Freeze Current Runtime Contract",
-      "session_id": "ses_2acd6ccbbffe4XveZgPaRdnxDs",
+      "task_title": "冻结路由归属矩阵、API 归属矩阵与旧地址迁移表",
+      "session_id": "ses_24a7161e9ffehKdWfNiUQPBsiA",
       "agent": "Sisyphus-Junior",
-      "category": "quick",
-      "updated_at": "2026-04-03T11:46:19.764Z"
+      "category": "deep",
+      "updated_at": "2026-04-22T14:23:14.335Z"
     },
     "todo:2": {
       "task_key": "todo:2",
       "task_label": "2",
-      "task_title": "Add Backend Production Container",
-      "session_id": "ses_2acd4c2b4ffe2lbDWF5s6K3cNv",
+      "task_title": "建立后端 admin router、session 认证与会话接口",
+      "session_id": "ses_24a6b2d0bffeYV8S4Ak2XFWR9g",
       "agent": "Sisyphus-Junior",
       "category": "unspecified-high",
-      "updated_at": "2026-04-03T12:03:55.424Z"
+      "updated_at": "2026-04-22T14:36:51.896Z"
+    },
+    "todo:3": {
+      "task_key": "todo:3",
+      "task_label": "3",
+      "task_title": "将 quality-registry 后端拆分为 public 提交流与 admin 管理流",
+      "session_id": "ses_24a5037d4ffeMecsmjtXVd5W4K",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-04-22T15:09:29.202Z"
     },
     "todo:5": {
       "task_key": "todo:5",
       "task_label": "5",
-      "task_title": "Compose the Staged LAN Stack on Alternate Ports",
-      "session_id": "ses_2acbff7a1ffeP055MatdNepQi5",
+      "task_title": "统一双前端 API 代理与 client 基础设施，消除双代理歧义",
+      "session_id": "ses_24a3ce8deffeRaVcq1UpADegXi",
       "agent": "Sisyphus-Junior",
       "category": "unspecified-high",
-      "updated_at": "2026-04-03T12:15:22.837Z"
+      "updated_at": "2026-04-22T15:45:59.030Z"
     },
     "todo:6": {
       "task_key": "todo:6",
       "task_label": "6",
-      "task_title": "Prove End-to-End UI, API, and Persistence Parity",
-      "session_id": "ses_2acba515effeNrex5LerERjiCP",
+      "task_title": "清理用户端壳层与导航，只保留普通用户能力",
+      "session_id": "ses_249fb83b3ffeNewtd2Q2MbhPFp",
+      "agent": "Sisyphus-Junior",
+      "category": "visual-engineering",
+      "updated_at": "2026-04-22T16:34:18.998Z"
+    },
+    "todo:8": {
+      "task_key": "todo:8",
+      "task_label": "8",
+      "task_title": "将设置页与历史页完整迁移到管理端应用",
+      "session_id": "ses_249ef3794ffempOjATzOJ5ShQ6",
+      "agent": "Sisyphus-Junior",
+      "category": "visual-engineering",
+      "updated_at": "2026-04-22T16:53:36.885Z"
+    },
+    "todo:10": {
+      "task_key": "todo:10",
+      "task_label": "10",
+      "task_title": "更新双前端本地开发、Compose、网关与文档拓扑",
+      "session_id": "ses_249d6cad8ffe9f5RlwPkUUS7r0",
       "agent": "Sisyphus-Junior",
       "category": "unspecified-high",
-      "updated_at": "2026-04-03T12:21:31.134Z"
+      "updated_at": "2026-04-22T17:14:36.148Z"
     },
-    "todo:7": {
-      "task_key": "todo:7",
-      "task_label": "7",
-      "task_title": "Add Rollback Runbook and Controlled Cutover Procedure",
-      "session_id": "ses_2acb4cf54ffeUyHHx4qOSadqcY",
+    "todo:11": {
+      "task_key": "todo:11",
+      "task_label": "11",
+      "task_title": "完成双前端测试、类型检查、OpenAPI 契约与回归工作流",
+      "session_id": "ses_249cc86abffePqfTNg4MaXILBH",
+      "updated_at": "2026-04-22T17:38:06.536Z"
+    },
+    "final-wave:f1": {
+      "task_key": "final-wave:f1",
+      "task_label": "F1",
+      "task_title": "Plan Compliance Audit — oracle",
+      "session_id": "ses_249777996ffemlZf98ngf0q0d0",
       "agent": "Sisyphus-Junior",
-      "category": "writing",
-      "updated_at": "2026-04-03T12:28:04.928Z"
+      "category": "ultrabrain",
+      "updated_at": "2026-04-22T18:58:25.185Z"
     }
+  },
+  "session_origins": {
+    "ses_25062b237ffe34yGy1gctfCno5": "direct",
+    "ses_249b196dbffeVcx5zVJK08JjkY": "appended",
+    "ses_249b15bf1ffeiKHnx1TkmR6FSs": "appended",
+    "ses_249b12212ffeSI8r0LBrmcVlEY": "appended",
+    "ses_249b0e540ffeP0k4tnBfHliV6y": "appended"
   }
 }

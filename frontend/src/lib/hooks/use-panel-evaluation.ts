@@ -21,9 +21,15 @@ export interface PanelEvaluationState {
   error: string | null;
 }
 
+export interface EvaluateContext {
+  species?: string;
+  markers?: string[];
+  inventoryFile?: string;
+}
+
 export interface UsePanelEvaluationReturn {
   state: PanelEvaluationState;
-  evaluate: (candidates: PanelCandidate[], missingMarkers?: string[]) => Promise<void>;
+  evaluate: (candidates: PanelCandidate[], missingMarkers?: string[], context?: EvaluateContext) => Promise<void>;
   clear: () => void;
 }
 
@@ -34,7 +40,7 @@ export function usePanelEvaluation(): UsePanelEvaluationReturn {
     error: null,
   });
 
-  const evaluate = useCallback(async (candidates: PanelCandidate[], missingMarkers?: string[]) => {
+  const evaluate = useCallback(async (candidates: PanelCandidate[], missingMarkers?: string[], context?: EvaluateContext) => {
     if (candidates.length === 0) {
       setState((prev) => ({
         ...prev,
@@ -54,6 +60,9 @@ export function usePanelEvaluation(): UsePanelEvaluationReturn {
       const requestBody: PanelEvaluateRequest = {
         candidates: candidates as Record<string, Record<string, unknown>>[],
         missing_markers: missingMarkers ?? [],
+        species: context?.species ?? null,
+        markers: context?.markers ?? null,
+        inventory_file: context?.inventoryFile ?? null,
       };
 
       const response = await apiClient.post<PanelEvaluateResponse>(

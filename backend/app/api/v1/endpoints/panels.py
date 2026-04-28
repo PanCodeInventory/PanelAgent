@@ -1,11 +1,14 @@
 import json
 import importlib
+import logging
 from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
 from ....core.config import get_settings, project_root, resolve_static_data_path
+
+logger = logging.getLogger(__name__)
 
 _panels_schemas = importlib.import_module("backend.app.schemas.panels")
 DiagnoseRequest = _panels_schemas.DiagnoseRequest
@@ -198,10 +201,56 @@ async def evaluate_panels(payload: PanelEvaluateRequest) -> PanelEvaluateRespons
     if not isinstance(rationale, str):
         rationale = str(rationale)
 
-    return PanelEvaluateResponse(
+    response = PanelEvaluateResponse(
         status="success",
         selected_panel=selected_panel,
         rationale=rationale,
         gating_detail=gating_detail,
         message=None,
     )
+
+    # Persist to panel history on success
+    if selected_panel:
+        try:
+            _persist_evaluation_history(
+                species=payload.species,
+                inventory_file=payload.inventory_file,
+                requested_markers=payload.markers or [],
+                missing_markers=payload.missing_markers,
+                selected_panel=selected_panel,
+                rationale=rationale,
+            )
+        except Exception:
+            logger.warning("Failed to persist panel history entry", exc_info=True)
+
+    return response
+
+
+def _persist_evaluation_history(
+    species: str | None,
+    inventory_file: str | None,
+    requested_markers: list[str],
+    missing_markers: list[str],
+    selected_panel: dict[str, dict[str, Any]],
+    rationale: str,
+) -> None:
+    """Write a PanelHistoryEntry after a successful evaluation."""
+    from backend.app.services.panel_history_store import PanelHistoryEntry, PanelHistoryStore
+    from backend.app.services.llm_settings_store import LlmSettingsStore
+
+    settings = LlmSettingsStore().get_effective_settings()
+
+    # Convert dict[str, dict] → list[dict] for storage
+    panel_list = [{"marker": marker, **info} for marker, info in selected_panel.items()]
+
+    entry = PanelHistoryEntry(
+        species=species or "unknown",
+        inventory_file=inventory_file,
+        requested_markers=requested_markers,
+        missing_markers=missing_markers,
+        selected_panel=panel_list,
+        rationale=rationale,
+        model_name=settings.model_name,
+        api_base=settings.api_base,
+    )
+    PanelHistoryStore().create_entry(entry)

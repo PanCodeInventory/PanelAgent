@@ -46,6 +46,9 @@ class DiagnoseResponse(BaseModel):
 class PanelEvaluateRequest(BaseModel):
     candidates: list[dict[str, dict[str, Any]]] = Field(min_length=1)
     missing_markers: list[str] = Field(default_factory=list)
+    species: str | None = None
+    markers: list[str] | None = None
+    inventory_file: str | None = None
 
 
 class PanelEvaluateResponse(BaseModel):

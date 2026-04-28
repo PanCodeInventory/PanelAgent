@@ -1,28 +1,17 @@
-"""Comprehensive API tests for quality registry endpoints.
+"""Comprehensive API tests for quality registry endpoints."""
 
-Tests cover all 8 endpoints:
-  POST   /quality-registry/issues                     — create issue
-  GET    /quality-registry/issues                     — list issues
-  GET    /quality-registry/issues/{issue_id}          — issue detail
-  GET    /quality-registry/issues/{issue_id}/history  — audit history
-  POST   /quality-registry/candidates/lookup          — candidate lookup
-  POST   /quality-registry/candidates/confirm         — confirm candidate
-  GET    /quality-registry/review-queue               — manual review queue
-  POST   /quality-registry/review-queue/{issue_id}/resolve — resolve review
-"""
+from unittest.mock import patch
 
 import pytest
 import pytest_asyncio
-from unittest.mock import patch, MagicMock
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 
-from backend.app.services.quality_registry_store import QualityRegistryStore
-from backend.app.services.quality_projection import QualityProjector
 from backend.app.main import app
+from backend.app.services.quality_projection import QualityProjector
+from backend.app.services.quality_registry_store import QualityRegistryStore
 
-# ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
+TEST_PASSWORD = "test-secret-password-123"
+SESSION_SECRET = "test-session-secret-for-tests-only"
 
 _VALID_ISSUE = {
     "issue_text": "Fluorescence spill-over detected on channel PE-Cy7",
@@ -35,9 +24,16 @@ _VALID_ISSUE = {
 }
 
 
+@pytest.fixture(autouse=True)
+def _set_admin_env(monkeypatch):
+    monkeypatch.setenv("ADMIN_PASSWORD", TEST_PASSWORD)
+    monkeypatch.setenv("ADMIN_SESSION_SECRET", SESSION_SECRET)
+
+
 @pytest_asyncio.fixture
 async def qr_client(tmp_path):
     """AsyncClient with isolated store/projector using tmp_path."""
+    from backend.app.api.v1.admin.endpoints import quality_registry as admin_qr_mod
     from backend.app.api.v1.endpoints import quality_registry as qr_mod
 
     test_store = QualityRegistryStore(data_dir=str(tmp_path / "quality_registry"))
@@ -46,15 +42,20 @@ async def qr_client(tmp_path):
     with (
         patch.object(qr_mod, "_store", test_store),
         patch.object(qr_mod, "_projector", test_projector),
+        patch.object(admin_qr_mod, "_store", test_store),
+        patch.object(admin_qr_mod, "_projector", test_projector),
     ):
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             yield ac
 
 
-# ---------------------------------------------------------------------------
-# 1. Create issue
-# ---------------------------------------------------------------------------
+async def _admin_cookie(client: AsyncClient) -> dict[str, str]:
+    resp = await client.post("/api/v1/admin/auth/login", json={"password": TEST_PASSWORD})
+    assert resp.status_code == 200
+    session_cookie = resp.cookies.get("panelagent_admin_session")
+    assert session_cookie is not None
+    return {"panelagent_admin_session": session_cookie}
 
 
 @pytest.mark.asyncio
@@ -75,11 +76,6 @@ async def test_create_issue(qr_client):
     assert body["entity_key"] is None
 
 
-# ---------------------------------------------------------------------------
-# 2. Create issue — validation failure
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.asyncio
 async def test_create_issue_validation_missing_fields(qr_client):
     resp = await qr_client.post("/api/v1/quality-registry/issues", json={})
@@ -93,57 +89,50 @@ async def test_create_issue_validation_blank_issue_text(qr_client):
     assert resp.status_code == 422
 
 
-# ---------------------------------------------------------------------------
-# 3. List issues
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.asyncio
 async def test_list_issues(qr_client):
-    # Create two issues
+    admin_cookies = await _admin_cookie(qr_client)
     await qr_client.post("/api/v1/quality-registry/issues", json=_VALID_ISSUE)
     issue2 = {**_VALID_ISSUE, "marker": "CD4", "fluorochrome": "PE"}
     await qr_client.post("/api/v1/quality-registry/issues", json=issue2)
 
-    resp = await qr_client.get("/api/v1/quality-registry/issues")
+    resp = await qr_client.get("/api/v1/admin/quality-registry/issues", cookies=admin_cookies)
     assert resp.status_code == 200
-    body = resp.json()
-    assert len(body) == 2
-
-
-# ---------------------------------------------------------------------------
-# 4. List issues — filter by status
-# ---------------------------------------------------------------------------
+    assert len(resp.json()) == 2
 
 
 @pytest.mark.asyncio
 async def test_list_issues_filter_by_status(qr_client):
-    # Create an issue (status=submitted)
-    r = await qr_client.post("/api/v1/quality-registry/issues", json=_VALID_ISSUE)
-    issue_id = r.json()["id"]
+    admin_cookies = await _admin_cookie(qr_client)
+    await qr_client.post("/api/v1/quality-registry/issues", json=_VALID_ISSUE)
 
-    # Get submitted issues
-    resp = await qr_client.get("/api/v1/quality-registry/issues", params={"status": "submitted"})
+    resp = await qr_client.get(
+        "/api/v1/admin/quality-registry/issues",
+        params={"status": "submitted"},
+        cookies=admin_cookies,
+    )
     assert resp.status_code == 200
     assert len(resp.json()) >= 1
 
-    # Get resolved issues — should be empty
-    resp2 = await qr_client.get("/api/v1/quality-registry/issues", params={"status": "resolved"})
+    resp2 = await qr_client.get(
+        "/api/v1/admin/quality-registry/issues",
+        params={"status": "resolved"},
+        cookies=admin_cookies,
+    )
     assert resp2.status_code == 200
     assert len(resp2.json()) == 0
 
 
-# ---------------------------------------------------------------------------
-# 5. Get issue detail
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.asyncio
 async def test_get_issue_detail(qr_client):
+    admin_cookies = await _admin_cookie(qr_client)
     r = await qr_client.post("/api/v1/quality-registry/issues", json=_VALID_ISSUE)
     issue_id = r.json()["id"]
 
-    resp = await qr_client.get(f"/api/v1/quality-registry/issues/{issue_id}")
+    resp = await qr_client.get(
+        f"/api/v1/admin/quality-registry/issues/{issue_id}",
+        cookies=admin_cookies,
+    )
     assert resp.status_code == 200
     body = resp.json()
     assert body["id"] == issue_id
@@ -151,29 +140,26 @@ async def test_get_issue_detail(qr_client):
     assert body["issue_text"] == _VALID_ISSUE["issue_text"]
 
 
-# ---------------------------------------------------------------------------
-# 6. Get issue detail — not found
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.asyncio
 async def test_get_issue_detail_not_found(qr_client):
-    resp = await qr_client.get("/api/v1/quality-registry/issues/nonexistent-id")
+    admin_cookies = await _admin_cookie(qr_client)
+    resp = await qr_client.get(
+        "/api/v1/admin/quality-registry/issues/nonexistent-id",
+        cookies=admin_cookies,
+    )
     assert resp.status_code == 404
-
-
-# ---------------------------------------------------------------------------
-# 7. Get history
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
 async def test_get_history(qr_client):
+    admin_cookies = await _admin_cookie(qr_client)
     r = await qr_client.post("/api/v1/quality-registry/issues", json=_VALID_ISSUE)
     issue_id = r.json()["id"]
 
-    # History should have 1 event (created)
-    resp = await qr_client.get(f"/api/v1/quality-registry/issues/{issue_id}/history")
+    resp = await qr_client.get(
+        f"/api/v1/admin/quality-registry/issues/{issue_id}/history",
+        cookies=admin_cookies,
+    )
     assert resp.status_code == 200
     events = resp.json()
     assert len(events) == 1
@@ -183,10 +169,10 @@ async def test_get_history(qr_client):
 
 @pytest.mark.asyncio
 async def test_get_history_with_entity_bind(qr_client):
+    admin_cookies = await _admin_cookie(qr_client)
     r = await qr_client.post("/api/v1/quality-registry/issues", json=_VALID_ISSUE)
     issue_id = r.json()["id"]
 
-    # Confirm a candidate (binds entity)
     confirm_payload = {
         "issue_id": issue_id,
         "entity_key": {
@@ -199,61 +185,49 @@ async def test_get_history_with_entity_bind(qr_client):
     }
     await qr_client.post("/api/v1/quality-registry/candidates/confirm", json=confirm_payload)
 
-    # History should have 2 events: created + entity_bound
-    resp = await qr_client.get(f"/api/v1/quality-registry/issues/{issue_id}/history")
+    resp = await qr_client.get(
+        f"/api/v1/admin/quality-registry/issues/{issue_id}/history",
+        cookies=admin_cookies,
+    )
     assert resp.status_code == 200
-    events = resp.json()
-    assert len(events) == 2
-    actions = [e["action"] for e in events]
+    actions = [e["action"] for e in resp.json()]
     assert "created" in actions
     assert "entity_bound" in actions
 
 
 @pytest.mark.asyncio
 async def test_get_history_not_found(qr_client):
-    resp = await qr_client.get("/api/v1/quality-registry/issues/nonexistent/history")
+    admin_cookies = await _admin_cookie(qr_client)
+    resp = await qr_client.get(
+        "/api/v1/admin/quality-registry/issues/nonexistent/history",
+        cookies=admin_cookies,
+    )
     assert resp.status_code == 404
-
-
-# ---------------------------------------------------------------------------
-# 8. Candidate lookup
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
 async def test_candidate_lookup_with_inventory(qr_client):
-    """Lookup with species=Mouse should search inventory if mapped file exists."""
     payload = {
         "text": "CD3 APC antibody",
         "species": "Mouse",
         "marker": "CD3",
         "fluorochrome": "APC",
     }
-    # The inventory for Mouse may or may not exist in test env.
-    # If it doesn't exist, we just get an empty list — that's fine.
     resp = await qr_client.post("/api/v1/quality-registry/candidates/lookup", json=payload)
     assert resp.status_code == 200
-    body = resp.json()
-    assert "candidates" in body
+    assert "candidates" in resp.json()
 
 
 @pytest.mark.asyncio
 async def test_candidate_lookup_no_species(qr_client):
-    """Lookup without species returns empty candidates (no inventory resolved)."""
-    payload = {
-        "text": "CD3 APC antibody",
-        "marker": "CD3",
-        "fluorochrome": "APC",
-    }
+    payload = {"text": "CD3 APC antibody", "marker": "CD3", "fluorochrome": "APC"}
     resp = await qr_client.post("/api/v1/quality-registry/candidates/lookup", json=payload)
     assert resp.status_code == 200
-    body = resp.json()
-    assert body["candidates"] == []
+    assert resp.json()["candidates"] == []
 
 
 @pytest.mark.asyncio
 async def test_candidate_lookup_nonexistent_marker(qr_client):
-    """Lookup with marker not in inventory returns empty candidates."""
     payload = {
         "text": "XYZ999 antibody",
         "species": "Mouse",
@@ -262,22 +236,14 @@ async def test_candidate_lookup_nonexistent_marker(qr_client):
     }
     resp = await qr_client.post("/api/v1/quality-registry/candidates/lookup", json=payload)
     assert resp.status_code == 200
-    body = resp.json()
-    assert body["candidates"] == []
-
-
-# ---------------------------------------------------------------------------
-# 9. Candidate confirm
-# ---------------------------------------------------------------------------
+    assert resp.json()["candidates"] == []
 
 
 @pytest.mark.asyncio
 async def test_candidate_confirm(qr_client):
-    # Create an issue
     r = await qr_client.post("/api/v1/quality-registry/issues", json=_VALID_ISSUE)
     issue_id = r.json()["id"]
 
-    # Confirm a candidate
     confirm_payload = {
         "issue_id": issue_id,
         "entity_key": {
@@ -314,30 +280,24 @@ async def test_candidate_confirm_issue_not_found(qr_client):
     assert resp.status_code == 404
 
 
-# ---------------------------------------------------------------------------
-# 10. Manual review queue
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.asyncio
 async def test_review_queue_empty(qr_client):
-    resp = await qr_client.get("/api/v1/quality-registry/review-queue")
+    admin_cookies = await _admin_cookie(qr_client)
+    resp = await qr_client.get("/api/v1/admin/quality-registry/review-queue", cookies=admin_cookies)
     assert resp.status_code == 200
     assert resp.json() == []
 
 
 @pytest.mark.asyncio
 async def test_review_queue_with_items(qr_client):
-    from backend.app.api.v1.endpoints import quality_registry as qr_mod
+    from backend.app.api.v1.admin.endpoints import quality_registry as admin_qr_mod
 
-    # Create issue then send to review via the store directly
+    admin_cookies = await _admin_cookie(qr_client)
     r = await qr_client.post("/api/v1/quality-registry/issues", json=_VALID_ISSUE)
     issue_id = r.json()["id"]
+    admin_qr_mod._store.send_to_review(issue_id)
 
-    # Send to review using the patched store
-    qr_mod._store.send_to_review(issue_id)
-
-    resp = await qr_client.get("/api/v1/quality-registry/review-queue")
+    resp = await qr_client.get("/api/v1/admin/quality-registry/review-queue", cookies=admin_cookies)
     assert resp.status_code == 200
     body = resp.json()
     assert len(body) == 1
@@ -345,21 +305,15 @@ async def test_review_queue_with_items(qr_client):
     assert body[0]["status"] == "pending_review"
 
 
-# ---------------------------------------------------------------------------
-# 11. Resolve review
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.asyncio
 async def test_resolve_review(qr_client):
-    from backend.app.api.v1.endpoints import quality_registry as qr_mod
+    from backend.app.api.v1.admin.endpoints import quality_registry as admin_qr_mod
 
-    # Create issue and send to review
+    admin_cookies = await _admin_cookie(qr_client)
     r = await qr_client.post("/api/v1/quality-registry/issues", json=_VALID_ISSUE)
     issue_id = r.json()["id"]
-    qr_mod._store.send_to_review(issue_id)
+    admin_qr_mod._store.send_to_review(issue_id)
 
-    # Resolve review
     resolve_payload = {
         "reviewer": "bob",
         "entity_key": {
@@ -371,8 +325,9 @@ async def test_resolve_review(qr_client):
         },
     }
     resp = await qr_client.post(
-        f"/api/v1/quality-registry/review-queue/{issue_id}/resolve",
+        f"/api/v1/admin/quality-registry/review-queue/{issue_id}/resolve",
         json=resolve_payload,
+        cookies=admin_cookies,
     )
     assert resp.status_code == 200
     body = resp.json()
@@ -383,49 +338,44 @@ async def test_resolve_review(qr_client):
 
 @pytest.mark.asyncio
 async def test_resolve_review_without_entity(qr_client):
-    from backend.app.api.v1.endpoints import quality_registry as qr_mod
+    from backend.app.api.v1.admin.endpoints import quality_registry as admin_qr_mod
 
-    # Create issue and send to review
+    admin_cookies = await _admin_cookie(qr_client)
     r = await qr_client.post("/api/v1/quality-registry/issues", json=_VALID_ISSUE)
     issue_id = r.json()["id"]
-    qr_mod._store.send_to_review(issue_id)
+    admin_qr_mod._store.send_to_review(issue_id)
 
-    # Resolve without entity key
-    resolve_payload = {"reviewer": "carol"}
     resp = await qr_client.post(
-        f"/api/v1/quality-registry/review-queue/{issue_id}/resolve",
-        json=resolve_payload,
+        f"/api/v1/admin/quality-registry/review-queue/{issue_id}/resolve",
+        json={"reviewer": "carol"},
+        cookies=admin_cookies,
     )
     assert resp.status_code == 200
-    body = resp.json()
-    assert body["status"] == "resolved"
+    assert resp.json()["status"] == "resolved"
 
 
 @pytest.mark.asyncio
 async def test_resolve_review_not_found(qr_client):
-    resolve_payload = {"reviewer": "bob"}
+    admin_cookies = await _admin_cookie(qr_client)
     resp = await qr_client.post(
-        "/api/v1/quality-registry/review-queue/nonexistent/resolve",
-        json=resolve_payload,
+        "/api/v1/admin/quality-registry/review-queue/nonexistent/resolve",
+        json={"reviewer": "bob"},
+        cookies=admin_cookies,
     )
     assert resp.status_code == 404
 
 
-# ---------------------------------------------------------------------------
-# Edge cases
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.asyncio
 async def test_list_issues_empty(qr_client):
-    resp = await qr_client.get("/api/v1/quality-registry/issues")
+    admin_cookies = await _admin_cookie(qr_client)
+    resp = await qr_client.get("/api/v1/admin/quality-registry/issues", cookies=admin_cookies)
     assert resp.status_code == 200
     assert resp.json() == []
 
 
 @pytest.mark.asyncio
 async def test_candidate_confirm_updates_projection(qr_client):
-    """Verify that confirming a candidate triggers projection update (no error)."""
+    admin_cookies = await _admin_cookie(qr_client)
     r = await qr_client.post("/api/v1/quality-registry/issues", json=_VALID_ISSUE)
     issue_id = r.json()["id"]
 
@@ -441,23 +391,24 @@ async def test_candidate_confirm_updates_projection(qr_client):
     }
     resp = await qr_client.post("/api/v1/quality-registry/candidates/confirm", json=confirm_payload)
     assert resp.status_code == 200
-    # Check the issue is now confirmed
-    detail = await qr_client.get(f"/api/v1/quality-registry/issues/{issue_id}")
+
+    detail = await qr_client.get(
+        f"/api/v1/admin/quality-registry/issues/{issue_id}",
+        cookies=admin_cookies,
+    )
     assert detail.json()["status"] == "confirmed"
 
 
 @pytest.mark.asyncio
 async def test_full_lifecycle(qr_client):
-    """End-to-end: create → confirm → send_to_review → resolve."""
-    from backend.app.api.v1.endpoints import quality_registry as qr_mod
+    from backend.app.api.v1.admin.endpoints import quality_registry as admin_qr_mod
 
-    # 1. Create
+    admin_cookies = await _admin_cookie(qr_client)
     r = await qr_client.post("/api/v1/quality-registry/issues", json=_VALID_ISSUE)
     assert r.status_code == 200
     issue_id = r.json()["id"]
     assert r.json()["status"] == "submitted"
 
-    # 2. Confirm candidate
     confirm = {
         "issue_id": issue_id,
         "entity_key": {
@@ -472,13 +423,11 @@ async def test_full_lifecycle(qr_client):
     assert r2.status_code == 200
     assert r2.json()["status"] == "confirmed"
 
-    # 3. Send to review
-    qr_mod._store.send_to_review(issue_id)
-    r3 = await qr_client.get("/api/v1/quality-registry/review-queue")
+    admin_qr_mod._store.send_to_review(issue_id)
+    r3 = await qr_client.get("/api/v1/admin/quality-registry/review-queue", cookies=admin_cookies)
     assert len(r3.json()) == 1
     assert r3.json()[0]["status"] == "pending_review"
 
-    # 4. Resolve review
     resolve = {
         "reviewer": "admin",
         "entity_key": {
@@ -490,63 +439,58 @@ async def test_full_lifecycle(qr_client):
         },
     }
     r4 = await qr_client.post(
-        f"/api/v1/quality-registry/review-queue/{issue_id}/resolve",
+        f"/api/v1/admin/quality-registry/review-queue/{issue_id}/resolve",
         json=resolve,
+        cookies=admin_cookies,
     )
     assert r4.status_code == 200
     assert r4.json()["status"] == "resolved"
 
-    # 5. Review queue should be empty now
-    r5 = await qr_client.get("/api/v1/quality-registry/review-queue")
+    r5 = await qr_client.get("/api/v1/admin/quality-registry/review-queue", cookies=admin_cookies)
     assert r5.json() == []
 
-    # 6. History should have 4 events: created, entity_bound, status_changed, resolved
-    r6 = await qr_client.get(f"/api/v1/quality-registry/issues/{issue_id}/history")
-    events = r6.json()
-    actions = [e["action"] for e in events]
+    r6 = await qr_client.get(
+        f"/api/v1/admin/quality-registry/issues/{issue_id}/history",
+        cookies=admin_cookies,
+    )
+    actions = [e["action"] for e in r6.json()]
     assert "created" in actions
     assert "entity_bound" in actions
     assert "status_changed" in actions
     assert "resolved" in actions
 
 
-# ---------------------------------------------------------------------------
-# Brand filtering in candidate lookup
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.asyncio
 async def test_candidate_lookup_filters_by_brand(qr_client):
-    """Lookup should return only candidates matching the requested brand."""
-    response = await qr_client.post("/api/v1/quality-registry/candidates/lookup", json={
-        "text": "CD3",
-        "species": "Mouse",
-        "marker": "CD3",
-        "fluorochrome": "APC",
-        "brand": "BioLegend",
-    })
+    response = await qr_client.post(
+        "/api/v1/quality-registry/candidates/lookup",
+        json={
+            "text": "CD3",
+            "species": "Mouse",
+            "marker": "CD3",
+            "fluorochrome": "APC",
+            "brand": "BioLegend",
+        },
+    )
     data = response.json()
     assert response.status_code == 200
     for c in data["candidates"]:
         assert c["entity_key"]["brand"].lower() == "biolegend"
 
 
-# ---------------------------------------------------------------------------
-# Auto-route to pending_review
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.asyncio
 async def test_create_issue_auto_routes_to_pending_review(qr_client):
-    """Issues without clone should auto-transition to pending_review."""
-    response = await qr_client.post("/api/v1/quality-registry/issues", json={
-        "issue_text": "Poor staining",
-        "reported_by": "researcher",
-        "species": "Human",
-        "marker": "CD3",
-        "fluorochrome": "APC",
-        "brand": "BioLegend",
-    })
+    response = await qr_client.post(
+        "/api/v1/quality-registry/issues",
+        json={
+            "issue_text": "Poor staining",
+            "reported_by": "researcher",
+            "species": "Human",
+            "marker": "CD3",
+            "fluorochrome": "APC",
+            "brand": "BioLegend",
+        },
+    )
     data = response.json()
     assert response.status_code == 200
     assert data["status"] == "pending_review"
@@ -555,16 +499,18 @@ async def test_create_issue_auto_routes_to_pending_review(qr_client):
 
 @pytest.mark.asyncio
 async def test_create_issue_stays_submitted_with_clone(qr_client):
-    """Issues with clone should stay as submitted (not auto-routed)."""
-    response = await qr_client.post("/api/v1/quality-registry/issues", json={
-        "issue_text": "Poor staining",
-        "reported_by": "researcher",
-        "species": "Human",
-        "marker": "CD3",
-        "fluorochrome": "APC",
-        "brand": "BioLegend",
-        "clone": "UCHT1",
-    })
+    response = await qr_client.post(
+        "/api/v1/quality-registry/issues",
+        json={
+            "issue_text": "Poor staining",
+            "reported_by": "researcher",
+            "species": "Human",
+            "marker": "CD3",
+            "fluorochrome": "APC",
+            "brand": "BioLegend",
+            "clone": "UCHT1",
+        },
+    )
     data = response.json()
     assert response.status_code == 200
     assert data["status"] == "submitted"
@@ -572,40 +518,46 @@ async def test_create_issue_stays_submitted_with_clone(qr_client):
 
 @pytest.mark.asyncio
 async def test_candidate_lookup_with_localized_species(qr_client):
-    """Lookup should work with localized species strings like 'Mouse (小鼠)'."""
-    response = await qr_client.post("/api/v1/quality-registry/candidates/lookup", json={
-        "text": "CD3",
-        "species": "Mouse (小鼠)",
-        "marker": "CD3",
-        "fluorochrome": "APC",
-    })
+    response = await qr_client.post(
+        "/api/v1/quality-registry/candidates/lookup",
+        json={
+            "text": "CD3",
+            "species": "Mouse (小鼠)",
+            "marker": "CD3",
+            "fluorochrome": "APC",
+        },
+    )
     assert response.status_code == 200
-    data = response.json()
-    assert "candidates" in data
+    assert "candidates" in response.json()
 
 
 @pytest.mark.asyncio
 async def test_candidate_confirm_rejects_species_mismatch(qr_client):
-    """Confirm should reject entity_key with different species than issue."""
-    create_resp = await qr_client.post("/api/v1/quality-registry/issues", json={
-        "issue_text": "Test issue",
-        "reported_by": "researcher",
-        "species": "Human",
-        "marker": "CD3",
-        "fluorochrome": "APC",
-        "brand": "BioLegend",
-        "clone": "UCHT1",
-    })
+    create_resp = await qr_client.post(
+        "/api/v1/quality-registry/issues",
+        json={
+            "issue_text": "Test issue",
+            "reported_by": "researcher",
+            "species": "Human",
+            "marker": "CD3",
+            "fluorochrome": "APC",
+            "brand": "BioLegend",
+            "clone": "UCHT1",
+        },
+    )
     issue = create_resp.json()
 
-    confirm_resp = await qr_client.post("/api/v1/quality-registry/candidates/confirm", json={
-        "issue_id": issue["id"],
-        "entity_key": {
-            "species": "Mouse",
-            "normalized_marker": "CD3",
-            "clone": "17A2",
-            "brand": "BioLegend",
-            "catalog_number": "100206",
+    confirm_resp = await qr_client.post(
+        "/api/v1/quality-registry/candidates/confirm",
+        json={
+            "issue_id": issue["id"],
+            "entity_key": {
+                "species": "Mouse",
+                "normalized_marker": "CD3",
+                "clone": "17A2",
+                "brand": "BioLegend",
+                "catalog_number": "100206",
+            },
         },
-    })
+    )
     assert confirm_resp.status_code == 422

@@ -1,0 +1,31 @@
+Task 11 full verification sequence — 2026-04-23
+
+1. PYTHONPATH=. python -m pytest tests/ -q
+   Result: 298 passed, 4 failed.
+   Expected pre-existing failures only:
+   - tests/test_panel_evaluate_quality.py::test_quality_context_present_when_projections_exist
+   - tests/test_panel_recommend_quality.py::test_recommend_quality_context_present
+   - tests/test_quality_context_formatter.py::test_header_included_in_context
+   - tests/test_quality_e2e_integration.py::TestEvaluateCandidatesWithLLMContext::test_llm_prompt_contains_quality_context_header
+
+2. make generate-client
+   Result: success.
+   Exported OpenAPI paths include migrated admin endpoints:
+   - GET, PUT /api/v1/admin/settings/llm
+   - GET /api/v1/admin/panel-history
+   - GET /api/v1/admin/panel-history/{entry_id}
+
+3. make check-drift
+   Result: success. Client is in sync with backend schema.
+
+4. cd frontend && npx tsc --noEmit
+   Result: success.
+
+5. cd admin-frontend && npx tsc --noEmit
+   Result: success.
+
+6. cd frontend && npm run build
+   Result: success.
+
+7. cd admin-frontend && npm run build
+   Result: success (with existing Next.js middleware deprecation warning only).

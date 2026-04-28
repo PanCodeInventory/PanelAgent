@@ -230,6 +230,661 @@
           }
         }
       }
+    },
+    "/api/v1/quality-registry/issues": {
+      "post": {
+        "tags": [
+          "quality-registry"
+        ],
+        "summary": "Create Issue",
+        "description": "Create a new quality issue and trigger projection update.",
+        "operationId": "create_issue_api_v1_quality_registry_issues_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QualityIssueCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualityIssueResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quality-registry/candidates/lookup": {
+      "post": {
+        "tags": [
+          "quality-registry"
+        ],
+        "summary": "Candidate Lookup",
+        "description": "Look up candidate antibody matches from inventory.\n\nSimple heuristic: filter inventory by marker and fluorochrome,\nrank by exactness of match.",
+        "operationId": "candidate_lookup_api_v1_quality_registry_candidates_lookup_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateLookupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateLookupResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quality-registry/candidates/confirm": {
+      "post": {
+        "tags": [
+          "quality-registry"
+        ],
+        "summary": "Candidate Confirm",
+        "description": "Confirm a candidate entity selection for a quality issue.",
+        "operationId": "candidate_confirm_api_v1_quality_registry_candidates_confirm_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateConfirmWithIssue"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualityIssueResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/auth/login": {
+      "post": {
+        "tags": [
+          "admin",
+          "admin-auth"
+        ],
+        "summary": "Login",
+        "description": "Authenticate admin with a single password.\n\nCompares the provided password against the ``ADMIN_PASSWORD`` environment\nvariable using ``hmac.compare_digest`` (timing-safe).  On success, sets\nsession data ``{\"is_admin\": True, \"login_at\": <timestamp>}``.\n\nReturns 401 on mismatch without setting any cookie.",
+        "operationId": "login_api_v1_admin_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/auth/logout": {
+      "post": {
+        "tags": [
+          "admin",
+          "admin-auth"
+        ],
+        "summary": "Logout",
+        "description": "Clear admin session cookie.",
+        "operationId": "logout_api_v1_admin_auth_logout_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Logout Api V1 Admin Auth Logout Post"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/auth/session": {
+      "get": {
+        "tags": [
+          "admin",
+          "admin-auth"
+        ],
+        "summary": "Check Session",
+        "description": "Return current admin authentication status.\n\nThis endpoint is exempt from the ``require_admin_session`` dependency\nso it can report ``authenticated: false`` instead of returning 401.",
+        "operationId": "check_session_api_v1_admin_auth_session_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/settings/llm": {
+      "get": {
+        "tags": [
+          "admin",
+          "admin-settings"
+        ],
+        "summary": "Get Llm Settings",
+        "operationId": "get_llm_settings_api_v1_admin_settings_llm_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LlmSettingsResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "admin",
+          "admin-settings"
+        ],
+        "summary": "Put Llm Settings",
+        "operationId": "put_llm_settings_api_v1_admin_settings_llm_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LlmSettingsUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LlmSettingsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/panel-history": {
+      "get": {
+        "tags": [
+          "admin",
+          "admin-panel-history"
+        ],
+        "summary": "List History",
+        "operationId": "list_history_api_v1_admin_panel_history_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PanelHistoryListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/panel-history/{entry_id}": {
+      "get": {
+        "tags": [
+          "admin",
+          "admin-panel-history"
+        ],
+        "summary": "Get History Detail",
+        "operationId": "get_history_detail_api_v1_admin_panel_history__entry_id__get",
+        "parameters": [
+          {
+            "name": "entry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entry Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PanelHistoryDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/quality-registry/issues/{issue_id}": {
+      "put": {
+        "tags": [
+          "admin",
+          "admin-quality-registry"
+        ],
+        "summary": "Update Issue",
+        "operationId": "update_issue_api_v1_admin_quality_registry_issues__issue_id__put",
+        "parameters": [
+          {
+            "name": "issue_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Issue Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QualityIssueUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualityIssueResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "admin",
+          "admin-quality-registry"
+        ],
+        "summary": "Get Issue",
+        "description": "Get a single quality issue by ID.",
+        "operationId": "get_issue_api_v1_admin_quality_registry_issues__issue_id__get",
+        "parameters": [
+          {
+            "name": "issue_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Issue Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualityIssueResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/quality-registry/issues": {
+      "get": {
+        "tags": [
+          "admin",
+          "admin-quality-registry"
+        ],
+        "summary": "List Issues",
+        "description": "List quality issues, optionally filtered by status.",
+        "operationId": "list_issues_api_v1_admin_quality_registry_issues_get",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QualityIssueResponse"
+                  },
+                  "title": "Response List Issues Api V1 Admin Quality Registry Issues Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/quality-registry/issues/{issue_id}/history": {
+      "get": {
+        "tags": [
+          "admin",
+          "admin-quality-registry"
+        ],
+        "summary": "Get History",
+        "description": "Get audit history for a quality issue.",
+        "operationId": "get_history_api_v1_admin_quality_registry_issues__issue_id__history_get",
+        "parameters": [
+          {
+            "name": "issue_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Issue Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditEvent"
+                  },
+                  "title": "Response Get History Api V1 Admin Quality Registry Issues  Issue Id  History Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/quality-registry/review-queue": {
+      "get": {
+        "tags": [
+          "admin",
+          "admin-quality-registry"
+        ],
+        "summary": "Review Queue",
+        "description": "List all issues in pending_review status.",
+        "operationId": "review_queue_api_v1_admin_quality_registry_review_queue_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewItemResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Review Queue Api V1 Admin Quality Registry Review Queue Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/quality-registry/review-queue/{issue_id}/resolve": {
+      "post": {
+        "tags": [
+          "admin",
+          "admin-quality-registry"
+        ],
+        "summary": "Resolve Review",
+        "description": "Resolve a manual review item.",
+        "operationId": "resolve_review_api_v1_admin_quality_registry_review_queue__issue_id__resolve_post",
+        "parameters": [
+          {
+            "name": "issue_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Issue Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveReviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualityIssueResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -291,6 +946,17 @@
               }
             ],
             "title": "Target"
+          },
+          "stock": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stock"
           }
         },
         "type": "object",
@@ -300,6 +966,173 @@
           "brightness"
         ],
         "title": "AntibodyInfo"
+      },
+      "AuditEvent": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "issue_id": {
+            "type": "string",
+            "title": "Issue Id"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "actor": {
+            "type": "string",
+            "title": "Actor"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "issue_id",
+          "action",
+          "actor"
+        ],
+        "title": "AuditEvent",
+        "description": "Immutable record of a single mutation on a quality issue."
+      },
+      "CandidateConfirmWithIssue": {
+        "properties": {
+          "issue_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Issue Id"
+          },
+          "entity_key": {
+            "$ref": "#/components/schemas/EntityKey"
+          }
+        },
+        "type": "object",
+        "required": [
+          "issue_id",
+          "entity_key"
+        ],
+        "title": "CandidateConfirmWithIssue",
+        "description": "Confirm a candidate entity selection for a specific issue."
+      },
+      "CandidateLookupRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Text",
+            "description": "Natural-language description of the antibody."
+          },
+          "species": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Species"
+          },
+          "marker": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Marker"
+          },
+          "fluorochrome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fluorochrome"
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "CandidateLookupRequest",
+        "description": "Request to look up candidate antibody matches."
+      },
+      "CandidateLookupResponse": {
+        "properties": {
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateMatch"
+            },
+            "type": "array",
+            "title": "Candidates"
+          }
+        },
+        "type": "object",
+        "title": "CandidateLookupResponse",
+        "description": "Response containing candidate antibody matches."
+      },
+      "CandidateMatch": {
+        "properties": {
+          "entity_key": {
+            "$ref": "#/components/schemas/EntityKey"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "matched_marker": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched Marker"
+          }
+        },
+        "type": "object",
+        "required": [
+          "entity_key",
+          "confidence",
+          "source"
+        ],
+        "title": "CandidateMatch",
+        "description": "A single candidate match from the lookup."
       },
       "DiagnoseRequest": {
         "properties": {
@@ -358,6 +1191,91 @@
         ],
         "title": "DiagnoseResponse"
       },
+      "EntityKey": {
+        "properties": {
+          "species": {
+            "type": "string",
+            "title": "Species"
+          },
+          "normalized_marker": {
+            "type": "string",
+            "title": "Normalized Marker"
+          },
+          "clone": {
+            "type": "string",
+            "title": "Clone"
+          },
+          "brand": {
+            "type": "string",
+            "title": "Brand"
+          },
+          "catalog_number": {
+            "type": "string",
+            "title": "Catalog Number"
+          },
+          "lot_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lot Number"
+          }
+        },
+        "type": "object",
+        "required": [
+          "species",
+          "normalized_marker",
+          "clone",
+          "brand",
+          "catalog_number"
+        ],
+        "title": "EntityKey",
+        "description": "Canonical identity for a specific antibody reagent.\n\nEquality & hashing are based on the 5 required fields.\n``lot_number`` is tracked as metadata but is NOT part of identity."
+      },
+      "FeedbackKey": {
+        "properties": {
+          "species": {
+            "type": "string",
+            "title": "Species"
+          },
+          "normalized_marker": {
+            "type": "string",
+            "title": "Normalized Marker"
+          },
+          "fluorochrome": {
+            "type": "string",
+            "title": "Fluorochrome"
+          },
+          "brand": {
+            "type": "string",
+            "title": "Brand"
+          },
+          "clone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "species",
+          "normalized_marker",
+          "fluorochrome",
+          "brand"
+        ],
+        "title": "FeedbackKey",
+        "description": "Identity key for a quality-feedback submission.\n\nEquality & hashing are based on all non-None fields, so two submissions\nthat differ only in clone (where one has clone=None) are *not* equal."
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -370,6 +1288,117 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "LlmSettingsResponse": {
+        "properties": {
+          "api_base": {
+            "type": "string",
+            "title": "Api Base"
+          },
+          "model_name": {
+            "type": "string",
+            "title": "Model Name"
+          },
+          "has_api_key": {
+            "type": "boolean",
+            "title": "Has Api Key"
+          },
+          "api_key_masked": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key Masked"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "runtime",
+              "env-default"
+            ],
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "api_base",
+          "model_name",
+          "has_api_key",
+          "api_key_masked",
+          "source"
+        ],
+        "title": "LlmSettingsResponse",
+        "description": "Response model for GET /api/v1/settings/llm."
+      },
+      "LlmSettingsUpdate": {
+        "properties": {
+          "api_base": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Base"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "model_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Name"
+          }
+        },
+        "type": "object",
+        "title": "LlmSettingsUpdate",
+        "description": "Request model for PUT /api/v1/settings/llm.\n\nAll fields are optional \u2014 omitted fields keep their current value.\nSending ``api_key: \"\"`` clears the stored key."
+      },
+      "LoginRequest": {
+        "properties": {
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "title": "LoginRequest",
+        "description": "Request body for admin login."
+      },
+      "LoginResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "LoginResponse",
+        "description": "Response body for successful admin login."
       },
       "MarkerDetail": {
         "properties": {
@@ -502,6 +1531,42 @@
             },
             "type": "array",
             "title": "Missing Markers"
+          },
+          "species": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Species"
+          },
+          "markers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Markers"
+          },
+          "inventory_file": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inventory File"
           }
         },
         "type": "object",
@@ -638,6 +1703,419 @@
           "status"
         ],
         "title": "PanelGenerateResponse"
+      },
+      "PanelHistoryDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "species": {
+            "type": "string",
+            "title": "Species"
+          },
+          "inventory_file": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inventory File"
+          },
+          "requested_markers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Requested Markers"
+          },
+          "missing_markers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Markers"
+          },
+          "selected_panel": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Selected Panel"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          },
+          "model_name": {
+            "type": "string",
+            "title": "Model Name"
+          },
+          "api_base": {
+            "type": "string",
+            "title": "Api Base"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "species",
+          "requested_markers",
+          "missing_markers",
+          "selected_panel",
+          "rationale",
+          "model_name",
+          "api_base"
+        ],
+        "title": "PanelHistoryDetail"
+      },
+      "PanelHistoryDetailResponse": {
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/PanelHistoryDetail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item"
+        ],
+        "title": "PanelHistoryDetailResponse"
+      },
+      "PanelHistoryListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PanelHistorySummary"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "PanelHistoryListResponse"
+      },
+      "PanelHistorySummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "species": {
+            "type": "string",
+            "title": "Species"
+          },
+          "inventory_file": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inventory File"
+          },
+          "requested_markers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Requested Markers"
+          },
+          "missing_markers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Markers"
+          },
+          "model_name": {
+            "type": "string",
+            "title": "Model Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "species",
+          "requested_markers",
+          "missing_markers",
+          "model_name"
+        ],
+        "title": "PanelHistorySummary"
+      },
+      "QualityIssueCreate": {
+        "properties": {
+          "issue_text": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Issue Text"
+          },
+          "reported_by": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Reported By"
+          },
+          "species": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Species"
+          },
+          "marker": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Marker"
+          },
+          "fluorochrome": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Fluorochrome"
+          },
+          "brand": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Brand"
+          },
+          "clone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "issue_text",
+          "reported_by",
+          "species",
+          "marker",
+          "fluorochrome",
+          "brand"
+        ],
+        "title": "QualityIssueCreate",
+        "description": "Payload for submitting a new quality issue."
+      },
+      "QualityIssueResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "feedback_key": {
+            "$ref": "#/components/schemas/FeedbackKey"
+          },
+          "entity_key": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EntityKey"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "issue_text": {
+            "type": "string",
+            "title": "Issue Text"
+          },
+          "reported_by": {
+            "type": "string",
+            "title": "Reported By"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "submitted"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "feedback_key",
+          "issue_text",
+          "reported_by",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "QualityIssueResponse",
+        "description": "Full representation of a persisted quality issue."
+      },
+      "QualityIssueUpdate": {
+        "properties": {
+          "issue_text": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Issue Text"
+          },
+          "reported_by": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Reported By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "issue_text",
+          "reported_by"
+        ],
+        "title": "QualityIssueUpdate",
+        "description": "Payload for editing an existing quality issue.\n\nOnly ``issue_text`` and ``reported_by`` may be changed.\n``feedback_key``, ``entity_key``, and ``status`` are immutable via this schema."
+      },
+      "ResolveReviewRequest": {
+        "properties": {
+          "reviewer": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Reviewer"
+          },
+          "entity_key": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EntityKey"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "reviewer"
+        ],
+        "title": "ResolveReviewRequest",
+        "description": "Resolve a manual review item."
+      },
+      "ReviewItemResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "feedback_key": {
+            "$ref": "#/components/schemas/FeedbackKey"
+          },
+          "entity_key": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EntityKey"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "issue_text": {
+            "type": "string",
+            "title": "Issue Text"
+          },
+          "reported_by": {
+            "type": "string",
+            "title": "Reported By"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "pending_review"
+          },
+          "reviewer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewer"
+          },
+          "reviewed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "feedback_key",
+          "issue_text",
+          "reported_by",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ReviewItemResponse",
+        "description": "A quality issue queued for manual review."
+      },
+      "SessionResponse": {
+        "properties": {
+          "authenticated": {
+            "type": "boolean",
+            "title": "Authenticated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "authenticated"
+        ],
+        "title": "SessionResponse",
+        "description": "Response body for session status check."
       },
       "SpectraRenderRequest": {
         "properties": {
