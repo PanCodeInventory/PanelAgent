@@ -1,6 +1,5 @@
 import json
 import numpy as np
-import plotly.graph_objects as go
 from scipy.stats import norm
 
 def load_spectral_data(filepath="spectral_data.json"):
@@ -26,6 +25,8 @@ def plot_panel_spectra(panel_dict, spectral_data_path="spectral_data.json"):
     """
     Generates a Plotly figure showing the emission spectra of all fluorochromes in the panel.
     """
+    import plotly.graph_objects as go
+
     db = load_spectral_data(spectral_data_path)
     
     # Create X axis (Wavelength nm)

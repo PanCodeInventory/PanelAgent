@@ -58,7 +58,7 @@ async function proxyRequest(request: NextRequest, pathSegments: string[]) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 180_000); // 3 min hard limit
 
-    const response = await fetch(targetUrl, {
+      const response = await fetch(targetUrl, {
       method: request.method,
       headers,
       body,

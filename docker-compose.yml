@@ -24,6 +24,7 @@ services:
       - .env
     environment:
       ADMIN_PASSWORD: "123456"
+      ADMIN_SESSION_SECRET: "panelagent-docker-session-secret-2024"
       BACKEND_CORS_ORIGINS: "http://localhost:3000,http://localhost:3001,http://localhost:8080,http://192.168.1.100:3000,http://192.168.1.105:3000"
     volumes:
       - ./data/quality_registry:/app/data/quality_registry

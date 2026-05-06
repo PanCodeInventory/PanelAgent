@@ -19,6 +19,7 @@ COPY backend/ ./backend/
 COPY data_preprocessing.py  ./data_preprocessing.py
 COPY panel_generator.py     ./panel_generator.py
 COPY llm_api_client.py      ./llm_api_client.py
+COPY spectral_viewer.py     ./spectral_viewer.py
 
 # Copy static data files that config.py resolves via project_root()
 COPY channel_mapping.json     ./channel_mapping.json

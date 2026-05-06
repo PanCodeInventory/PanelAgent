@@ -78,7 +78,8 @@ export default function ExpDesignPage() {
 
   const handleUseThisPanel = () => {
     if (recState.markers.length === 0) return;
-    const markersParam = recState.markers.join(",");
+    const markers = [...recState.markers];
+    const markersParam = markers.join(",");
     router.push(`/panel-design?markers=${encodeURIComponent(markersParam)}`);
   };
 

@@ -5,6 +5,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException
 
 from ....core.config import get_settings, project_root, resolve_static_data_path
+from ....services.inventory_loader import load_inventory
 
 _recommendations_schemas = importlib.import_module("backend.app.schemas.recommendations")
 MarkerRecommendationRequest = _recommendations_schemas.MarkerRecommendationRequest
@@ -60,9 +61,7 @@ def _resolve_inventory_path(inventory_file: str | None, species: str | None) -> 
 
 
 def _load_inventory_df(inventory_path: Path):
-    data_preprocessing, _ = _load_domain_modules()
-    mapping_file = resolve_static_data_path("channel_mapping")
-    return data_preprocessing.load_antibody_data(str(inventory_path), mapping_file=str(mapping_file))
+    return load_inventory(inventory_path, include_viability=False)
 
 
 def _extract_available_targets(antibody_df) -> list[str]:

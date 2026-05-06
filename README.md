@@ -592,6 +592,67 @@ The nginx gateway on port 8080 provides unified access:
 - `http://localhost:8080/api/v1/` → Backend API (via user frontend proxy)
 - `http://localhost:8080/admin/api/v1/` → Admin API (via admin frontend proxy)
 
+## Migration to Another Lab
+
+PanelAgent is designed to be portable across laboratories. When migrating to a new lab, you need to replace lab-specific data while keeping the general-purpose computation logic intact.
+
+### Migration Overview (Three-Step Process)
+
+```
+Step 1: 替换数据层  —  替换抗体库存 CSV + 确认通道映射
+Step 2: 修改配置层  —  管理员密码 + API Key + CORS + 物种映射
+Step 3: 清理历史层  —  删除 SQLite 库 + 清空质量登记数据
+```
+
+### What Must Be Customized
+
+| # | Item | File(s) | Action Required |
+|---|------|---------|----------------|
+| 1 | **Antibody inventory CSVs** | `inventory/*.csv` | Replace with new lab's antibody database (human + mouse) |
+| 2 | **Admin password** | `docker-compose.yml` | Change `ADMIN_PASSWORD` — the default is insecure |
+| 3 | **Session secret** | `docker-compose.yml` | Change `ADMIN_SESSION_SECRET` or leave blank for auto-generation |
+| 4 | **AI API credentials** | `.env` | Fill in API key, base URL, and model name |
+| 5 | **CORS origins** | `docker-compose.yml` | Add new lab's deployment IPs/domains to `BACKEND_CORS_ORIGINS` |
+| 6 | **Dev origin whitelist** | `frontend/.env.local` | Add developers' machine IPs to `ALLOWED_DEV_ORIGINS` |
+| 7 | **Species→filename mapping** | `backend/app/core/config.py` | Update `SPECIES_INVENTORY_MAP` to match actual CSV filenames |
+| 8 | **Historical data cleanup** | `data/admin_console.sqlite3`, `data/quality_registry/` | Delete SQLite DB, clear issues/audit/projection files |
+
+### What Can Be Kept As-Is
+
+| Category | Files | Reason |
+|----------|-------|--------|
+| **Spectral data** | `spectral_data.json` | Fluorochrome spectra are inherent physical properties — valid worldwide |
+| **Brightness ratings** | `fluorochrome_brightness.json` | Relative brightness (PE=FITC×2) is a known ranking |
+| **All algorithms** | `panel_generator.py`, `data_preprocessing.py` | Panel generation logic is laboratory-agnostic |
+| **All backend code** | `backend/` | API, services, schemas are all generic |
+| **All frontend code** | `frontend/`, `admin-frontend/` | UI is fully reusable |
+| **Infrastructure** | `docker-compose.yml`, `gateway/nginx.conf` | Architecture reusable; only parameter values change |
+
+### What Depends on the New Lab's Setup
+
+| Scenario | Need to Check |
+|----------|---------------|
+| Different cytometer model | `channel_mapping.json` — may need full rewrite |
+| Different CSV column names | `data_preprocessing.py` — `column_mapping` logic |
+| Non-human/non-mouse species | `panel_generator.py` — `_infer_marker_type()` hardcoded lists |
+| English interface language | `llm_api_client.py` system prompt + all frontend UI text |
+| Different server ports | `docker-compose.yml` ports mapping |
+
+### AI-Assisted Migration
+
+A detailed, AI-Agent-friendly migration guide is available at **`docs/MIGRATION.md`**. This document is structured for coding assistants (like Claude, Cursor, etc.) to read and execute migration steps interactively.
+
+To perform migration with an AI agent:
+
+```bash
+# Ask your AI coding assistant to load the migration guide
+# The agent will:
+# 1. Walk through each required change
+# 2. Ask for new lab's specific data (CSV files, API key, etc.)
+# 3. Execute file modifications
+# 4. Validate the result
+```
+
 ## Contributing
 
 Contributions are welcome! Please follow these guidelines:

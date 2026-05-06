@@ -7,6 +7,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 
 from ....core.config import get_settings, project_root, resolve_static_data_path
+from ....services.inventory_loader import load_inventory
 
 logger = logging.getLogger(__name__)
 
@@ -68,9 +69,7 @@ def _resolve_inventory_path(inventory_file: str | None, species: str | None) -> 
 
 
 def _load_inventory_df(inventory_path: Path):
-    data_preprocessing, _ = _load_domain_modules()
-    mapping_file = resolve_static_data_path("channel_mapping")
-    return data_preprocessing.load_antibody_data(str(inventory_path), mapping_file=str(mapping_file))
+    return load_inventory(inventory_path, include_viability=True)
 
 
 @router.post("/generate", response_model=PanelGenerateResponse)
@@ -117,7 +116,7 @@ async def generate_panels(payload: PanelGenerateRequest) -> PanelGenerateRespons
                 "brightness": antibody.get("brightness", 3),
                 "clone": antibody.get("clone"),
                 "brand": antibody.get("brand"),
-                "catalog_number": antibody.get("catalog_number"),
+                "catalog_number": str(antibody.get("catalog_number", "")),
                 "target": marker,
                 "stock": antibody.get("stock"),
             }

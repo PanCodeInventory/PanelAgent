@@ -19,6 +19,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from ....core.config import get_settings, project_root, resolve_static_data_path
+from ....services.inventory_loader import load_inventory
 
 # ---------------------------------------------------------------------------
 # Lazy schema imports (importlib pattern used by other endpoint modules)
@@ -102,12 +103,7 @@ def _resolve_inventory_path(species: str | None) -> Path | None:
 
 
 def _load_inventory_df(inventory_path: Path):
-    """Load antibody inventory DataFrame from CSV."""
-    data_preprocessing = importlib.import_module("data_preprocessing")
-    mapping_file = resolve_static_data_path("channel_mapping")
-    return data_preprocessing.load_antibody_data(
-        str(inventory_path), mapping_file=str(mapping_file)
-    )
+    return load_inventory(inventory_path, include_viability=False)
 
 
 # ---------------------------------------------------------------------------
