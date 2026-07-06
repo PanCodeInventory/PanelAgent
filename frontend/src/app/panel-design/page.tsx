@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePanelGeneration } from "@/lib/hooks/use-panel-generation";
 import { usePanelEvaluation, type EvaluateContext } from "@/lib/hooks/use-panel-evaluation";
+import { inventoryApi, type InventoryFile } from "@/lib/api/inventory";
 import { SpectraChart } from "@/components/spectra-chart";
 import type { components } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,8 @@ import {
   Sparkles,
   Beaker,
   ChevronRight,
+  Upload,
+  FileSpreadsheet,
 } from "lucide-react";
 
 type PanelCandidate = components["schemas"]["PanelCandidate"];
@@ -136,32 +139,70 @@ function PanelDesignPageContent() {
   };
 
   const [markers, setMarkers] = useState(getInitialMarkers);
-  const [species, setSpecies] = useState("Mouse (小鼠)");
+  const [inventoryFiles, setInventoryFiles] = useState<InventoryFile[]>([]);
+  const [inventoryFile, setInventoryFile] = useState("");
   const [selectedTab, setSelectedTab] = useState("option0");
   const [viabilityDye, setViabilityDye] = useState("none");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { state: genState, generate, clear: clearGeneration } = usePanelGeneration();
   const { state: evalState, evaluate, clear: clearEvaluation } = usePanelEvaluation();
+
+  const refreshFiles = useCallback(async () => {
+    const res = await inventoryApi.listFiles();
+    if (res.data) setInventoryFiles(res.data);
+  }, []);
+
+  useEffect(() => {
+    void refreshFiles();
+  }, [refreshFiles]);
+
+  // Auto-select the first inventory file once the list loads.
+  useEffect(() => {
+    if (!inventoryFile && inventoryFiles.length > 0) {
+      setInventoryFile(inventoryFiles[0].filename);
+    }
+  }, [inventoryFiles, inventoryFile]);
 
   useEffect(() => {
     const markersParam = searchParams.get("markers");
     if (markersParam) {
       const decodedMarkers = decodeURIComponent(markersParam);
       const markerList = decodedMarkers.split(",").map((m) => m.trim()).filter(Boolean);
-      if (markerList.length > 0) {
-        void generate(markerList, species);
+      if (markerList.length > 0 && inventoryFile) {
+        void generate(markerList, inventoryFile);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadError(null);
+    const res = await inventoryApi.uploadFile(file);
+    setUploading(false);
+    // Reset the input so the same file can be re-selected.
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (res.error) {
+      setUploadError(res.error);
+      return;
+    }
+    await refreshFiles();
+    if (res.data?.filename) setInventoryFile(res.data.filename);
+  };
+
   const handleSearch = async () => {
+    if (!inventoryFile) return;
     clearEvaluation();
     const markerList = markers.split(",").map((m) => m.trim()).filter(Boolean);
     if (viabilityDye !== "none") {
       markerList.push(viabilityDye);
     }
-    await generate(markerList, species);
+    await generate(markerList, inventoryFile);
     setSelectedTab("option0");
   };
 
@@ -175,16 +216,7 @@ function PanelDesignPageContent() {
   const handleEvaluate = async () => {
     if (genState.candidates.length > 0) {
       const markerList = markers.split(",").map((m) => m.trim()).filter(Boolean);
-      const speciesParam = species.includes("Mouse") ? "Mouse"
-        : species.includes("Human") ? "Human"
-        : species;
-      const inventoryFile = speciesParam === "Mouse"
-        ? "inventory/mouse_inventory.csv"
-        : speciesParam === "Human"
-          ? "inventory/human_inventory.csv"
-          : undefined;
       const ctx: EvaluateContext = {
-        species: speciesParam,
         markers: markerList,
         inventoryFile,
       };
@@ -228,14 +260,45 @@ function PanelDesignPageContent() {
               disabled={genState.isLoading}
             />
             <select
-              value={species}
-              onChange={(e) => setSpecies(e.target.value)}
+              value={inventoryFile}
+              onChange={(e) => setInventoryFile(e.target.value)}
               className="rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm font-mono text-foreground ring-offset-background"
-              disabled={genState.isLoading}
+              disabled={genState.isLoading || uploading}
             >
-              <option>Mouse (小鼠)</option>
-              <option>Human (人)</option>
+              {inventoryFiles.length === 0 && (
+                <option value="">暂无库存文件，请先上传</option>
+              )}
+              {inventoryFiles.map((f) => (
+                <option key={f.filename} value={f.filename}>
+                  {f.filename}
+                </option>
+              ))}
             </select>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,.xlsx,.xls"
+              onChange={handleUpload}
+              className="hidden"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={genState.isLoading || uploading}
+            >
+              {uploading ? (
+                <>
+                  <Upload className="mr-2 h-4 w-4 animate-pulse" />
+                  上传中...
+                </>
+              ) : (
+                <>
+                  <Upload className="mr-2 h-4 w-4" />
+                  上传库存
+                </>
+              )}
+            </Button>
             <select
               value={viabilityDye}
               onChange={(e) => setViabilityDye(e.target.value)}
@@ -248,10 +311,15 @@ function PanelDesignPageContent() {
               <option value="FVS 780">FVS 780</option>
             </select>
           </div>
+          {uploadError && (
+            <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+              上传失败：{uploadError}
+            </div>
+          )}
           <div className="flex gap-2">
             <Button
               onClick={handleSearch}
-              disabled={genState.isLoading || !markers.trim()}
+              disabled={genState.isLoading || !markers.trim() || !inventoryFile}
             >
               {genState.isLoading ? (
                 <>
@@ -271,7 +339,10 @@ function PanelDesignPageContent() {
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>当前库存：</span>
-            <Badge variant="secondary" className="font-mono">{species}</Badge>
+            <Badge variant="secondary" className="font-mono inline-flex items-center gap-1">
+              <FileSpreadsheet className="h-3 w-3" />
+              {inventoryFile || "未选择"}
+            </Badge>
             {viabilityDye !== "none" && (
               <Badge variant="outline" className="font-mono border-primary/30 text-primary">
                 + {viabilityDye}

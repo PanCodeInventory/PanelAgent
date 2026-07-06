@@ -281,41 +281,80 @@ docker compose up -d
 
 This starts all services including the nginx gateway on port 8080.
 
+#### Option 4: Windows Native (No Docker)
+
+Windows 原生运行无需 Docker / WSL，直接用 Python + Node.js 启动。
+
+**前置要求**：
+- [Python 3.13+](https://www.python.org/downloads/)（安装时勾选 "Add to PATH"）
+- [Node.js 20+](https://nodejs.org/)
+
+**首次准备**（创建虚拟环境、安装依赖、生成 `.env`）：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\setup-windows.ps1
+```
+
+**启动**（会分别打开后端和前端两个窗口，并自动打开浏览器）：
+
+```powershell
+# PowerShell
+powershell -ExecutionPolicy Bypass -File scripts\start-windows.ps1
+
+# 或双击运行
+scripts\start-windows.bat
+```
+
+**手动启动**（若想自行控制）：
+
+```powershell
+# 后端（项目根目录）
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r backend\requirements.txt
+$env:PYTHONPATH = "."
+uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
+
+# 前端（另一个窗口，frontend 目录）
+cd frontend
+npm install
+npm run dev
+```
+
+启动后访问 `http://localhost:3000`。默认 LLM 配置为本地 LM Studio（`http://127.0.0.1:1234/v1`）；如需改用云端供应商（OpenAI、DeepSeek、智谱、Moonshot、通义千问等），在「设置」页顶部的「模型供应商」下拉中选择即可，API 地址和推荐模型会自动填充。
+
+> **Windows 运行注意事项**：项目代码已做跨平台处理（`pathlib` 路径、UTF-8 文件编码、无 Unix-only 依赖）。SQLite 数据库位于 `data\admin_console.sqlite3`，WAL 模式在 Windows 上工作正常，但备份或移动数据库文件前请确保没有任何进程占用它。
+
 #### Accessing the Application
 
 | Interface | URL |
 |-----------|-----|
-| User App (direct) | `http://localhost:3000` |
-| Admin App (direct) | `http://localhost:3001/login` |
+| Frontend (direct) | `http://localhost:3000` |
 | All services (gateway) | `http://localhost:8080` |
-| Admin (via gateway) | `http://localhost:8080/admin/login` |
+| API (direct) | `http://localhost:8000/api/v1/` |
 | API (via gateway) | `http://localhost:8080/api/v1/` |
 
-## Admin Interface
+## Settings & Management Pages
 
-The admin interface provides system management capabilities separate from the user-facing application.
+设置、历史、质量管理页面已合并到主前端（不再有独立的管理后台应用）。在顶部导航栏点击「设置」「历史」即可访问。
 
-### Access
+> **关于访问保护**：当前版本（面向单机 Windows 使用场景）未对这些页面做登录保护，任何能访问前端的人都能查看/修改设置。若需恢复 admin 登录保护，后端 `/api/v1/admin/*` 端点仍保留可用。
 
-- **Via gateway**: `http://localhost:8080/admin/login`
-- **Direct**: `http://localhost:3001/login`
-
-### Authentication
-
-Log in using the password configured via the `ADMIN_PASSWORD` environment variable. The session is managed server-side with cookies.
-
-### Admin Features
+### Pages
 
 | Page | Path | Description |
 |------|------|-------------|
-| Login | `/admin/login` | Admin authentication |
-| Settings | `/admin/settings` | LLM model configuration, API keys |
-| History | `/admin/history` | Panel generation history and audit |
-| Quality Registry | `/admin/quality-registry` | Review, resolve, and manage quality issues |
+| Settings | `/settings` | LLM 模型供应商选择、API 地址/密钥/模型配置 |
+| History | `/history` | 配色方案生成历史与审计 |
+| Quality Registry | `/quality-registry` | 用户提交的荧光抗体质量问题报告 |
 
-### Admin API
+### 设置页：选择模型供应商
 
-All admin API endpoints are prefixed with `/api/v1/admin/` and require authentication:
+设置页顶部的「模型供应商」下拉预设了多个 OpenAI 兼容端点（LM Studio、OpenAI、DeepSeek、智谱 AI、Moonshot、通义千问、AiHubMix、自定义）。选择供应商后会自动填充推荐的 API 地址与模型名称，你仍可手动覆盖。API 密钥留空表示保持已存储的密钥不变。
+
+### Admin API（保留，可选启用）
+
+后端 `/api/v1/admin/*` 端点保留，可配合中间件做登录保护：
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
