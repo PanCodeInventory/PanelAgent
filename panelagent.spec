@@ -39,19 +39,18 @@ if out_dir.is_dir():
     datas.append((str(out_dir), str(Path("frontend") / "out")))
 
 # --- Hidden imports (modules imported dynamically via importlib) ----------
-# Backend endpoints are loaded via importlib in router.py, so PyInstaller's
-# static analysis misses them — list them explicitly.
-_backend_endpoint_modules = []
-_endpoints_root = PROJECT_ROOT / "backend" / "app" / "api" / "v1" / "endpoints"
-if _endpoints_root.is_dir():
-    for f in _endpoints_root.glob("*.py"):
-        if f.stem != "__init__":
-            _backend_endpoint_modules.append(f"backend.app.api.v1.endpoints.{f.stem}")
-_admin_endpoints_root = PROJECT_ROOT / "backend" / "app" / "api" / "v1" / "admin" / "endpoints"
-if _admin_endpoints_root.is_dir():
-    for f in _admin_endpoints_root.glob("*.py"):
-        if f.stem != "__init__":
-            _backend_endpoint_modules.append(f"backend.app.api.v1.admin.endpoints.{f.stem}")
+# The backend loads endpoints, schemas and services via import_module() with
+# string literals (see backend/app/api/v1/router.py and the endpoints). PyInstaller's
+# static analysis cannot follow these, so we collect EVERY .py module under
+# backend/app/ plus the root-level domain modules.
+_backend_modules = []
+_backend_root = PROJECT_ROOT / "backend" / "app"
+if _backend_root.is_dir():
+    for f in _backend_root.rglob("*.py"):
+        if f.name == "__init__.py":
+            continue
+        rel = f.relative_to(PROJECT_ROOT).with_suffix("")
+        _backend_modules.append(".".join(rel.parts))
 
 hiddenimports = [
     "data_preprocessing",
@@ -69,7 +68,7 @@ hiddenimports = [
     "backend.app.main",
     # Data file dependencies pulled in by pandas/openpyxl at runtime.
     "openpyxl",
-] + _backend_endpoint_modules
+] + _backend_modules
 
 a = Analysis(
     ["launcher.py"],
