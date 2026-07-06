@@ -84,35 +84,25 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
     [],
-    exclude_binaries=True,
     name="PanelAgent",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=False,  # UPX is unreliable on macOS arm64
-    console=False,  # GUI app: no terminal window (logs go to ~/.panelagent/launcher.log)
+    console=True,  # macOS: run as a terminal app so users see startup output;
+                   # logs also go to ~/.panelagent/launcher.log
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch="arm64",
 )
 
-app = BUNDLE(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    name="PanelAgent",
-    info_plist={
-        "CFBundleDisplayName": "PanelAgent",
-        "CFBundleShortVersionString": "1.0.0",
-        "CFBundleVersion": "1",
-        "CFBundleIdentifier": "com.panelagent.app",
-        "NSHighResolutionCapable": True,
-        "LSMinimumSystemVersion": "12.0",
-        # Allow the bundled Python to run without a terminal; suppress the
-        # dock icon flicker on launch.
-        "LSUIElement": False,
-    },
-    # icon_filename="scripts/panelagent.icns",  # add an icns if available
-)
+# NOTE: A proper .app bundle (BUNDLE) is desirable for the dock-icon UX, but
+# PyInstaller's BUNDLE step produced an empty directory in CI (the .app
+# wasn't materialized). Falling back to a single-file Unix executable — same
+# launcher, same UX as the Windows exe. The release zips this as
+# PanelAgent-mac-arm64. Users run it from Terminal or via a wrapper.
+

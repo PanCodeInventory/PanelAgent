@@ -149,23 +149,20 @@ jobs:
           npm run build
           test -f out/index.html || { echo "next build did not produce out/index.html"; exit 1; }
 
-      - name: Build .app
+      - name: Build macOS binary
         run: |
           python -m PyInstaller panelagent-mac.spec --noconfirm --clean
           echo "=== dist/ contents ==="
           ls -la dist/
-          # Locate the produced .app (exact name may vary by PyInstaller version).
-          app_path=$(find dist -maxdepth 1 -name "*.app" -type d | head -1)
-          echo "Found app: ${app_path:-<none>}"
-          test -n "$app_path" || { echo "No .app produced under dist/"; exit 1; }
-          echo "APP_PATH=$app_path" >> "$GITHUB_ENV"
-          echo "APP_NAME=$(basename "$app_path")" >> "$GITHUB_ENV"
+          test -f dist/PanelAgent || { echo "PyInstaller did not produce dist/PanelAgent"; exit 1; }
+          echo "APP_PATH=dist/PanelAgent" >> "$GITHUB_ENV"
 
-      - name: Smoke test (launch app + poll health + dump log + kill)
+      - name: Smoke test (launch binary + poll health + dump log + kill)
         continue-on-error: true
         run: |
-          exe="${APP_PATH}/Contents/MacOS/${APP_NAME%.app}"
+          exe="${APP_PATH}"
           echo "Launching $exe..."
+          chmod +x "$exe"
           "$exe" &
           pid=$!
           ok=false
@@ -194,14 +191,15 @@ jobs:
             echo "::warning::Smoke test could not reach health endpoint within 120s. The .app will still be uploaded."
           fi
 
-      - name: Zip .app for upload
+      - name: Zip binary for upload
         run: |
           cd dist
-          # ditto preserves macOS metadata and permissions better than zip.
-          ditto -c -k --keepParent "${APP_NAME}" PanelAgent-mac-arm64.zip
+          # ditto preserves macOS permissions (executable bit) better than zip.
+          ditto -c -k --keepParent PanelAgent PanelAgent-mac-arm64.zip
           test -f PanelAgent-mac-arm64.zip
+          ls -la PanelAgent-mac-arm64.zip
 
-      - name: Upload .app zip to the release
+      - name: Upload macOS zip to the release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
