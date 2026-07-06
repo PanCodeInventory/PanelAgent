@@ -1,7 +1,8 @@
-// Direct backend URL. The Next.js proxy route was removed for static-export
-// compatibility; the browser talks to FastAPI directly. Override with
-// NEXT_PUBLIC_API_URL for non-default deployments.
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL?.trim() || "http://127.0.0.1:8000";
+// API base URL. Default empty = same-origin (the Next.js proxy route at
+// /api/v1/* forwards to the backend). Set NEXT_PUBLIC_API_URL to the
+// backend's absolute URL only when the frontend is served as a static
+// export without the proxy route (single-exe build sets this in CI).
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL?.trim() || "";
 
 interface ApiResponse<T> {
   data?: T;

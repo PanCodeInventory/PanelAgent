@@ -42,12 +42,18 @@ jobs:
           pip install -r backend/requirements.txt
           pip install pyinstaller
 
-      - name: Build static frontend
+      - name: Build static frontend (export mode)
         env:
+          # Static export flags: enable output:export in next.config.ts and
+          # talk directly to the backend (no Next.js proxy route in export mode).
+          PANELAGENT_STATIC_EXPORT: "1"
           NEXT_PUBLIC_API_URL: "http://127.0.0.1:8000"
         run: |
           cd frontend
           npm install
+          # The proxy route handler is incompatible with output: export.
+          # Remove it only for this build (kept in the repo for Linux deploys).
+          Remove-Item -Recurse -Force "src/app/api" -ErrorAction SilentlyContinue
           npm run build
           if (-Not (Test-Path "out/index.html")) { throw "next build did not produce out/index.html" }
         shell: pwsh

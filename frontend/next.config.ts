@@ -13,19 +13,22 @@ const allowedDevOrigins = Array.from(
   ),
 );
 
+// Static export is only enabled when PANELAGENT_STATIC_EXPORT=1 (set by the
+// single-exe CI build). The default (Linux dev / docker server) keeps the
+// standard Next.js server runtime, route handlers and SSR.
+const staticExport = process.env.PANELAGENT_STATIC_EXPORT === "1";
+
 const nextConfig: NextConfig = {
-  // Static HTML export: produces a fully static site under ./out that can be
-  // served by any static file server (including the bundled FastAPI backend
-  // in the single-exe build). Disables the Next.js server runtime, route
-  // handlers, SSR and image optimization.
-  output: "export",
-  images: {
-    unoptimized: true,
-  },
   allowedDevOrigins,
   turbopack: {
     root: path.join(__dirname),
   },
+  ...(staticExport
+    ? {
+        output: "export" as const,
+        images: { unoptimized: true },
+      }
+    : {}),
 };
 
 export default nextConfig;
