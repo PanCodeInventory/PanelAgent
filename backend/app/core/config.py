@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     )
 
     # CORS
-    BACKEND_CORS_ORIGINS: str = "http://localhost:3000,http://localhost:8501"
+    BACKEND_CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:8501"
 
     # LLM / OpenAI-compatible API
     OPENAI_API_BASE: str = "http://127.0.0.1:1234/v1"

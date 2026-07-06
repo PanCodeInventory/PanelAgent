@@ -3,9 +3,12 @@
 import logging
 import os
 import secrets
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -58,3 +61,31 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix="/api/v1")
+
+# ---------------------------------------------------------------------------
+# Static frontend hosting (single-exe mode)
+# ---------------------------------------------------------------------------
+# When STATIC_FRONTEND_DIR points at a directory of pre-built Next.js static
+# export (out/), mount it at /. The SPA fallback serves index.html for any
+# unknown path so client-side routing (e.g. /settings) works on refresh.
+# In normal dev/preview mode this is unset and the frontend runs separately.
+_static_dir = os.environ.get("STATIC_FRONTEND_DIR", "").strip()
+if _static_dir and Path(_static_dir).is_dir():
+    _next_dir = Path(_static_dir) / "_next"
+    if _next_dir.is_dir():
+        app.mount(
+            "/_next",
+            StaticFiles(directory=_next_dir),
+            name="next-static",
+        )
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def spa_fallback(full_path: str):
+        """Serve a static file if it exists, otherwise fall back to index.html."""
+        candidate = Path(_static_dir) / full_path
+        if full_path and candidate.is_file():
+            return FileResponse(candidate)
+        index_html = Path(_static_dir) / "index.html"
+        return FileResponse(index_html)
+
+    logger.info("Serving static frontend from %s", _static_dir)

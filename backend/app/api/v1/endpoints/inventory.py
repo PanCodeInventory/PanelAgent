@@ -8,6 +8,7 @@ Uploaded antibody inventories (.csv / .xlsx) are stored flat in the
 
 from __future__ import annotations
 
+import os
 import re
 from datetime import datetime
 from pathlib import Path
@@ -46,7 +47,18 @@ class InventoryUploadResponse(BaseModel):
 
 
 def _inventory_dir() -> Path:
+    """Resolve the inventory directory.
+
+    Bundled CSVs live under the project root / PyInstaller bundle. When
+    ``PANELAGENT_DATA_DIR`` is set (single-exe mode, where the bundle is
+    read-only), uploaded files are written to an ``inventory/`` subfolder
+    under that user-writable directory instead, and is also where we look
+    first so uploads persist across runs.
+    """
     settings = get_settings()
+    data_dir = os.environ.get("PANELAGENT_DATA_DIR", "").strip()
+    if data_dir:
+        return Path(data_dir) / settings.INVENTORY_DIR
     return project_root() / settings.INVENTORY_DIR
 
 
