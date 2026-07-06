@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import HistoryClientPage from "./history-client";
 
 export default function HistoryPage() {
-  redirect("/admin/history");
+  return <HistoryClientPage />;
 }

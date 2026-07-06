@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useSettings } from "@/lib/hooks/use-settings";
+import { settingsApi, type ProviderPreset } from "@/lib/api/settings";
 import { Settings, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default function SettingsClientPage() {
@@ -20,10 +21,15 @@ export default function SettingsClientPage() {
   const [modelName, setModelName] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [hasApiKey, setHasApiKey] = useState(false);
+  const [provider, setProvider] = useState<string>("custom");
+  const [providers, setProviders] = useState<ProviderPreset[]>([]);
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     void loadSettings();
+    settingsApi.getProviders().then((res) => {
+      if (res.data) setProviders(res.data);
+    });
   }, [loadSettings]);
 
   useEffect(() => {
@@ -31,8 +37,26 @@ export default function SettingsClientPage() {
       setApiBase(state.settings.api_base);
       setModelName(state.settings.model_name);
       setHasApiKey(state.settings.has_api_key);
+      // Match the stored provider to a known preset; fall back to "custom".
+      const stored = state.settings.provider;
+      setProvider(stored && providers.some((p) => p.id === stored) ? stored : "custom");
     }
-  }, [state.settings]);
+  }, [state.settings, providers]);
+
+  const selectedPreset = useMemo(
+    () => providers.find((p) => p.id === provider),
+    [providers, provider]
+  );
+
+  const handleProviderChange = (id: string) => {
+    setProvider(id);
+    const preset = providers.find((p) => p.id === id);
+    if (!preset) return;
+    // Only prefill when the preset defines a value, so "custom" leaves the
+    // fields untouched for manual entry.
+    if (preset.api_base) setApiBase(preset.api_base);
+    if (preset.default_model) setModelName(preset.default_model);
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -43,9 +67,11 @@ export default function SettingsClientPage() {
       api_base?: string;
       model_name?: string;
       api_key?: string;
+      provider?: string;
     } = {
       api_base: apiBase,
       model_name: modelName,
+      provider,
     };
 
     if (apiKey.trim()) {
@@ -72,7 +98,7 @@ export default function SettingsClientPage() {
           设置
         </h1>
         <p className="mt-2 text-muted-foreground">
-          管理 LLM 配置，包括 API 地址、模型名称和 API 密钥。
+          管理 LLM 配置，包括模型供应商、API 地址、模型名称和 API 密钥。
         </p>
       </div>
 
@@ -103,7 +129,7 @@ export default function SettingsClientPage() {
             LLM 配置
           </CardTitle>
           <CardDescription>
-            配置 OpenAI 兼容 API 的连接参数。留空 API 密钥表示不修改已存储的密钥。
+            选择模型供应商后会自动填充推荐参数，你仍可手动修改。留空 API 密钥表示不修改已存储的密钥。
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -112,6 +138,33 @@ export default function SettingsClientPage() {
             onSubmit={handleSubmit}
             data-testid="settings-form"
           >
+            <div className="flex flex-col gap-2">
+              <label
+                className="text-sm font-medium text-foreground"
+                htmlFor="settings-provider"
+              >
+                模型供应商
+              </label>
+              <select
+                id="settings-provider"
+                value={provider}
+                onChange={(event) => handleProviderChange(event.target.value)}
+                data-testid="settings-provider"
+                className="rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground disabled:opacity-50"
+                disabled={state.isLoading || providers.length === 0}
+              >
+                {providers.length === 0 && <option value="custom">自定义</option>}
+                {providers.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground">
+                选择供应商会自动填入其 API 地址与推荐模型。选「自定义」可手动填写任意 OpenAI 兼容端点。
+              </p>
+            </div>
+
             <div className="flex flex-col gap-2">
               <label
                 className="text-sm font-medium text-foreground"
@@ -144,7 +197,7 @@ export default function SettingsClientPage() {
                 id="settings-model-name"
                 value={modelName}
                 onChange={(event) => setModelName(event.target.value)}
-                placeholder="gpt-4o"
+                placeholder={selectedPreset?.default_model || "gpt-4o"}
                 data-testid="settings-model-name"
                 className="bg-secondary/50 border-border"
                 disabled={state.isLoading}
@@ -166,7 +219,9 @@ export default function SettingsClientPage() {
                 type="password"
                 value={apiKey}
                 onChange={(event) => setApiKey(event.target.value)}
-                placeholder={hasApiKey ? "••••••••" : "sk-..."}
+                placeholder={
+                  hasApiKey ? "••••••••" : selectedPreset?.key_hint || "sk-..."
+                }
                 data-testid="settings-api-key"
                 className="bg-secondary/50 border-border"
                 disabled={state.isLoading}
