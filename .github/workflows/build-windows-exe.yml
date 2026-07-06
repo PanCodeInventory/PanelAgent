@@ -58,7 +58,7 @@ jobs:
           if (-Not (Test-Path "dist/panelagent.exe")) { throw "PyInstaller did not produce dist/panelagent.exe" }
         shell: pwsh
 
-      - name: Smoke test (start exe + poll health endpoint + kill)
+      - name: Smoke test (start exe + poll health endpoint + dump log + kill)
         continue-on-error: true  # don't block the release upload if the CI env can't reach localhost
         run: |
           Write-Host "Launching dist\panelagent.exe..."
@@ -80,10 +80,19 @@ jobs:
             }
           }
           Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
-          # Wait for child processes (uvicorn workers) to exit.
           Start-Sleep -Seconds 2
+          # If it failed, dump the launcher log so the cause is visible in CI.
+          $logPath = "$env:USERPROFILE\.panelagent\launcher.log"
+          Write-Host "Launcher log: $logPath"
+          if (Test-Path $logPath) {
+            Write-Host "===== launcher.log ====="
+            Get-Content $logPath | ForEach-Object { Write-Host $_ }
+            Write-Host "===== end launcher.log ====="
+          } else {
+            Write-Host "No launcher.log found (exe may have crashed before logging was set up)."
+          }
           if (-not $ok) {
-            Write-Host "::warning::Smoke test could not reach health endpoint within 120s. The exe will still be uploaded so users can test manually."
+            Write-Host "::warning::Smoke test could not reach health endpoint within 120s. See launcher.log above. The exe will still be uploaded."
           }
         shell: pwsh
 
