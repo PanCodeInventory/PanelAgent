@@ -46,9 +46,13 @@ CREATE TABLE IF NOT EXISTS llm_settings (
     api_base    TEXT    NOT NULL,
     api_key     TEXT    NULL,
     model_name  TEXT    NOT NULL,
+    provider    TEXT    NULL,
     updated_at  TEXT    NOT NULL
 );
 """
+
+# Additive migration for databases created before the provider column.
+_ADD_PROVIDER_COLUMN = "ALTER TABLE llm_settings ADD COLUMN provider TEXT NULL;"
 
 _CREATE_PANEL_HISTORY = """
 CREATE TABLE IF NOT EXISTS panel_history (
@@ -91,6 +95,12 @@ def init_db(db_path: str | Path | None = None) -> Path:
     try:
         conn.execute("PRAGMA journal_mode=WAL;")
         conn.execute(_CREATE_LLM_SETTINGS)
+        # Idempotent migration: add provider column to pre-existing tables.
+        # sqlite3 raises OperationalError "duplicate column name" if it exists.
+        try:
+            conn.execute(_ADD_PROVIDER_COLUMN)
+        except sqlite3.OperationalError:
+            pass
         conn.execute(_CREATE_PANEL_HISTORY)
         conn.commit()
     finally:

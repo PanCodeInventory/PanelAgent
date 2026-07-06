@@ -14,6 +14,7 @@ class LlmSettingsResponse(BaseModel):
     model_name: str
     has_api_key: bool
     api_key_masked: str | None
+    provider: str | None
     source: Literal["runtime", "env-default"]
 
 
@@ -27,3 +28,14 @@ class LlmSettingsUpdate(BaseModel):
     api_base: Optional[str] = None
     api_key: Optional[str] = None
     model_name: Optional[str] = None
+    provider: Optional[str] = None
+
+
+class ProviderPreset(BaseModel):
+    """A provider preset returned by GET /api/v1/settings/providers."""
+
+    id: str
+    label: str
+    api_base: str
+    default_model: str
+    key_hint: str

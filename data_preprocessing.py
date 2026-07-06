@@ -58,22 +58,31 @@ def load_antibody_data(file_input, mapping_file=None, column_mapping=None):
                         e.g. {'Antigen': 'Target', 'Fluor': 'Fluorescein'}
     """
     df = None
-    
-    # 1. Load CSV with Encoding Detection
-    encodings_to_try = ['utf-8', 'gbk', 'gb18030', 'latin1']
-    
-    # If it's a file-like object, we need to be careful about seeking to 0 if we retry
+
+    # 1. Load spreadsheet — Excel (.xlsx) uses read_excel; CSV uses encoding detection.
     is_buffer = not isinstance(file_input, str)
-    
-    for encoding in encodings_to_try:
+    is_xlsx = isinstance(file_input, str) and file_input.lower().endswith((".xlsx", ".xls"))
+
+    if is_xlsx:
+        # Excel files are binary; no encoding probing needed.
         try:
-            if is_buffer:
-                file_input.seek(0)
-            df = pd.read_csv(file_input, encoding=encoding)
-            break # Success
-        except (UnicodeDecodeError, pd.errors.ParserError):
-            continue
-            
+            df = pd.read_excel(file_input)
+        except Exception as e:
+            print(f"Error: Failed to read Excel file: {e}")
+            return None
+    else:
+        encodings_to_try = ['utf-8', 'gbk', 'gb18030', 'latin1']
+
+        # If it's a file-like object, we need to be careful about seeking to 0 if we retry
+        for encoding in encodings_to_try:
+            try:
+                if is_buffer:
+                    file_input.seek(0)
+                df = pd.read_csv(file_input, encoding=encoding)
+                break # Success
+            except (UnicodeDecodeError, pd.errors.ParserError):
+                continue
+
     if df is None:
         print("Error: Failed to decode file with supported encodings.")
         return None
@@ -197,7 +206,7 @@ if __name__ == "__main__":
         # print("\nFormatted data for LLM (first 2 entries):")
         # print(json.dumps(llm_formatted_data[:2], indent=2, ensure_ascii=False))
 
-        with open(brightness_file, 'r') as f:
+        with open(brightness_file, 'r', encoding='utf-8') as f:
             brightness_data = json.load(f)
 
         # --- Test the new aggregation function ---
