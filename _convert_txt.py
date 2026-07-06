@@ -1,6 +1,9 @@
 import re
+from pathlib import Path
 
-with open('/home/user/PanChongshi/Repo/PanelAgent/PROMOTION.md', 'r') as f:
+_BASE = Path(__file__).parent
+
+with open(_BASE / 'PROMOTION.md', 'r', encoding='utf-8') as f:
     content = f.read()
 
 # Keep bold markers (convert **bold** to 【bold】)
@@ -27,7 +30,7 @@ content = re.sub(r'`([^`]+)`', r'\1', content)
 # Clean up excessive blank lines
 content = re.sub(r'\n{3,}', '\n\n', content)
 
-with open('/home/user/PanChongshi/Repo/PanelAgent/PROMOTION.txt', 'w') as f:
+with open(_BASE / 'PROMOTION.txt', 'w', encoding='utf-8') as f:
     f.write(content)
 
 print('Done')

@@ -4,7 +4,7 @@ from scipy.stats import norm
 
 def load_spectral_data(filepath="spectral_data.json"):
     try:
-        with open(filepath, 'r') as f:
+        with open(filepath, 'r', encoding='utf-8') as f:
             return json.load(f)
     except Exception as e:
         print(f"Error loading spectral data: {e}")

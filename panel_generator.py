@@ -276,7 +276,7 @@ def generate_candidate_panels(user_markers, antibody_df, max_solutions=10):
     
     try:
         brightness_path = resolve_static_data_path("brightness_mapping")
-        with open(brightness_path, 'r') as f:
+        with open(brightness_path, 'r', encoding='utf-8') as f:
             brightness_data = json.load(f)
     except FileNotFoundError:
         brightness_data = {} 

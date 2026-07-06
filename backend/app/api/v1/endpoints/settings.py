@@ -5,7 +5,12 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from backend.app.core.config import get_settings
-from backend.app.schemas.settings import LlmSettingsResponse, LlmSettingsUpdate
+from backend.app.schemas.settings import (
+    LlmSettingsResponse,
+    LlmSettingsUpdate,
+    ProviderPreset,
+)
+from backend.app.services.llm_providers import PROVIDERS
 from backend.app.services.llm_settings_store import LlmSettingsStore
 
 router = APIRouter(prefix="/settings")
@@ -29,8 +34,15 @@ def _build_response(settings, *, is_runtime: bool) -> LlmSettingsResponse:
         model_name=settings.model_name,
         has_api_key=settings.api_key is not None and settings.api_key != "",
         api_key_masked=_mask_api_key(settings.api_key),
+        provider=settings.provider,
         source="runtime" if is_runtime else "env-default",
     )
+
+
+@router.get("/providers", response_model=list[ProviderPreset])
+async def list_providers() -> list[ProviderPreset]:
+    """Return the static catalog of LLM provider presets."""
+    return [ProviderPreset(**preset) for preset in PROVIDERS]
 
 
 @router.get("/llm", response_model=LlmSettingsResponse)
@@ -43,7 +55,6 @@ async def get_llm_settings() -> LlmSettingsResponse:
         env_model_name=cfg.OPENAI_MODEL_NAME,
     )
 
-    conn = store._db_path  # check if DB row exists to determine source
     from backend.app.services.admin_database import get_connection
 
     db_conn = get_connection(store._db_path)
@@ -76,5 +87,14 @@ async def put_llm_settings(body: LlmSettingsUpdate) -> LlmSettingsResponse:
     else:
         api_key = current.api_key
 
-    updated = store.upsert(api_base=api_base, model_name=model_name, api_key=api_key)
+    # provider defaults to current value; explicitly passing None clears it
+    # (used when switching to "custom"). Sending the same value is a no-op.
+    provider = body.provider if body.provider is not None else current.provider
+
+    updated = store.upsert(
+        api_base=api_base,
+        model_name=model_name,
+        api_key=api_key,
+        provider=provider,
+    )
     return _build_response(updated, is_runtime=True)

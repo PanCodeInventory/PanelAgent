@@ -11,7 +11,7 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
 from backend.app.main import app
-from backend.app.services.admin_database import get_db_path
+from backend.app.services.admin_database import get_db_path, init_db
 
 TEST_PASSWORD = "test-secret-password-123"
 SESSION_SECRET = "test-session-secret-for-tests-only"
@@ -26,23 +26,9 @@ def _set_admin_env(monkeypatch):
 @pytest.fixture()
 def tmp_db(tmp_path: Path):
     db_file = tmp_path / "test_admin.sqlite3"
-    conn = sqlite3.connect(str(db_file))
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS llm_settings ("
-        "id INTEGER PRIMARY KEY CHECK (id = 1), "
-        "api_base TEXT NOT NULL, api_key TEXT NULL, "
-        "model_name TEXT NOT NULL, updated_at TEXT NOT NULL)"
-    )
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS panel_history ("
-        "id TEXT PRIMARY KEY, created_at TEXT NOT NULL, "
-        "species TEXT NOT NULL, inventory_file TEXT NULL, "
-        "requested_markers TEXT NOT NULL, missing_markers TEXT NOT NULL, "
-        "selected_panel TEXT NOT NULL, rationale TEXT NOT NULL, "
-        "model_name TEXT NOT NULL, api_base TEXT NOT NULL)"
-    )
-    conn.commit()
-    conn.close()
+    # Use init_db so the table schema (including the provider column) matches
+    # production exactly, rather than re-declaring DDL here.
+    init_db(str(db_file))
     return str(db_file)
 
 
@@ -212,3 +198,46 @@ async def test_get_after_put_returns_runtime_source(client):
     body = resp.json()
     assert body["source"] == "runtime"
     assert body["api_base"] == "http://localhost:9999/v1"
+
+
+@pytest.mark.asyncio
+async def test_list_providers_is_public(client):
+    """GET /api/v1/settings/providers is not admin-gated."""
+    resp = await client.get("/api/v1/settings/providers")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert isinstance(body, list)
+    assert len(body) >= 1
+    ids = {p["id"] for p in body}
+    assert {"lmstudio", "openai", "deepseek", "custom"}.issubset(ids)
+
+
+@pytest.mark.asyncio
+async def test_public_settings_llm_endpoint_works(client):
+    """The non-admin /api/v1/settings/llm endpoint is now reachable."""
+    resp = await client.get("/api/v1/settings/llm")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert "provider" in body
+
+
+@pytest.mark.asyncio
+async def test_put_and_get_provider_roundtrip(client):
+    admin_cookies = await _admin_cookie(client)
+    resp = await client.put(
+        "/api/v1/admin/settings/llm",
+        json={
+            "api_base": "https://api.deepseek.com/v1",
+            "model_name": "deepseek-chat",
+            "api_key": "sk-abcdefghijklmnop1234567890",
+            "provider": "deepseek",
+        },
+        cookies=admin_cookies,
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["provider"] == "deepseek"
+
+    resp = await client.get("/api/v1/admin/settings/llm", cookies=admin_cookies)
+    assert resp.status_code == 200
+    assert resp.json()["provider"] == "deepseek"

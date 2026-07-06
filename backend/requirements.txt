@@ -10,5 +10,6 @@ pandas
 numpy
 scipy
 openai
+openpyxl>=3.1.0
 python-dotenv
 itsdangerous>=2.1.0
