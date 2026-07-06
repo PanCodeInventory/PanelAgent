@@ -59,8 +59,13 @@ def _user_data_root() -> Path:
 
 
 def _find_free_port(preferred: int = DEFAULT_PORT) -> int:
-    """Return ``preferred`` if free, otherwise the next free OS-assigned port."""
+    """Return ``preferred`` if free, otherwise the next free OS-assigned port.
+
+    Uses SO_REUSEADDR so the subsequent uvicorn bind isn't blocked by the
+    probe's TIME_WAIT.
+    """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             s.bind((HOST, preferred))
             return preferred
@@ -126,6 +131,7 @@ def main() -> int:
         logger.info("Port %d busy, using %d instead.", DEFAULT_PORT, port)
 
     # Import after env is configured so Settings picks up the overrides.
+    logger.info("Importing backend modules (this is slow on first run)...")
     import uvicorn
 
     server = uvicorn.Server(
@@ -133,10 +139,12 @@ def main() -> int:
             app="backend.app.main:app",
             host=HOST,
             port=port,
-            log_level="info",
+            log_level="warning",  # cut access-log noise; launcher logs readiness
             # Avoid signal handlers — we manage lifecycle ourselves.
         )
     )
+    # Allow the server to install its own signal handlers off the main thread.
+    server.install_signal_handlers = lambda: None
 
     server_thread = threading.Thread(target=server.run, daemon=True)
     server_thread.start()
