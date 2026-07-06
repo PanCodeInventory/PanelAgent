@@ -41,7 +41,16 @@ gha-creds-*.json
 .playwright-mcp/
 data/admin_console.sqlite3
 
-# --- Admin Frontend ---
-admin-frontend/node_modules/
-admin-frontend/.next/
-admin-frontend/tsconfig.tsbuildinfo
+# --- Frontend build artifacts ---
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/tsconfig.tsbuildinfo
+
+# --- PyInstaller / single-exe build ---
+build/
+dist/
+*.spec.bak
+
+# --- User data (single-exe runtime) ---
+.panelagent/

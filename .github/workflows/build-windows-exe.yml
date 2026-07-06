@@ -1,0 +1,87 @@
+# =============================================================================
+# Build panelagent.exe on tag push and attach it to a GitHub Release.
+# =============================================================================
+# Trigger: push a tag matching v* (e.g. v1.0.0). The workflow builds the
+# static frontend, bundles it with the Python backend via PyInstaller on a
+# Windows runner, and uploads panelagent.exe to a Release for that tag.
+# =============================================================================
+
+name: Build Windows exe
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:  # allow manual runs from the Actions tab
+
+permissions:
+  contents: write  # required to create the release and upload the asset
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install backend deps + PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install pyinstaller
+
+      - name: Build static frontend
+        env:
+          NEXT_PUBLIC_API_URL: "http://127.0.0.1:8000"
+        run: |
+          cd frontend
+          npm install
+          npm run build
+          if (-Not (Test-Path "out/index.html")) { throw "next build did not produce out/index.html" }
+        shell: pwsh
+
+      - name: Build exe
+        run: |
+          python -m PyInstaller panelagent.spec --noconfirm --clean
+          if (-Not (Test-Path "dist/panelagent.exe")) { throw "PyInstaller did not produce dist/panelagent.exe" }
+        shell: pwsh
+
+      - name: Smoke test (start + hit health endpoint + kill)
+        run: |
+          $p = Start-Process -FilePath "dist\panelagent.exe" -PassThru
+          Start-Sleep -Seconds 25
+          try {
+            $resp = Invoke-WebRequest -Uri "http://127.0.0.1:8000/api/v1/health" -UseBasicParsing -TimeoutSec 10
+            if ($resp.StatusCode -ne 200) { throw "health check returned $($resp.StatusCode)" }
+            Write-Host "Health check OK: $($resp.Content)"
+          } finally {
+            Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+          }
+        shell: pwsh
+
+      - name: Get version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        id: version
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+
+      - name: Create / update Release and upload asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag || github.ref_name }}
+          name: PanelAgent ${{ steps.version.outputs.tag || 'dev' }}
+          files: dist/panelagent.exe
+          generate_release_notes: true
+          fail_on_unmatched_files: true

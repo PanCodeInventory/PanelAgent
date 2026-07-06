@@ -14,6 +14,14 @@ const allowedDevOrigins = Array.from(
 );
 
 const nextConfig: NextConfig = {
+  // Static HTML export: produces a fully static site under ./out that can be
+  // served by any static file server (including the bundled FastAPI backend
+  // in the single-exe build). Disables the Next.js server runtime, route
+  // handlers, SSR and image optimization.
+  output: "export",
+  images: {
+    unoptimized: true,
+  },
   allowedDevOrigins,
   turbopack: {
     root: path.join(__dirname),

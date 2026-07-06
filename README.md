@@ -281,6 +281,19 @@ docker compose up -d
 
 This starts all services including the nginx gateway on port 8080.
 
+#### Option 3.5: Download the Windows exe (single-file build)
+
+最简单的方式：从 [Releases](https://github.com/PanCodeInventory/PanelAgent/releases) 下载 `panelagent.exe`，双击运行。
+
+- 无需安装 Python / Node.js，exe 内含完整运行时。
+- 启动后会自动打开浏览器访问 `http://127.0.0.1:8000`。
+- 关闭命令行窗口即停止服务。
+- **首次使用**：进入「配色方案」页 → 点击「上传库存」上传你的抗体库（`.csv` / `.xlsx`），然后进入「设置」页选择模型供应商并填入 API 密钥。
+- 你的数据（SQLite 数据库、上传的库存、LLM 配置）保存在 `C:\Users\<你>\.panelagent\`，卸载只需删除 exe 和该目录。
+- 库存文件**不会**预置在 exe 里（避免泄露真实抗体数据），需自行上传。
+
+> exe 由 GitHub Actions 在打 tag（如 `v1.0.0`）时自动构建并发布。本地构建见 `scripts/build-windows.ps1`。
+
 #### Option 4: Windows Native (No Docker)
 
 Windows 原生运行无需 Docker / WSL，直接用 Python + Node.js 启动。

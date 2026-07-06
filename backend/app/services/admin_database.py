@@ -8,6 +8,7 @@ Initialisation is idempotent — calling :func:`init_db` repeatedly is safe.
 
 from __future__ import annotations
 
+import os
 import sqlite3
 from pathlib import Path
 
@@ -26,13 +27,17 @@ def get_db_path(db_path: str | Path | None = None) -> Path:
     Args:
         db_path: Explicit path.  When *None* the default
             ``data/admin_console.sqlite3`` relative to the project root
-            is used.
+            is used, or — when ``PANELAGENT_DATA_DIR`` is set (single-exe
+            mode) — under that writable user directory.
 
     Returns:
         Absolute :class:`Path` to the database file.
     """
     if db_path is not None:
         return Path(db_path).resolve()
+    data_dir = os.environ.get("PANELAGENT_DATA_DIR", "").strip()
+    if data_dir:
+        return Path(data_dir) / _DEFAULT_DB_RELATIVE
     return project_root() / _DEFAULT_DB_RELATIVE
 
 
