@@ -1,7 +1,10 @@
 # =============================================================================
 # PanelAgent - Docker Compose Stack
 # =============================================================================
-# Ports: user frontend 3000, admin frontend 3001, backend 8000, gateway 8080
+# Ports: frontend 3000, backend 8000, gateway 8080
+#
+# Note: the admin-frontend app has been merged into frontend/. Settings,
+# history and quality pages are now served from the single frontend app.
 #
 # Usage:
 #   docker compose build           # build images
@@ -25,7 +28,13 @@ services:
     environment:
       ADMIN_PASSWORD: "123456"
       ADMIN_SESSION_SECRET: "panelagent-docker-session-secret-2024"
-      BACKEND_CORS_ORIGINS: "http://localhost:3000,http://localhost:3001,http://localhost:8080,http://192.168.1.100:3000,http://192.168.1.105:3000"
+      BACKEND_CORS_ORIGINS: "http://localhost:3000,http://localhost:8080,http://192.168.1.100:3000,http://192.168.1.105:3000"
+      # LLM egress: aihubmix.com is only reachable through the host's mihomo
+      # proxy (bound to the compose network gateway 172.18.0.1). httpx/OpenAI
+      # client reads these env vars automatically. Leave blank to disable.
+      HTTPS_PROXY: "http://172.18.0.1:7890"
+      HTTP_PROXY: "http://172.18.0.1:7890"
+      NO_PROXY: "localhost,127.0.0.1,backend,frontend,admin-frontend"
     volumes:
       - ./data/quality_registry:/app/data/quality_registry
     healthcheck:
@@ -56,26 +65,6 @@ services:
       start_period: 10s
     restart: unless-stopped
 
-  admin-frontend:
-    build:
-      context: ./admin-frontend
-      dockerfile: ../Dockerfile.frontend
-    container_name: panelagent-admin-frontend
-    ports:
-      - "3001:3000"
-    environment:
-      BACKEND_INTERNAL_URL: "http://backend:8000"
-    depends_on:
-      backend:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/').then(r=>{process.exit(r.ok?0:1)}).catch(()=>process.exit(1))"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    restart: unless-stopped
-
   gateway:
     image: nginx:alpine
     container_name: panelagent-gateway
@@ -85,8 +74,6 @@ services:
       - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       frontend:
-        condition: service_healthy
-      admin-frontend:
         condition: service_healthy
       backend:
         condition: service_healthy

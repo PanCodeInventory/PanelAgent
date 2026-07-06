@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
+import { Settings, History } from "lucide-react";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -75,8 +76,26 @@ export default function RootLayout({
               >
                 <span className="relative">
                   质量登记
-                  <span className="absolute inset-x-0 -bottom-1 h-px bg-primary opacity-0 transition-opacity hover:opacity-100" />
+                  <span className="absolute inset-x-0 -bottom-1 h-px bg-primary opacity-0 transition-opacity group-hover:opacity-100" />
                 </span>
+              </Link>
+            </nav>
+            <nav className="flex items-center gap-1">
+              <Link
+                href="/settings"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                title="系统设置"
+              >
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">设置</span>
+              </Link>
+              <Link
+                href="/history"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                title="方案历史"
+              >
+                <History className="h-4 w-4" />
+                <span className="hidden sm:inline">历史</span>
               </Link>
             </nav>
           </div>

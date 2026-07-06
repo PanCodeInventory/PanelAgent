@@ -357,6 +357,302 @@
         }
       }
     },
+    "/api/v1/settings/providers": {
+      "get": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "List Providers",
+        "description": "Return the static catalog of LLM provider presets.",
+        "operationId": "list_providers_api_v1_settings_providers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProviderPreset"
+                  },
+                  "type": "array",
+                  "title": "Response List Providers Api V1 Settings Providers Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/settings/llm": {
+      "get": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Get Llm Settings",
+        "operationId": "get_llm_settings_api_v1_settings_llm_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LlmSettingsResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Put Llm Settings",
+        "operationId": "put_llm_settings_api_v1_settings_llm_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LlmSettingsUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LlmSettingsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/panel-history": {
+      "get": {
+        "tags": [
+          "panel-history"
+        ],
+        "summary": "List History",
+        "operationId": "list_history_api_v1_panel_history_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PanelHistoryListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/panel-history/{entry_id}": {
+      "get": {
+        "tags": [
+          "panel-history"
+        ],
+        "summary": "Get History Detail",
+        "operationId": "get_history_detail_api_v1_panel_history__entry_id__get",
+        "parameters": [
+          {
+            "name": "entry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entry Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PanelHistoryDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inventory/files": {
+      "get": {
+        "tags": [
+          "inventory"
+        ],
+        "summary": "List Inventory Files",
+        "description": "List antibody inventory files available for panel generation.\n\nBundled CSVs in ``inventory/`` plus any previously uploaded files are\nreturned. Auxiliary data files (viability dyes, isotype controls) are\nhidden from this list.",
+        "operationId": "list_inventory_files_api_v1_inventory_files_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InventoryFile"
+                  },
+                  "type": "array",
+                  "title": "Response List Inventory Files Api V1 Inventory Files Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inventory/upload": {
+      "post": {
+        "tags": [
+          "inventory"
+        ],
+        "summary": "Upload Inventory",
+        "description": "Accept an uploaded ``.csv`` / ``.xlsx`` antibody inventory.\n\nThe file is stored flat in ``inventory/`` (timestamp-prefixed to avoid\nclobbering bundled data) and immediately usable via the ``inventory_file``\nfield on ``/panels/generate`` etc.",
+        "operationId": "upload_inventory_api_v1_inventory_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_inventory_api_v1_inventory_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryUploadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inventory/files/{filename}": {
+      "delete": {
+        "tags": [
+          "inventory"
+        ],
+        "summary": "Delete Inventory File",
+        "description": "Delete an uploaded inventory file by name.\n\nRefuses path separators and only deletes files within ``inventory/``.",
+        "operationId": "delete_inventory_file_api_v1_inventory_files__filename__delete",
+        "parameters": [
+          {
+            "name": "filename",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Filename"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Delete Inventory File Api V1 Inventory Files  Filename  Delete"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/auth/login": {
       "post": {
         "tags": [
@@ -441,6 +737,33 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/settings/providers": {
+      "get": {
+        "tags": [
+          "admin",
+          "admin-settings"
+        ],
+        "summary": "List Providers",
+        "description": "Return the static catalog of LLM provider presets.",
+        "operationId": "list_providers_api_v1_admin_settings_providers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProviderPreset"
+                  },
+                  "type": "array",
+                  "title": "Response List Providers Api V1 Admin Settings Providers Get"
                 }
               }
             }
@@ -1005,6 +1328,20 @@
         "title": "AuditEvent",
         "description": "Immutable record of a single mutation on a quality issue."
       },
+      "Body_upload_inventory_api_v1_inventory_upload_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_inventory_api_v1_inventory_upload_post"
+      },
       "CandidateConfirmWithIssue": {
         "properties": {
           "issue_id": {
@@ -1289,6 +1626,54 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "InventoryFile": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "uploaded": {
+            "type": "boolean",
+            "title": "Uploaded"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "uploaded"
+        ],
+        "title": "InventoryFile"
+      },
+      "InventoryUploadResponse": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "rows": {
+            "type": "integer",
+            "title": "Rows"
+          },
+          "species_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Species Hint"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "rows",
+          "species_hint"
+        ],
+        "title": "InventoryUploadResponse"
+      },
       "LlmSettingsResponse": {
         "properties": {
           "api_base": {
@@ -1314,6 +1699,17 @@
             ],
             "title": "Api Key Masked"
           },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
           "source": {
             "type": "string",
             "enum": [
@@ -1329,6 +1725,7 @@
           "model_name",
           "has_api_key",
           "api_key_masked",
+          "provider",
           "source"
         ],
         "title": "LlmSettingsResponse",
@@ -1368,6 +1765,17 @@
               }
             ],
             "title": "Model Name"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
           }
         },
         "type": "object",
@@ -1865,6 +2273,40 @@
           "model_name"
         ],
         "title": "PanelHistorySummary"
+      },
+      "ProviderPreset": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "api_base": {
+            "type": "string",
+            "title": "Api Base"
+          },
+          "default_model": {
+            "type": "string",
+            "title": "Default Model"
+          },
+          "key_hint": {
+            "type": "string",
+            "title": "Key Hint"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "api_base",
+          "default_model",
+          "key_hint"
+        ],
+        "title": "ProviderPreset",
+        "description": "A provider preset returned by GET /api/v1/settings/providers."
       },
       "QualityIssueCreate": {
         "properties": {

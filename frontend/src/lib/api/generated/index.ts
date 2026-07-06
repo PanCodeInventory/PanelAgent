@@ -172,6 +172,148 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/settings/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Providers
+         * @description Return the static catalog of LLM provider presets.
+         */
+        get: operations["list_providers_api_v1_settings_providers_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings/llm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Llm Settings */
+        get: operations["get_llm_settings_api_v1_settings_llm_get"];
+        /** Put Llm Settings */
+        put: operations["put_llm_settings_api_v1_settings_llm_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/panel-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List History */
+        get: operations["list_history_api_v1_panel_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/panel-history/{entry_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get History Detail */
+        get: operations["get_history_detail_api_v1_panel_history__entry_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Inventory Files
+         * @description List antibody inventory files available for panel generation.
+         *
+         *     Bundled CSVs in ``inventory/`` plus any previously uploaded files are
+         *     returned. Auxiliary data files (viability dyes, isotype controls) are
+         *     hidden from this list.
+         */
+        get: operations["list_inventory_files_api_v1_inventory_files_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload Inventory
+         * @description Accept an uploaded ``.csv`` / ``.xlsx`` antibody inventory.
+         *
+         *     The file is stored flat in ``inventory/`` (timestamp-prefixed to avoid
+         *     clobbering bundled data) and immediately usable via the ``inventory_file``
+         *     field on ``/panels/generate`` etc.
+         */
+        post: operations["upload_inventory_api_v1_inventory_upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/files/{filename}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Inventory File
+         * @description Delete an uploaded inventory file by name.
+         *
+         *     Refuses path separators and only deletes files within ``inventory/``.
+         */
+        delete: operations["delete_inventory_file_api_v1_inventory_files__filename__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/auth/login": {
         parameters: {
             query?: never;
@@ -233,6 +375,26 @@ export interface paths {
          *     so it can report ``authenticated: false`` instead of returning 401.
          */
         get: operations["check_session_api_v1_admin_auth_session_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/settings/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Providers
+         * @description Return the static catalog of LLM provider presets.
+         */
+        get: operations["list_providers_api_v1_admin_settings_providers_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -440,6 +602,11 @@ export interface components {
              */
             timestamp?: string;
         };
+        /** Body_upload_inventory_api_v1_inventory_upload_post */
+        Body_upload_inventory_api_v1_inventory_upload_post: {
+            /** File */
+            file: string;
+        };
         /**
          * CandidateConfirmWithIssue
          * @description Confirm a candidate entity selection for a specific issue.
@@ -550,6 +717,22 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** InventoryFile */
+        InventoryFile: {
+            /** Filename */
+            filename: string;
+            /** Uploaded */
+            uploaded: boolean;
+        };
+        /** InventoryUploadResponse */
+        InventoryUploadResponse: {
+            /** Filename */
+            filename: string;
+            /** Rows */
+            rows: number;
+            /** Species Hint */
+            species_hint: string | null;
+        };
         /**
          * LlmSettingsResponse
          * @description Response model for GET /api/v1/settings/llm.
@@ -563,6 +746,8 @@ export interface components {
             has_api_key: boolean;
             /** Api Key Masked */
             api_key_masked: string | null;
+            /** Provider */
+            provider: string | null;
             /**
              * Source
              * @enum {string}
@@ -583,6 +768,8 @@ export interface components {
             api_key?: string | null;
             /** Model Name */
             model_name?: string | null;
+            /** Provider */
+            provider?: string | null;
         };
         /**
          * LoginRequest
@@ -757,6 +944,22 @@ export interface components {
             missing_markers: string[];
             /** Model Name */
             model_name: string;
+        };
+        /**
+         * ProviderPreset
+         * @description A provider preset returned by GET /api/v1/settings/providers.
+         */
+        ProviderPreset: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Api Base */
+            api_base: string;
+            /** Default Model */
+            default_model: string;
+            /** Key Hint */
+            key_hint: string;
         };
         /**
          * QualityIssueCreate
@@ -1221,6 +1424,228 @@ export interface operations {
             };
         };
     };
+    list_providers_api_v1_settings_providers_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderPreset"][];
+                };
+            };
+        };
+    };
+    get_llm_settings_api_v1_settings_llm_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmSettingsResponse"];
+                };
+            };
+        };
+    };
+    put_llm_settings_api_v1_settings_llm_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LlmSettingsUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmSettingsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_history_api_v1_panel_history_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PanelHistoryListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_history_detail_api_v1_panel_history__entry_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entry_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PanelHistoryDetailResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_inventory_files_api_v1_inventory_files_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryFile"][];
+                };
+            };
+        };
+    };
+    upload_inventory_api_v1_inventory_upload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_inventory_api_v1_inventory_upload_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryUploadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_inventory_file_api_v1_inventory_files__filename__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                filename: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     login_api_v1_admin_auth_login_post: {
         parameters: {
             query?: never;
@@ -1292,6 +1717,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SessionResponse"];
+                };
+            };
+        };
+    };
+    list_providers_api_v1_admin_settings_providers_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderPreset"][];
                 };
             };
         };
