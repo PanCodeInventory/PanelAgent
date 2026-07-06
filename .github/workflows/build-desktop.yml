@@ -1,0 +1,203 @@
+# =============================================================================
+# Build panelagent desktop bundles on tag push and attach to a GitHub Release.
+# =============================================================================
+# Trigger: push a tag matching v* (e.g. v1.0.0). Two jobs run in parallel:
+#   - build-windows: produces dist/panelagent.exe
+#   - build-macos:   produces PanelAgent-mac-arm64.zip (contains PanelAgent.app)
+# Both upload to the SAME release for that tag, so users pick their platform
+# from one page. Manual dispatch also supported from the Actions tab.
+# =============================================================================
+
+name: Build desktop bundles
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write  # required to create the release and upload assets
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Windows (x86_64) — single-file panelagent.exe
+  # ---------------------------------------------------------------------------
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install backend deps + PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install pyinstaller
+
+      - name: Build static frontend (export mode)
+        env:
+          PANELAGENT_STATIC_EXPORT: "1"
+          NEXT_PUBLIC_API_URL: "http://127.0.0.1:8000"
+        run: |
+          cd frontend
+          npm install
+          Remove-Item -Recurse -Force "src/app/api" -ErrorAction SilentlyContinue
+          npm run build
+          if (-Not (Test-Path "out/index.html")) { throw "next build did not produce out/index.html" }
+        shell: pwsh
+
+      - name: Build exe
+        run: |
+          python -m PyInstaller panelagent.spec --noconfirm --clean
+          if (-Not (Test-Path "dist/panelagent.exe")) { throw "PyInstaller did not produce dist/panelagent.exe" }
+        shell: pwsh
+
+      - name: Smoke test (start exe + poll health + dump log + kill)
+        continue-on-error: true
+        run: |
+          Write-Host "Launching dist\panelagent.exe..."
+          $p = Start-Process -FilePath "dist\panelagent.exe" -PassThru
+          $ok = $false
+          for ($i = 0; $i -lt 24; $i++) {
+            Start-Sleep -Seconds 5
+            try {
+              $resp = Invoke-WebRequest -Uri "http://127.0.0.1:8000/api/v1/health" -UseBasicParsing -TimeoutSec 5
+              if ($resp.StatusCode -eq 200) {
+                Write-Host "Health check OK after $($i*5)s: $($resp.Content)"
+                $ok = $true
+                break
+              }
+            } catch {
+              Write-Host "Waiting... ($($_.Exception.Message.Split([Environment]::NewLine)[0]))"
+            }
+          }
+          Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+          Start-Sleep -Seconds 2
+          $logPath = "$env:USERPROFILE\.panelagent\launcher.log"
+          Write-Host "Launcher log: $logPath"
+          if (Test-Path $logPath) {
+            Write-Host "===== launcher.log ====="
+            Get-Content $logPath | ForEach-Object { Write-Host $_ }
+            Write-Host "===== end launcher.log ====="
+          } else {
+            Write-Host "No launcher.log found (exe may have crashed before logging was set up)."
+          }
+          if (-not $ok) {
+            Write-Host "::warning::Smoke test could not reach health endpoint within 120s. See launcher.log above. The exe will still be uploaded."
+          }
+        shell: pwsh
+
+      - name: Upload exe to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: PanelAgent ${{ github.ref_name }}
+          files: dist/panelagent.exe
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+
+  # ---------------------------------------------------------------------------
+  # macOS (Apple Silicon / arm64) — PanelAgent.app
+  # ---------------------------------------------------------------------------
+  build-macos:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install backend deps + PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install pyinstaller
+
+      - name: Build static frontend (export mode)
+        env:
+          PANELAGENT_STATIC_EXPORT: "1"
+          NEXT_PUBLIC_API_URL: "http://127.0.0.1:8000"
+        run: |
+          cd frontend
+          npm install
+          # Proxy route handler is incompatible with output: export; remove
+          # it from this build working copy only (kept in repo for Linux).
+          rm -rf src/app/api
+          npm run build
+          test -f out/index.html || { echo "next build did not produce out/index.html"; exit 1; }
+
+      - name: Build .app
+        run: |
+          python -m PyInstaller panelagent-mac.spec --noconfirm --clean
+          test -d dist/PanelAgent.app || { echo "PyInstaller did not produce dist/PanelAgent.app"; exit 1; }
+
+      - name: Smoke test (launch app + poll health + dump log + kill)
+        continue-on-error: true
+        run: |
+          echo "Launching dist/PanelAgent.app/Contents/MacOS/PanelAgent..."
+          dist/PanelAgent.app/Contents/MacOS/PanelAgent &
+          pid=$!
+          ok=false
+          for i in $(seq 1 24); do
+            sleep 5
+            if curl -sf http://127.0.0.1:8000/api/v1/health >/dev/null 2>&1; then
+              echo "Health check OK after $((i*5))s"
+              ok=true
+              break
+            fi
+            echo "Waiting..."
+          done
+          kill $pid 2>/dev/null || true
+          pkill -f "PanelAgent" 2>/dev/null || true
+          sleep 2
+          log="$HOME/.panelagent/launcher.log"
+          echo "Launcher log: $log"
+          if [ -f "$log" ]; then
+            echo "===== launcher.log ====="
+            cat "$log"
+            echo "===== end launcher.log ====="
+          else
+            echo "No launcher.log found."
+          fi
+          if [ "$ok" = "false" ]; then
+            echo "::warning::Smoke test could not reach health endpoint within 120s. The .app will still be uploaded."
+          fi
+
+      - name: Zip .app for upload
+        run: |
+          cd dist
+          # ditto preserves macOS metadata and permissions better than zip.
+          ditto -c -k --keepParent PanelAgent.app PanelAgent-mac-arm64.zip
+          test -f PanelAgent-mac-arm64.zip
+
+      - name: Upload .app zip to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: PanelAgent ${{ github.ref_name }}
+          files: dist/PanelAgent-mac-arm64.zip
+          generate_release_notes: true
+          fail_on_unmatched_files: true
