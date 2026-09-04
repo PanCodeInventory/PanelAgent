@@ -1,0 +1,1 @@
+"""Immutable seed snapshots."""

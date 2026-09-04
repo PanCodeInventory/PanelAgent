@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "panelagent"
+version = "0.1.0"
+description = "SQLite-backed core for flow cytometry panel design"
+requires-python = ">=3.10"
+dependencies = ["pydantic>=2"]
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.2,<2"]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+pa = "panelagent.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["panelagent*"]
+
+[tool.setuptools.package-data]
+"panelagent.data.seed" = ["*.json", "README.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"

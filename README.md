@@ -27,7 +27,6 @@ PanelAgent combines deterministic algorithms with Large Language Model (LLM) eva
 - [Project Structure](#project-structure)
 - [API Reference](#api-reference)
 - [Development](#development)
-- [Docker Deployment](#docker-deployment)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -103,7 +102,6 @@ Visualize fluorochrome spectral characteristics:
 | **AI Integration** | Vercel AI SDK, OpenAI API |
 | **Backend** | FastAPI 0.115+, Python 3.13+ |
 | **Data Processing** | Pandas, NumPy, SciPy |
-| **Reverse Proxy** | Nginx (gateway) |
 | **Testing** | Playwright (E2E), Pytest |
 
 ## Architecture
@@ -112,8 +110,6 @@ PanelAgent uses a **dual-frontend architecture** with a shared backend:
 
 ```
                         ┌──────────────────┐
-                        │  Gateway (nginx) │
-                        │  localhost:8080   │
                         └────────┬─────────┘
                                  │
                  ┌───────────────┼───────────────┐
@@ -140,19 +136,9 @@ PanelAgent uses a **dual-frontend architecture** with a shared backend:
 | Backend | 8000 | `http://localhost:8000` | FastAPI REST API |
 | User Frontend | 3000 | `http://localhost:3000` | User-facing Next.js app |
 | Admin Frontend | 3001 | `http://localhost:3001` | Admin Next.js app |
-| Gateway | 8080 | `http://localhost:8080` | Nginx reverse proxy (all services) |
 
 ### Request Routing
 
-The nginx gateway routes requests based on URL prefix:
-
-| Browser Path | Routes To | Backend API Path |
-|--------------|-----------|------------------|
-| `/` | User Frontend (3000) | — |
-| `/exp-design` | User Frontend (3000) | — |
-| `/panel-design` | User Frontend (3000) | — |
-| `/quality-registry` | User Frontend (3000) | — |
-| `/api/v1/*` | User Frontend (3000) → Backend (8000) | `/api/v1/*` |
 | `/admin/login` | Admin Frontend (3001) | — |
 | `/admin/settings` | Admin Frontend (3001) | — |
 | `/admin/history` | Admin Frontend (3001) | — |
@@ -165,7 +151,6 @@ The nginx gateway routes requests based on URL prefix:
 - **Node.js** 18+ and npm/pnpm
 - **Python** 3.13+
 - **OpenAI API access** (or compatible API endpoint)
-- **Docker** (optional, for containerized deployment)
 
 ### Installation
 
@@ -272,29 +257,7 @@ cd admin-frontend
 npm run dev -- --port 3001
 ```
 
-#### Option 3: Docker Compose
-
-```bash
-docker compose build
-docker compose up -d
-```
-
-This starts all services including the nginx gateway on port 8080.
-
-#### Option 3.5: Download the Windows exe (single-file build)
-
-最简单的方式：从 [Releases](https://github.com/PanCodeInventory/PanelAgent/releases) 下载 `panelagent.exe`，双击运行。
-
-- 无需安装 Python / Node.js，exe 内含完整运行时。
-- 启动后会自动打开浏览器访问 `http://127.0.0.1:8000`。
-- 关闭命令行窗口即停止服务。
-- **首次使用**：进入「配色方案」页 → 点击「上传库存」上传你的抗体库（`.csv` / `.xlsx`），然后进入「设置」页选择模型供应商并填入 API 密钥。
-- 你的数据（SQLite 数据库、上传的库存、LLM 配置）保存在 `C:\Users\<你>\.panelagent\`，卸载只需删除 exe 和该目录。
-- 库存文件**不会**预置在 exe 里（避免泄露真实抗体数据），需自行上传。
-
-> exe 由 GitHub Actions 在打 tag（如 `v1.0.0`）时自动构建并发布。本地构建见 `scripts/build-windows.ps1`。
-
-#### Option 4: Windows Native (No Docker)
+#### Option 3: Windows Native
 
 Windows 原生运行无需 Docker / WSL，直接用 Python + Node.js 启动。
 
@@ -343,9 +306,7 @@ npm run dev
 | Interface | URL |
 |-----------|-----|
 | Frontend (direct) | `http://localhost:3000` |
-| All services (gateway) | `http://localhost:8080` |
 | API (direct) | `http://localhost:8000/api/v1/` |
-| API (via gateway) | `http://localhost:8080/api/v1/` |
 
 ## Settings & Management Pages
 
@@ -451,8 +412,6 @@ PanelAgent/
 │   │   └── core/             # Configuration
 │   └── requirements.txt
 │
-├── gateway/                  # Nginx reverse proxy (port 8080)
-│   └── nginx.conf            # Gateway routing configuration
 │
 ├── inventory/                # Antibody inventory CSVs
 │   ├── human_inventory.csv
@@ -467,9 +426,6 @@ PanelAgent/
 │   └── route-ownership-matrix.md
 │
 ├── tests/                    # Python tests
-├── docker-compose.yml        # Multi-service Docker stack
-├── Dockerfile.backend        # Backend container image
-├── Dockerfile.frontend       # Frontend container image (shared)
 ├── Makefile                  # Project commands
 └── .agents/                  # Agent skill configurations
 ```
@@ -597,52 +553,6 @@ cd frontend
 npm run test:e2e
 ```
 
-## Docker Deployment
-
-### Build and Start
-
-```bash
-# Build all images
-docker compose build
-
-# Start all services
-docker compose up -d
-
-# Check status
-docker compose ps
-
-# View logs
-docker compose logs -f
-
-# Stop
-docker compose down
-```
-
-### Individual Service Logs
-
-```bash
-docker compose logs -f backend
-docker compose logs -f frontend
-docker compose logs -f admin-frontend
-docker compose logs -f gateway
-```
-
-### Service Endpoints (Docker)
-
-| Service | URL |
-|---------|-----|
-| User App | `http://localhost:3000` |
-| Admin App | `http://localhost:3001` |
-| Backend API | `http://localhost:8000` |
-| Gateway (all-in-one) | `http://localhost:8080` |
-
-### Gateway Routing
-
-The nginx gateway on port 8080 provides unified access:
-- `http://localhost:8080/` → User frontend
-- `http://localhost:8080/admin/` → Admin frontend
-- `http://localhost:8080/api/v1/` → Backend API (via user frontend proxy)
-- `http://localhost:8080/admin/api/v1/` → Admin API (via admin frontend proxy)
 
 ## Migration to Another Lab
 
@@ -661,10 +571,10 @@ Step 3: 清理历史层  —  删除 SQLite 库 + 清空质量登记数据
 | # | Item | File(s) | Action Required |
 |---|------|---------|----------------|
 | 1 | **Antibody inventory CSVs** | `inventory/*.csv` | Replace with new lab's antibody database (human + mouse) |
-| 2 | **Admin password** | `docker-compose.yml` | Change `ADMIN_PASSWORD` — the default is insecure |
-| 3 | **Session secret** | `docker-compose.yml` | Change `ADMIN_SESSION_SECRET` or leave blank for auto-generation |
+| 2 | **Admin password** | env `ADMIN_PASSWORD` | Change it — the default is insecure |
+| 3 | **Session secret** | env `ADMIN_SESSION_SECRET` | Change it or leave blank for auto-generation |
 | 4 | **AI API credentials** | `.env` | Fill in API key, base URL, and model name |
-| 5 | **CORS origins** | `docker-compose.yml` | Add new lab's deployment IPs/domains to `BACKEND_CORS_ORIGINS` |
+| 5 | **CORS origins** | env / `.env` | Add new lab's deployment IPs/domains to `BACKEND_CORS_ORIGINS` |
 | 6 | **Dev origin whitelist** | `frontend/.env.local` | Add developers' machine IPs to `ALLOWED_DEV_ORIGINS` |
 | 7 | **Species→filename mapping** | `backend/app/core/config.py` | Update `SPECIES_INVENTORY_MAP` to match actual CSV filenames |
 | 8 | **Historical data cleanup** | `data/admin_console.sqlite3`, `data/quality_registry/` | Delete SQLite DB, clear issues/audit/projection files |
@@ -678,7 +588,7 @@ Step 3: 清理历史层  —  删除 SQLite 库 + 清空质量登记数据
 | **All algorithms** | `panel_generator.py`, `data_preprocessing.py` | Panel generation logic is laboratory-agnostic |
 | **All backend code** | `backend/` | API, services, schemas are all generic |
 | **All frontend code** | `frontend/`, `admin-frontend/` | UI is fully reusable |
-| **Infrastructure** | `docker-compose.yml`, `gateway/nginx.conf` | Architecture reusable; only parameter values change |
+| **Infrastructure** | (Docker stack removed; will be rebuilt post-refactor) | To be redefined |
 
 ### What Depends on the New Lab's Setup
 
@@ -688,7 +598,7 @@ Step 3: 清理历史层  —  删除 SQLite 库 + 清空质量登记数据
 | Different CSV column names | `data_preprocessing.py` — `column_mapping` logic |
 | Non-human/non-mouse species | `panel_generator.py` — `_infer_marker_type()` hardcoded lists |
 | English interface language | `llm_api_client.py` system prompt + all frontend UI text |
-| Different server ports | `docker-compose.yml` ports mapping |
+| Different server ports | `Makefile` dev targets / uvicorn & next ports |
 
 ### AI-Assisted Migration
 
