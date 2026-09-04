@@ -18,12 +18,17 @@ env/
 # --- Project Data (Inventory) ---
 *.csv
 !tests/fixtures/gbk_inventory.csv
+!tests/fixtures/panel_inventory.csv
+!tests/fixtures/small_inventory.csv
+!tests/fixtures/alias_inventory.csv
 *.xlsx
 *.xls
 
 # --- Secrets & Configuration ---
 .env
 .env.*
+config/.env
+!config/.env.example
 api_key.txt
 secrets.json
 config_private.json

@@ -24,11 +24,8 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - .env
+      - ./config/.env
     environment:
-      ADMIN_PASSWORD: "123456"
-      ADMIN_SESSION_SECRET: "panelagent-docker-session-secret-2024"
-      BACKEND_CORS_ORIGINS: "http://localhost:3000,http://localhost:8080,http://192.168.1.100:3000,http://192.168.1.105:3000"
       # LLM egress: aihubmix.com is only reachable through the host's mihomo
       # proxy (bound to the compose network gateway 172.18.0.1). httpx/OpenAI
       # client reads these env vars automatically. Leave blank to disable.
@@ -36,7 +33,12 @@ services:
       HTTP_PROXY: "http://172.18.0.1:7890"
       NO_PROXY: "localhost,127.0.0.1,backend,frontend,admin-frontend"
     volumes:
-      - ./data/quality_registry:/app/data/quality_registry
+      - ./config/channel_mapping.json:/app/channel_mapping.json:ro
+      - ./config/fluorochrome_brightness.json:/app/fluorochrome_brightness.json:ro
+      - ./config/spectral_data.json:/app/spectral_data.json:ro
+      - ./config/quality_registry:/app/data/quality_registry
+      - ./data:/app/data
+      - ./inventory:/app/inventory
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
       interval: 30s
@@ -69,7 +71,7 @@ services:
     image: nginx:alpine
     container_name: panelagent-gateway
     ports:
-      - "8080:80"
+      - "8088:80"
     volumes:
       - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:

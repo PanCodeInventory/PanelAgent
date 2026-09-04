@@ -19,7 +19,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install all dependencies (dev + prod) needed for the build step
-RUN npm ci
+RUN unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy ALL_PROXY all_proxy && npm config set registry https://registry.npmmirror.com && npm ci
 
 # ---------------------------------------------------------------------------
 # Stage 2: Build - compile Next.js production bundle
@@ -66,7 +66,7 @@ RUN addgroup --system --gid 1001 nodejs && \
 COPY package.json package-lock.json ./
 
 # Install only production dependencies
-RUN npm ci --omit=dev && \
+RUN unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy ALL_PROXY all_proxy && npm config set registry https://registry.npmmirror.com && npm ci --omit=dev && \
     npm cache clean --force
 
 # Copy Next.js build output

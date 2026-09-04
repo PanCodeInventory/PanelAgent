@@ -10,7 +10,7 @@ WORKDIR /app
 
 # Install Python dependencies first (layer caching)
 COPY backend/requirements.txt ./backend/requirements.txt
-RUN pip install --no-cache-dir -r backend/requirements.txt
+RUN unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy ALL_PROXY all_proxy && pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -r backend/requirements.txt
 
 # Copy backend source
 COPY backend/ ./backend/
