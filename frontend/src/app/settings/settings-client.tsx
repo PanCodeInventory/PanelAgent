@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useMemo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -9,21 +8,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { useSettings } from "@/lib/hooks/use-settings";
 import { settingsApi, type ProviderPreset } from "@/lib/api/settings";
-import { Settings, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Settings, AlertCircle, Info } from "lucide-react";
+
+function ReadOnlyField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-sm font-medium text-foreground">{label}</span>
+      <div className="rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground">
+        {value}
+      </div>
+    </div>
+  );
+}
 
 export default function SettingsClientPage() {
-  const { state, loadSettings, saveSettings, clearError } = useSettings();
+  const { state, loadSettings } = useSettings();
 
-  const [apiBase, setApiBase] = useState("");
-  const [modelName, setModelName] = useState("");
-  const [apiKey, setApiKey] = useState("");
-  const [hasApiKey, setHasApiKey] = useState(false);
-  const [provider, setProvider] = useState<string>("custom");
   const [providers, setProviders] = useState<ProviderPreset[]>([]);
-  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     void loadSettings();
@@ -32,61 +35,19 @@ export default function SettingsClientPage() {
     });
   }, [loadSettings]);
 
-  useEffect(() => {
-    if (state.settings) {
-      setApiBase(state.settings.api_base);
-      setModelName(state.settings.model_name);
-      setHasApiKey(state.settings.has_api_key);
-      // Match the stored provider to a known preset; fall back to "custom".
-      const stored = state.settings.provider;
-      setProvider(stored && providers.some((p) => p.id === stored) ? stored : "custom");
-    }
-  }, [state.settings, providers]);
+  const providerLabel = useMemo(() => {
+    const id = state.settings?.provider ?? "custom";
+    return (
+      providers.find((p) => p.id === id)?.label ??
+      (id === "custom" ? "自定义" : id)
+    );
+  }, [providers, state.settings]);
 
-  const selectedPreset = useMemo(
-    () => providers.find((p) => p.id === provider),
-    [providers, provider]
-  );
-
-  const handleProviderChange = (id: string) => {
-    setProvider(id);
-    const preset = providers.find((p) => p.id === id);
-    if (!preset) return;
-    // Only prefill when the preset defines a value, so "custom" leaves the
-    // fields untouched for manual entry.
-    if (preset.api_base) setApiBase(preset.api_base);
-    if (preset.default_model) setModelName(preset.default_model);
-  };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    clearError();
-    setSuccess(false);
-
-    const data: {
-      api_base?: string;
-      model_name?: string;
-      api_key?: string;
-      provider?: string;
-    } = {
-      api_base: apiBase,
-      model_name: modelName,
-      provider,
-    };
-
-    if (apiKey.trim()) {
-      data.api_key = apiKey;
-    }
-
-    const result = await saveSettings(data);
-
-    if (result) {
-      setSuccess(true);
-      setApiKey("");
-      setHasApiKey(result.has_api_key);
-      window.setTimeout(() => setSuccess(false), 3000);
-    }
-  };
+  const apiKeyStatus = state.settings
+    ? state.settings.has_api_key
+      ? "已配置"
+      : "未配置"
+    : "";
 
   return (
     <div
@@ -98,7 +59,7 @@ export default function SettingsClientPage() {
           设置
         </h1>
         <p className="mt-2 text-muted-foreground">
-          管理 LLM 配置，包括模型供应商、API 地址、模型名称和 API 密钥。
+          当前生效的 LLM 配置（只读）。
         </p>
       </div>
 
@@ -111,14 +72,13 @@ export default function SettingsClientPage() {
         </div>
       )}
 
-      {success && (
-        <div className="mb-6 rounded-lg border border-green-500/50 bg-green-500/10 p-4">
-          <div className="flex items-center gap-2 text-green-600">
-            <CheckCircle2 className="size-4" />
-            <p className="text-sm">设置已保存</p>
-          </div>
-        </div>
-      )}
+      <div className="mb-6 flex items-start gap-2 rounded-lg border border-border bg-muted/40 p-4">
+        <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">
+          LLM 设置由宿主机 <code className="font-mono">config/.env</code>{" "}
+          配置，重启容器后生效，此处仅作展示。
+        </p>
+      </div>
 
       <Card className="bg-card border border-border">
         <CardHeader>
@@ -129,120 +89,25 @@ export default function SettingsClientPage() {
             LLM 配置
           </CardTitle>
           <CardDescription>
-            选择模型供应商后会自动填充推荐参数，你仍可手动修改。留空 API 密钥表示不修改已存储的密钥。
+            当前生效配置，来自宿主机环境变量，不可在本页面修改。
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form
+          <div
             className="flex flex-col gap-6"
-            onSubmit={handleSubmit}
-            data-testid="settings-form"
+            data-testid="settings-view"
           >
-            <div className="flex flex-col gap-2">
-              <label
-                className="text-sm font-medium text-foreground"
-                htmlFor="settings-provider"
-              >
-                模型供应商
-              </label>
-              <select
-                id="settings-provider"
-                value={provider}
-                onChange={(event) => handleProviderChange(event.target.value)}
-                data-testid="settings-provider"
-                className="rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground disabled:opacity-50"
-                disabled={state.isLoading || providers.length === 0}
-              >
-                {providers.length === 0 && <option value="custom">自定义</option>}
-                {providers.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
-              <p className="text-xs text-muted-foreground">
-                选择供应商会自动填入其 API 地址与推荐模型。选「自定义」可手动填写任意 OpenAI 兼容端点。
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label
-                className="text-sm font-medium text-foreground"
-                htmlFor="settings-api-base"
-              >
-                API 地址
-              </label>
-              <Input
-                id="settings-api-base"
-                value={apiBase}
-                onChange={(event) => setApiBase(event.target.value)}
-                placeholder="https://api.openai.com/v1"
-                data-testid="settings-api-base"
-                className="bg-secondary/50 border-border"
-                disabled={state.isLoading}
-              />
-              <p className="text-xs text-muted-foreground">
-                OpenAI 兼容 API 的基础 URL
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label
-                className="text-sm font-medium text-foreground"
-                htmlFor="settings-model-name"
-              >
-                模型名称
-              </label>
-              <Input
-                id="settings-model-name"
-                value={modelName}
-                onChange={(event) => setModelName(event.target.value)}
-                placeholder={selectedPreset?.default_model || "gpt-4o"}
-                data-testid="settings-model-name"
-                className="bg-secondary/50 border-border"
-                disabled={state.isLoading}
-              />
-              <p className="text-xs text-muted-foreground">
-                要使用的 LLM 模型名称
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label
-                className="text-sm font-medium text-foreground"
-                htmlFor="settings-api-key"
-              >
-                API 密钥
-              </label>
-              <Input
-                id="settings-api-key"
-                type="password"
-                value={apiKey}
-                onChange={(event) => setApiKey(event.target.value)}
-                placeholder={
-                  hasApiKey ? "••••••••" : selectedPreset?.key_hint || "sk-..."
-                }
-                data-testid="settings-api-key"
-                className="bg-secondary/50 border-border"
-                disabled={state.isLoading}
-              />
-              <p className="text-xs text-muted-foreground">
-                {hasApiKey
-                  ? "已存储密钥。输入新密钥以替换，留空保持现有密钥。"
-                  : "输入 API 密钥以启用 LLM 功能"}
-              </p>
-            </div>
-
-            <div className="flex justify-end">
-              <Button
-                type="submit"
-                disabled={state.isLoading || state.isSaving}
-                data-testid="settings-save-button"
-              >
-                {state.isSaving ? "保存中..." : "保存设置"}
-              </Button>
-            </div>
-          </form>
+            <ReadOnlyField label="模型供应商" value={providerLabel} />
+            <ReadOnlyField
+              label="API 地址"
+              value={state.settings?.api_base ?? "—"}
+            />
+            <ReadOnlyField
+              label="模型名称"
+              value={state.settings?.model_name ?? "—"}
+            />
+            <ReadOnlyField label="API 密钥" value={apiKeyStatus} />
+          </div>
         </CardContent>
       </Card>
     </div>
