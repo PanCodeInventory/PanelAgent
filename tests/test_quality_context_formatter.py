@@ -132,13 +132,15 @@ def test_header_included_in_context():
     proj = _proj()
     ctx = format_quality_context([proj])
 
-    # The header should appear in the formatted output
-    # total_chars measures the full formatted string including header
-    assert ctx.total_chars > 0
-    # The header string should be part of the final context
-    # We'll verify via the full concatenation logic
-    full_text = QUALITY_CONTEXT_HEADER + "\n".join(ctx.entries)
-    assert "## Antibody Quality Context" in full_text
+    # 1) Length contract: total_chars counts header + entries joined by newline
+    assert ctx.total_chars == len(QUALITY_CONTEXT_HEADER + chr(10).join(ctx.entries))
+    # 2) Entries are per-antibody blocks only — the header lives outside entries
+    assert ctx.entries[0].startswith("###")
+    # 3) Pin the header literal so future copy changes are caught here
+    assert QUALITY_CONTEXT_HEADER == (
+        "## 抗体质量上下文\n\n"
+        "以下抗体有已报告的质量问题：\n\n"
+    )
 
 
 def test_sanitization_strips_markdown_chars():

@@ -157,7 +157,7 @@ class TestEvaluateCandidatesWithLLMContext:
 
         # Assert mock LLM received prompt containing quality context header
         prompt_arg = mock_llm.call_args[0][0]
-        assert "Antibody Quality" in prompt_arg
+        assert "抗体质量备注" in prompt_arg
         # Sanitization strips # chars, so the stored text "lot #2024-03"
         # becomes "lot 2024-03" in the formatted context
         assert "Weak staining signal on lot" in prompt_arg

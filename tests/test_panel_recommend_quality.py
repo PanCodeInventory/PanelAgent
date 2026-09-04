@@ -69,9 +69,9 @@ def test_recommend_quality_context_present(mock_llm, tmp_path):
 
     assert result["status"] == "success"
     prompt_arg = mock_llm.call_args[0][0]
-    assert "Antibody Quality Notes" in prompt_arg
+    assert "抗体质量备注" in prompt_arg
     assert "High background staining observed" in prompt_arg
-    assert "do NOT auto-exclude" in prompt_arg
+    assert "不要自动排除" in prompt_arg
 
 
 @patch("panel_generator.consult_gpt_oss", return_value=MOCK_LLM_RESPONSE)
@@ -86,7 +86,7 @@ def test_recommend_quality_context_absent(mock_llm, tmp_path):
 
     assert result["status"] == "success"
     prompt_arg = mock_llm.call_args[0][0]
-    assert "Antibody Quality Notes" not in prompt_arg
+    assert "抗体质量备注" not in prompt_arg
 
 
 @patch("panel_generator.consult_gpt_oss", return_value=MOCK_LLM_RESPONSE)
