@@ -1,18 +1,7 @@
 import type { Metadata } from "next";
-import { DM_Sans, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import { Settings, History } from "lucide-react";
 import "./globals.css";
-
-const dmSans = DM_Sans({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "PanelAgent 流式配色助手",
@@ -27,7 +16,7 @@ export default function RootLayout({
   return (
     <html
       lang="zh-CN"
-      className={`${dmSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className="h-full antialiased"
     >
       <body className="min-h-full flex flex-col font-sans">
         <header className="sticky top-0 z-50 bg-background border-b border-border">
